@@ -3173,75 +3173,75 @@ namespace std {
     constexpr shared_ptr() noexcept;
     constexpr shared_ptr(nullptr_t) noexcept : shared_ptr() { }
     template<class Y>
-      explicit shared_ptr(Y* p);
+      constexpr explicit shared_ptr(Y* p);
     template<class Y, class D>
-      shared_ptr(Y* p, D d);
+      constexpr shared_ptr(Y* p, D d);
     template<class Y, class D, class A>
-      shared_ptr(Y* p, D d, A a);
+      constexpr shared_ptr(Y* p, D d, A a);
     template<class D>
-      shared_ptr(nullptr_t p, D d);
+      constexpr shared_ptr(nullptr_t p, D d);
     template<class D, class A>
-      shared_ptr(nullptr_t p, D d, A a);
+      constexpr shared_ptr(nullptr_t p, D d, A a);
     template<class Y>
-      shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
+      constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
     template<class Y>
-      shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
-    shared_ptr(const shared_ptr& r) noexcept;
+      constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
+    constexpr shared_ptr(const shared_ptr& r) noexcept;
     template<class Y>
-      shared_ptr(const shared_ptr<Y>& r) noexcept;
-    shared_ptr(shared_ptr&& r) noexcept;
+      constexpr shared_ptr(const shared_ptr<Y>& r) noexcept;
+    constexpr shared_ptr(shared_ptr&& r) noexcept;
     template<class Y>
-      shared_ptr(shared_ptr<Y>&& r) noexcept;
+      constexpr shared_ptr(shared_ptr<Y>&& r) noexcept;
     template<class Y>
-      explicit shared_ptr(const weak_ptr<Y>& r);
+      constexpr explicit shared_ptr(const weak_ptr<Y>& r);
     template<class Y, class D>
-      shared_ptr(unique_ptr<Y, D>&& r);
+      constexpr shared_ptr(unique_ptr<Y, D>&& r);
 
     // \ref{util.smartptr.shared.dest}, destructor
-    ~shared_ptr();
+    constexpr ~shared_ptr();
 
     // \ref{util.smartptr.shared.assign}, assignment
-    shared_ptr& operator=(const shared_ptr& r) noexcept;
+    constexpr shared_ptr& operator=(const shared_ptr& r) noexcept;
     template<class Y>
-      shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
-    shared_ptr& operator=(shared_ptr&& r) noexcept;
+      constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
+    constexpr shared_ptr& operator=(shared_ptr&& r) noexcept;
     template<class Y>
-      shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
+      constexpr shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
     template<class Y, class D>
-      shared_ptr& operator=(unique_ptr<Y, D>&& r);
+      constexpr shared_ptr& operator=(unique_ptr<Y, D>&& r);
 
     // \ref{util.smartptr.shared.mod}, modifiers
-    void swap(shared_ptr& r) noexcept;
-    void reset() noexcept;
+    constexpr void swap(shared_ptr& r) noexcept;
+    constexpr void reset() noexcept;
     template<class Y>
-      void reset(Y* p);
+      constexpr void reset(Y* p);
     template<class Y, class D>
-      void reset(Y* p, D d);
+      constexpr void reset(Y* p, D d);
     template<class Y, class D, class A>
-      void reset(Y* p, D d, A a);
+      constexpr void reset(Y* p, D d, A a);
 
     // \ref{util.smartptr.shared.obs}, observers
-    element_type* get() const noexcept;
-    T& operator*() const noexcept;
-    T* operator->() const noexcept;
-    element_type& operator[](ptrdiff_t i) const;
-    long use_count() const noexcept;
-    explicit operator bool() const noexcept;
+    constexpr element_type* get() const noexcept;
+    constexpr T& operator*() const noexcept;
+    constexpr T* operator->() const noexcept;
+    constexpr element_type& operator[](ptrdiff_t i) const;
+    constexpr long use_count() const noexcept;
+    constexpr explicit operator bool() const noexcept;
     template<class U>
-      bool owner_before(const shared_ptr<U>& b) const noexcept;
+      constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
     template<class U>
-      bool owner_before(const weak_ptr<U>& b) const noexcept;
-    size_t owner_hash() const noexcept;
+      constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
+    constexpr size_t owner_hash() const noexcept;
     template<class U>
-      bool owner_equal(const shared_ptr<U>& b) const noexcept;
+      constexpr bool owner_equal(const shared_ptr<U>& b) const noexcept;
     template<class U>
-      bool owner_equal(const weak_ptr<U>& b) const noexcept;
+      constexpr bool owner_equal(const weak_ptr<U>& b) const noexcept;
   };
 
   template<class T>
-    shared_ptr(weak_ptr<T>) -> shared_ptr<T>;
+    constexpr shared_ptr(weak_ptr<T>) -> shared_ptr<T>;
   template<class T, class D>
-    shared_ptr(unique_ptr<T, D>) -> shared_ptr<T>;
+    constexpr shared_ptr(unique_ptr<T, D>) -> shared_ptr<T>;
 }
 \end{codeblock}
 
@@ -3312,7 +3312,7 @@ constexpr shared_ptr() noexcept;
 
 \indexlibraryctor{shared_ptr}%
 \begin{itemdecl}
-template<class Y> explicit shared_ptr(Y* p);
+template<class Y> constexpr explicit shared_ptr(Y* p);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3363,10 +3363,10 @@ constructor fails} exception when a resource other than memory cannot be obtaine
 
 \indexlibraryctor{shared_ptr}%
 \begin{itemdecl}
-template<class Y, class D> shared_ptr(Y* p, D d);
-template<class Y, class D, class A> shared_ptr(Y* p, D d, A a);
-template<class D> shared_ptr(nullptr_t p, D d);
-template<class D, class A> shared_ptr(nullptr_t p, D d, A a);
+template<class Y, class D> constexpr shared_ptr(Y* p, D d);
+template<class Y, class D, class A> constexpr shared_ptr(Y* p, D d, A a);
+template<class D> constexpr shared_ptr(nullptr_t p, D d);
+template<class D, class A> constexpr shared_ptr(nullptr_t p, D d, A a);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3418,8 +3418,10 @@ when a resource other than memory cannot be obtained.
 
 \indexlibraryctor{shared_ptr}%
 \begin{itemdecl}
-template<class Y> shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
-template<class Y> shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
+template<class Y>
+  constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
+template<class Y>
+  constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3451,8 +3453,8 @@ This constructor allows creation of an empty
 
 \indexlibraryctor{shared_ptr}%
 \begin{itemdecl}
-shared_ptr(const shared_ptr& r) noexcept;
-template<class Y> shared_ptr(const shared_ptr<Y>& r) noexcept;
+constexpr shared_ptr(const shared_ptr& r) noexcept;
+template<class Y> constexpr shared_ptr(const shared_ptr<Y>& r) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3473,8 +3475,8 @@ a \tcode{shared_ptr} object that shares ownership with \tcode{r}.
 
 \indexlibraryctor{shared_ptr}%
 \begin{itemdecl}
-shared_ptr(shared_ptr&& r) noexcept;
-template<class Y> shared_ptr(shared_ptr<Y>&& r) noexcept;
+constexpr shared_ptr(shared_ptr&& r) noexcept;
+template<class Y> constexpr shared_ptr(shared_ptr<Y>&& r) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3495,7 +3497,7 @@ Move constructs a \tcode{shared_ptr} instance from \tcode{r}.
 \indexlibraryctor{shared_ptr}%
 \indexlibraryglobal{weak_ptr}%
 \begin{itemdecl}
-template<class Y> explicit shared_ptr(const weak_ptr<Y>& r);
+template<class Y> constexpr explicit shared_ptr(const weak_ptr<Y>& r);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3521,7 +3523,7 @@ If an exception is thrown, the constructor has no effect.
 \indexlibraryctor{shared_ptr}%
 \indexlibraryglobal{unique_ptr}%
 \begin{itemdecl}
-template<class Y, class D> shared_ptr(unique_ptr<Y, D>&& r);
+template<class Y, class D> constexpr shared_ptr(unique_ptr<Y, D>&& r);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3543,7 +3545,7 @@ If an exception is thrown, the constructor has no effect.
 
 \indexlibrarydtor{shared_ptr}%
 \begin{itemdecl}
-~shared_ptr();
+constexpr ~shared_ptr();
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3577,8 +3579,9 @@ than its previous value.
 
 \indexlibrarymember{operator=}{shared_ptr}%
 \begin{itemdecl}
-shared_ptr& operator=(const shared_ptr& r) noexcept;
-template<class Y> shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
+constexpr shared_ptr& operator=(const shared_ptr& r) noexcept;
+template<class Y>
+  constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3609,8 +3612,8 @@ both assignments can be no-ops.
 
 \indexlibrarymember{operator=}{shared_ptr}%
 \begin{itemdecl}
-shared_ptr& operator=(shared_ptr&& r) noexcept;
-template<class Y> shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
+constexpr shared_ptr& operator=(shared_ptr&& r) noexcept;
+template<class Y> constexpr shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3625,7 +3628,8 @@ Equivalent to \tcode{shared_ptr(std::move(r)).swap(*this)}.
 
 \indexlibrarymember{operator=}{shared_ptr}%
 \begin{itemdecl}
-template<class Y, class D> shared_ptr& operator=(unique_ptr<Y, D>&& r);
+template<class Y, class D>
+  constexpr shared_ptr& operator=(unique_ptr<Y, D>&& r);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3642,7 +3646,7 @@ Equivalent to \tcode{shared_ptr(std::move(r)).swap(*this)}.
 
 \indexlibrarymember{swap}{shared_ptr}%
 \begin{itemdecl}
-void swap(shared_ptr& r) noexcept;
+constexpr void swap(shared_ptr& r) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3654,7 +3658,7 @@ Exchanges the contents of \tcode{*this} and \tcode{r}.
 
 \indexlibrarymember{reset}{shared_ptr}%
 \begin{itemdecl}
-void reset() noexcept;
+constexpr void reset() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3665,7 +3669,7 @@ Equivalent to \tcode{shared_ptr().swap(*this)}.
 
 \indexlibrarymember{reset}{shared_ptr}%
 \begin{itemdecl}
-template<class Y> void reset(Y* p);
+template<class Y> constexpr void reset(Y* p);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3676,7 +3680,7 @@ Equivalent to \tcode{shared_ptr(p).swap(*this)}.
 
 \indexlibrarymember{reset}{shared_ptr}%
 \begin{itemdecl}
-template<class Y, class D> void reset(Y* p, D d);
+template<class Y, class D> constexpr void reset(Y* p, D d);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3687,7 +3691,7 @@ Equivalent to \tcode{shared_ptr(p, d).swap(*this)}.
 
 \indexlibrarymember{reset}{shared_ptr}%
 \begin{itemdecl}
-template<class Y, class D, class A> void reset(Y* p, D d, A a);
+template<class Y, class D, class A> constexpr void reset(Y* p, D d, A a);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3699,7 +3703,7 @@ Equivalent to \tcode{shared_ptr(p, d, a).swap(*this)}.
 \rSec4[util.smartptr.shared.obs]{Observers}
 \indexlibrarymember{get}{shared_ptr}%
 \begin{itemdecl}
-element_type* get() const noexcept;
+constexpr element_type* get() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3710,7 +3714,7 @@ The stored pointer.
 
 \indexlibrarymember{operator*}{shared_ptr}%
 \begin{itemdecl}
-T& operator*() const noexcept;
+constexpr T& operator*() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3733,7 +3737,7 @@ definition) of the function shall be well-formed.
 
 \indexlibrarymember{operator->}{shared_ptr}%
 \begin{itemdecl}
-T* operator->() const noexcept;
+constexpr T* operator->() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
