@@ -3141,7 +3141,7 @@ constructor taking a \tcode{weak_ptr}.
 
 \indexlibrarymember{what}{bad_weak_ptr}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5042,7 +5042,7 @@ constexpr weak_ptr<T const> weak_from_this() const noexcept;
 
 \indexlibrarymember{hash}{unique_ptr}%
 \begin{itemdecl}
-constexpr template<class T, class D> struct hash<unique_ptr<T, D>>;
+template<class T, class D> struct hash<unique_ptr<T, D>>;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5153,7 +5153,7 @@ on the same object may conflict\iref{intro.races}.
 
 \indexlibraryctor{out_ptr_t}%
 \begin{itemdecl}
-explicit out_ptr_t(Smart& smart, Args... args);
+constexpr explicit out_ptr_t(Smart& smart, Args... args);
 \end{itemdecl}
 
 \begin{itemdescr}
