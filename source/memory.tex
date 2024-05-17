@@ -427,7 +427,7 @@ namespace std {
     requires @\libconcept{three_way_comparable_with}@<typename unique_ptr<T1, D1>::pointer,
                                        typename unique_ptr<T2, D2>::pointer>
     constexpr compare_three_way_result_t<typename unique_ptr<T1, D1>::pointer,
-                                         typename unique_ptr<T2, D2>::pointer>
+                               typename unique_ptr<T2, D2>::pointer>
       operator<=>(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);        // freestanding
 
   template<class T, class D>
@@ -482,7 +482,7 @@ namespace std {
     constexpr shared_ptr<T> make_shared(size_t N, const remove_extent_t<T>& u);           // \tcode{T} is \tcode{U[]}
   template<class T, class A>
     constexpr shared_ptr<T> allocate_shared(const A& a, size_t N,
-                                            const remove_extent_t<T>& u);                 // \tcode{T} is \tcode{U[]}
+                                  const remove_extent_t<T>& u);                 // \tcode{T} is \tcode{U[]}
 
   template<class T>
     constexpr shared_ptr<T> make_shared(const remove_extent_t<T>& u);                     // \tcode{T} is \tcode{U[N]}
@@ -2987,7 +2987,7 @@ template<class T1, class D1, class T2, class D2>
   requires @\libconcept{three_way_comparable_with}@<typename unique_ptr<T1, D1>::pointer,
                                      typename unique_ptr<T2, D2>::pointer>
   constexpr compare_three_way_result_t<typename unique_ptr<T1, D1>::pointer,
-                                       typename unique_ptr<T2, D2>::pointer>
+                             typename unique_ptr<T2, D2>::pointer>
     operator<=>(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);
 \end{itemdecl}
 
@@ -3182,18 +3182,13 @@ namespace std {
       constexpr shared_ptr(nullptr_t p, D d);
     template<class D, class A>
       constexpr shared_ptr(nullptr_t p, D d, A a);
-    template<class Y>
-      constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
-    template<class Y>
-      constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
+    template<class Y> constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
+    template<class Y> constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
     constexpr shared_ptr(const shared_ptr& r) noexcept;
-    template<class Y>
-      constexpr shared_ptr(const shared_ptr<Y>& r) noexcept;
+    template<class Y> constexpr shared_ptr(const shared_ptr<Y>& r) noexcept;
     constexpr shared_ptr(shared_ptr&& r) noexcept;
-    template<class Y>
-      constexpr shared_ptr(shared_ptr<Y>&& r) noexcept;
-    template<class Y>
-      constexpr explicit shared_ptr(const weak_ptr<Y>& r);
+    template<class Y> constexpr shared_ptr(shared_ptr<Y>&& r) noexcept;
+    template<class Y> constexpr explicit shared_ptr(const weak_ptr<Y>& r);
     template<class Y, class D>
       constexpr shared_ptr(unique_ptr<Y, D>&& r);
 
@@ -3202,11 +3197,9 @@ namespace std {
 
     // \ref{util.smartptr.shared.assign}, assignment
     constexpr shared_ptr& operator=(const shared_ptr& r) noexcept;
-    template<class Y>
-      constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
+    template<class Y> constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
     constexpr shared_ptr& operator=(shared_ptr&& r) noexcept;
-    template<class Y>
-      constexpr shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
+    template<class Y> constexpr shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
     template<class Y, class D>
       constexpr shared_ptr& operator=(unique_ptr<Y, D>&& r);
 
@@ -3227,10 +3220,8 @@ namespace std {
     constexpr element_type& operator[](ptrdiff_t i) const;
     constexpr long use_count() const noexcept;
     constexpr explicit operator bool() const noexcept;
-    template<class U>
-      constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
-    template<class U>
-      constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
+    template<class U> constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
+    template<class U> constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
     constexpr size_t owner_hash() const noexcept;
     template<class U>
       constexpr bool owner_equal(const shared_ptr<U>& b) const noexcept;
@@ -3418,10 +3409,8 @@ when a resource other than memory cannot be obtained.
 
 \indexlibraryctor{shared_ptr}%
 \begin{itemdecl}
-template<class Y>
-  constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
-template<class Y>
-  constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
+template<class Y> constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
+template<class Y> constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3580,8 +3569,7 @@ than its previous value.
 \indexlibrarymember{operator=}{shared_ptr}%
 \begin{itemdecl}
 constexpr shared_ptr& operator=(const shared_ptr& r) noexcept;
-template<class Y>
-  constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
+template<class Y> constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3628,8 +3616,7 @@ Equivalent to \tcode{shared_ptr(std::move(r)).swap(*this)}.
 
 \indexlibrarymember{operator=}{shared_ptr}%
 \begin{itemdecl}
-template<class Y, class D>
-  constexpr shared_ptr& operator=(unique_ptr<Y, D>&& r);
+template<class Y, class D> constexpr shared_ptr& operator=(unique_ptr<Y, D>&& r);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3837,10 +3824,8 @@ constexpr explicit operator bool() const noexcept;
 
 \indexlibrarymember{owner_before}{shared_ptr}%
 \begin{itemdecl}
-template<class U>
-  constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
-template<class U>
-  constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
+template<class U> constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
+template<class U> constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4139,11 +4124,9 @@ shared_ptr<double[6][2][2]> q = make_shared<double[6][2][2]>();
 \indexlibraryglobal{allocate_shared}%
 \begin{itemdecl}
 template<class T>
-  constexpr shared_ptr<T> make_shared(size_t N,
-                                      const remove_extent_t<T>& u);       // \tcode{T} is \tcode{U[]}
+  constexpr shared_ptr<T> make_shared(size_t N, const remove_extent_t<T>& u);       // \tcode{T} is \tcode{U[]}
 template<class T, class A>
-  constexpr shared_ptr<T> allocate_shared(const A& a, size_t N,
-                                          const remove_extent_t<T>& u);   // \tcode{T} is \tcode{U[]}
+  constexpr shared_ptr<T> allocate_shared(const A& a, size_t N, const remove_extent_t<T>& u);   // \tcode{T} is \tcode{U[]}
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4176,8 +4159,7 @@ shared_ptr<vector<int>[]> r = make_shared<vector<int>[]>(4, {1, 2});
 template<class T>
   constexpr shared_ptr<T> make_shared(const remove_extent_t<T>& u);       // \tcode{T} is \tcode{U[N]}
 template<class T, class A>
-  constexpr shared_ptr<T> allocate_shared(const A& a,
-                                          const remove_extent_t<T>& u);   // \tcode{T} is \tcode{U[N]}
+  constexpr shared_ptr<T> allocate_shared(const A& a, const remove_extent_t<T>& u);   // \tcode{T} is \tcode{U[N]}
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4268,8 +4250,7 @@ shared_ptr<double[]> p = make_shared_for_overwrite<double[]>(1024);
 \indexlibrarymember{operator==}{shared_ptr}%
 \begin{itemdecl}
 template<class T, class U>
-  constexpr bool operator==(const shared_ptr<T>& a,
-                            const shared_ptr<U>& b) noexcept;
+  constexpr bool operator==(const shared_ptr<T>& a, const shared_ptr<U>& b) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4280,8 +4261,7 @@ template<class T, class U>
 
 \indexlibrarymember{operator==}{shared_ptr}%
 \begin{itemdecl}
-template<class T>
-  constexpr bool operator==(const shared_ptr<T>& a, nullptr_t) noexcept;
+template<class T> constexpr bool operator==(const shared_ptr<T>& a, nullptr_t) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
