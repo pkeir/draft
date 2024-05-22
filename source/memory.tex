@@ -3130,7 +3130,7 @@ namespace std {
   class bad_weak_ptr : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    constexpr const char* what() const noexcept override;
+    const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -3141,7 +3141,7 @@ constructor taking a \tcode{weak_ptr}.
 
 \indexlibrarymember{what}{bad_weak_ptr}%
 \begin{itemdecl}
-constexpr const char* what() const noexcept override;
+const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3222,7 +3222,7 @@ namespace std {
     constexpr explicit operator bool() const noexcept;
     template<class U> constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
     template<class U> constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
-    constexpr size_t owner_hash() const noexcept;
+    size_t owner_hash() const noexcept;
     template<class U>
       constexpr bool owner_equal(const shared_ptr<U>& b) const noexcept;
     template<class U>
@@ -3843,7 +3843,7 @@ if and only if \tcode{owner_equal(b)} is \tcode{true}.
 
 \indexlibrarymember{owner_hash}{shared_ptr}%
 \begin{itemdecl}
-constexpr size_t owner_hash() const noexcept;
+size_t owner_hash() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4538,7 +4538,7 @@ namespace std {
       constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
     template<class U>
       constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
-    constexpr size_t owner_hash() const noexcept;
+    size_t owner_hash() const noexcept;
     template<class U>
       constexpr bool owner_equal(const shared_ptr<U>& b) const noexcept;
     template<class U>
@@ -4752,7 +4752,7 @@ if and only if \tcode{owner_equal(b)} is \tcode{true}.
 
 \indexlibrarymember{owner_hash}{weak_ptr}%
 \begin{itemdecl}
-constexpr size_t owner_hash() const noexcept;
+size_t owner_hash() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4859,10 +4859,10 @@ The class \tcode{owner_hash} provides ownership-based hashing.
 namespace std {
   struct owner_hash {
     template<class T>
-      constexpr size_t operator()(const shared_ptr<T>&) const noexcept;
+      size_t operator()(const shared_ptr<T>&) const noexcept;
 
     template<class T>
-      constexpr size_t operator()(const weak_ptr<T>&) const noexcept;
+      size_t operator()(const weak_ptr<T>&) const noexcept;
 
     using is_transparent = @\unspec@;
   };
@@ -4872,9 +4872,9 @@ namespace std {
 \indexlibrarymember{operator()}{owner_hash}%
 \begin{itemdecl}
 template<class T>
-  constexpr size_t operator()(const shared_ptr<T>& x) const noexcept;
+  size_t operator()(const shared_ptr<T>& x) const noexcept;
 template<class T>
-  constexpr size_t operator()(const weak_ptr<T>& x) const noexcept;
+  size_t operator()(const weak_ptr<T>& x) const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
