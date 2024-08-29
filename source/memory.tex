@@ -528,9 +528,9 @@ namespace std {
   template<class T, class U>
     constexpr shared_ptr<T> const_pointer_cast(shared_ptr<U>&& r) noexcept;
   template<class T, class U>
-    constexpr shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U>& r) noexcept;
+    shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U>& r) noexcept;
   template<class T, class U>
-    constexpr shared_ptr<T> reinterpret_pointer_cast(shared_ptr<U>&& r) noexcept;
+    shared_ptr<T> reinterpret_pointer_cast(shared_ptr<U>&& r) noexcept;
 
   // \ref{util.smartptr.getdeleter}, \tcode{shared_ptr} \tcode{get_deleter}
   template<class D, class T>
@@ -4415,9 +4415,9 @@ undefined behavior, attempting to delete the same object twice.
 \indexlibrarymember{reinterpret_pointer_cast}{shared_ptr}%
 \begin{itemdecl}
 template<class T, class U>
-  constexpr shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U>& r) noexcept;
+  shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U>& r) noexcept;
 template<class T, class U>
-  constexpr shared_ptr<T> reinterpret_pointer_cast(shared_ptr<U>&& r) noexcept;
+  shared_ptr<T> reinterpret_pointer_cast(shared_ptr<U>&& r) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
