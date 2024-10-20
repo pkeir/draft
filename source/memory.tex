@@ -3128,7 +3128,7 @@ namespace std {
   class bad_weak_ptr : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -3139,7 +3139,7 @@ constructor taking a \tcode{weak_ptr}.
 
 \indexlibrarymember{what}{bad_weak_ptr}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
