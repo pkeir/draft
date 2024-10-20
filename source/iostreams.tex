@@ -734,8 +734,8 @@ namespace std {
   ios_base& defaultfloat(ios_base& str);
 
   // \ref{error.reporting}, error reporting
-  enum class io_errc {
-    stream = 1
+  enum class @\libglobal{io_errc}@ {
+    @\libmember{stream}{io_errc}@ = 1
   };
 
   template<> struct is_error_code_enum<io_errc> : public true_type { };
@@ -831,7 +831,7 @@ namespace std {
     virtual ~ios_base();
 
     // \ref{ios.base.callback}, callbacks
-    enum event { erase_event, imbue_event, copyfmt_event };
+    enum @\libmember{event}{ios_base}@ { erase_event, imbue_event, copyfmt_event };
     using event_callback = void (*)(event, ios_base&, int idx);
     void register_callback(event_callback fn, int idx);
 
@@ -844,9 +844,9 @@ namespace std {
     ios_base();
 
   private:
-    static int index;           // \expos
-    long*  iarray;              // \expos
-    void** parray;              // \expos
+    static int @\exposid{index}@;           // \expos
+    long*  @\exposid{iarray}@;              // \expos
+    void** @\exposid{parray}@;              // \expos
   };
 }
 \end{codeblock}
@@ -882,19 +882,19 @@ additional information that is stored by the program for its private use.
 For the sake of exposition, the maintained data is presented here as:
 \begin{itemize}
 \item
-\tcode{static int index},
+\tcode{static int \exposid{index}},
 specifies the next available
 unique index for the integer or pointer arrays maintained for the private use
 of the program, initialized to an unspecified value;
 \item
-\tcode{long* iarray},
+\tcode{long* \exposid{iarray}},
 points to the first element of an
 arbitrary-length
 \tcode{long}
 array maintained for the private use of the
 program;
 \item
-\tcode{void** parray},
+\tcode{void** \exposid{parray}},
 points to the first element of an
 arbitrary-length pointer array maintained for the private use of the program.
 \end{itemize}
@@ -1132,9 +1132,6 @@ namespace std {
     Init(const Init&) = default;
     ~Init();
     Init& operator=(const Init&) = default;
-
-  private:
-    static int init_cnt;        // \expos
   };
 }
 \end{codeblock}
@@ -1147,17 +1144,6 @@ ensures the construction of the eight objects declared in
 stream buffers with the standard C streams
 provided for by the functions declared in
 \libheaderref{cstdio}.
-
-\pnum
-For the sake of exposition, the maintained data is presented here as:
-\begin{itemize}
-\item
-\tcode{static int init_cnt},
-counts the number of
-constructor and destructor calls for class
-\tcode{Init},
-initialized to zero.
-\end{itemize}
 
 \indexlibraryctor{ios_base::Init}%
 \begin{itemdecl}
@@ -1446,7 +1432,7 @@ static int xalloc();
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{index}
+\exposid{index}
 \tcode{++}.
 
 \pnum
@@ -1467,20 +1453,20 @@ long& iword(int idx);
 
 \pnum
 \effects
-If \tcode{iarray} is a null pointer, allocates an array of
+If \exposid{iarray} is a null pointer, allocates an array of
 \tcode{long}
 of unspecified size and stores a pointer to its first element in
-\tcode{iarray}.
+\exposid{iarray}.
 The function then extends the array pointed at by
-\tcode{iarray} as necessary to include the element
-\tcode{iarray[idx]}.
+\exposid{iarray} as necessary to include the element
+\tcode{\exposid{iarray}[idx]}.
 Each newly allocated element of the array is initialized to zero.
 The reference returned is invalid after any other operation on the
 object.
 \begin{footnote}
 An implementation is free to implement both the integer
-array pointed at by \tcode{iarray} and the pointer array pointed at by
-\tcode{parray} as sparse data structures, possibly with a one-element
+array pointed at by \exposid{iarray} and the pointer array pointed at by
+\exposid{parray} as sparse data structures, possibly with a one-element
 cache for each.
 \end{footnote}
 However, the value of the storage referred to is retained, so
@@ -1505,7 +1491,7 @@ on the derived object (which may throw
 \pnum
 \returns
 On success
-\tcode{iarray[idx]}.
+\tcode{\exposid{iarray}[idx]}.
 On failure, a valid
 \tcode{long\&}
 initialized to 0.
@@ -1523,13 +1509,13 @@ void*& pword(int idx);
 
 \pnum
 \effects
-If \tcode{parray} is a null pointer, allocates an array of
+If \exposid{parray} is a null pointer, allocates an array of
 pointers to \keyword{void} of unspecified size and stores a pointer to
 its
-first element in \tcode{parray}.
+first element in \exposid{parray}.
 The function then extends the array
-pointed at by \tcode{parray} as necessary to include the element
-\tcode{parray[idx]}.
+pointed at by \exposid{parray} as necessary to include the element
+\tcode{\exposid{parray}[idx]}.
 Each newly allocated element of the array is initialized to a null
 pointer.
 The reference returned is invalid after any other operation on the
@@ -1657,7 +1643,7 @@ namespace std {
     void state(stateT);
 
   private:
-    stateT st;                  // \expos
+    stateT @\exposid{st}@;                  // \expos
   };
 }
 \end{codeblock}
@@ -1672,7 +1658,7 @@ void state(stateT s);
 \begin{itemdescr}
 \pnum
 \effects
-Assigns \tcode{s} to \tcode{st}.
+Assigns \tcode{s} to \exposid{st}.
 \end{itemdescr}
 
 \indexlibrarymember{state}{fpos}%
@@ -1683,7 +1669,7 @@ stateT state() const;
 \begin{itemdescr}
 \pnum
 \returns
-Current value of \tcode{st}.
+Current value of \exposid{st}.
 \end{itemdescr}
 
 \rSec3[fpos.operations]{Requirements}
@@ -4521,12 +4507,12 @@ Exchanges the values returned by \tcode{gcount()} and
 namespace std {
   template<class charT, class traits>
   class basic_istream<charT, traits>::sentry {
-    bool ok_;                   // \expos
+    bool @\exposid{ok_}@;                   // \expos
 
   public:
     explicit sentry(basic_istream& is, bool noskipws = false);
     ~sentry();
-    explicit operator bool() const { return ok_; }
+    explicit operator bool() const { return @\exposid{ok_}@; }
     sentry(const sentry&) = delete;
     sentry& operator=(const sentry&) = delete;
   };
@@ -4623,9 +4609,9 @@ If, after any preparation is completed,
 \tcode{is.good()}
 is
 \tcode{true},
-\tcode{ok_ != false}
+\tcode{\exposid{ok_} != false}
 otherwise,
-\tcode{ok_ == false}.
+\tcode{\exposid{ok_} == false}.
 During preparation, the constructor may call
 \tcode{setstate(failbit)}
 (which may throw
@@ -4660,7 +4646,7 @@ explicit operator bool() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{ok_}.
+\exposid{ok_}.
 \end{itemdescr}
 
 \rSec3[istream.formatted]{Formatted input functions}
@@ -6189,12 +6175,12 @@ Calls \tcode{basic_ios<charT, traits>::swap(rhs)}.
 namespace std {
   template<class charT, class traits>
   class basic_ostream<charT, traits>::sentry {
-    bool ok_;       // \expos
+    bool @\exposid{ok_}@;       // \expos
 
   public:
     explicit sentry(basic_ostream& os);
     ~sentry();
-    explicit operator bool() const { return ok_; }
+    explicit operator bool() const { return @\exposid{ok_}@; }
 
     sentry(const sentry&) = delete;
     sentry& operator=(const sentry&) = delete;
@@ -6235,9 +6221,9 @@ If, after any preparation is completed,
 \tcode{os.good()}
 is
 \tcode{true},
-\tcode{ok_ == true}
+\tcode{\exposid{ok_} == true}
 otherwise,
-\tcode{ok_ == false}.
+\tcode{\exposid{ok_} == false}.
 During preparation, the constructor may call
 \tcode{setstate(failbit)}
 (which may throw
@@ -6278,7 +6264,7 @@ explicit operator bool() const;
 \pnum
 \effects
 Returns
-\tcode{ok_}.
+\exposid{ok_}.
 \end{itemdescr}
 
 \rSec4[ostream.seeks]{Seek members}
@@ -6446,9 +6432,8 @@ or
 \tcode{const void*},
 the formatting conversion occurs as if it performed the following code fragment:
 \begin{codeblock}
-bool failed = use_facet<
-  num_put<charT, ostreambuf_iterator<charT, traits>>
-    >(getloc()).put(*this, *this, fill(), val).failed();
+bool failed = use_facet<num_put<charT, ostreambuf_iterator<charT, traits>>>(
+  getloc()).put(*this, *this, fill(), val).failed();
 \end{codeblock}
 
 When \tcode{val} is of type
@@ -6456,9 +6441,8 @@ When \tcode{val} is of type
 the formatting conversion occurs as if it performed the following code fragment:
 \begin{codeblock}
 ios_base::fmtflags baseflags = ios_base::flags() & ios_base::basefield;
-bool failed = use_facet<
-  num_put<charT, ostreambuf_iterator<charT, traits>>
-    >(getloc()).put(*this, *this, fill(),
+bool failed = use_facet<num_put<charT, ostreambuf_iterator<charT, traits>>>(
+  getloc()).put(*this, *this, fill(),
     baseflags == ios_base::oct || baseflags == ios_base::hex
       ? static_cast<long>(static_cast<unsigned short>(val))
       : static_cast<long>(val)).failed();
@@ -6469,9 +6453,8 @@ When \tcode{val} is of type
 the formatting conversion occurs as if it performed the following code fragment:
 \begin{codeblock}
 ios_base::fmtflags baseflags = ios_base::flags() & ios_base::basefield;
-bool failed = use_facet<
-  num_put<charT, ostreambuf_iterator<charT, traits>>
-    >(getloc()).put(*this, *this, fill(),
+bool failed = use_facet<num_put<charT, ostreambuf_iterator<charT, traits>>>(
+  getloc()).put(*this, *this, fill(),
     baseflags == ios_base::oct || baseflags == ios_base::hex
       ? static_cast<long>(static_cast<unsigned int>(val))
       : static_cast<long>(val)).failed();
@@ -6483,20 +6466,16 @@ or
 \tcode{unsigned int}
 the formatting conversion occurs as if it performed the following code fragment:
 \begin{codeblock}
-bool failed = use_facet<
-  num_put<charT, ostreambuf_iterator<charT, traits>>
-    >(getloc()).put(*this, *this, fill(),
-      static_cast<unsigned long>(val)).failed();
+bool failed = use_facet<num_put<charT, ostreambuf_iterator<charT, traits>>>(
+  getloc()).put(*this, *this, fill(), static_cast<unsigned long>(val)).failed();
 \end{codeblock}
 
 When \tcode{val} is of type
 \tcode{float}
 the formatting conversion occurs as if it performed the following code fragment:
 \begin{codeblock}
-bool failed = use_facet<
-  num_put<charT, ostreambuf_iterator<charT, traits>>
-    >(getloc()).put(*this, *this, fill(),
-      static_cast<double>(val)).failed();
+bool failed = use_facet<num_put<charT, ostreambuf_iterator<charT, traits>>>(
+  getloc()).put(*this, *this, fill(), static_cast<double>(val)).failed();
 \end{codeblock}
 
 \pnum
@@ -6553,20 +6532,16 @@ If the floating-point conversion rank of \tcode{\placeholder{extended-floating-p
 is less than or equal to that of \tcode{double},
 the formatting conversion occurs as if it performed the following code fragment:
 \begin{codeblock}
-bool failed = use_facet<
-  num_put<charT, ostreambuf_iterator<charT, traits>>
-    >(getloc()).put(*this, *this, fill(),
-      static_cast<double>(val)).failed();
+bool failed = use_facet<num_put<charT, ostreambuf_iterator<charT, traits>>>(
+  getloc()).put(*this, *this, fill(), static_cast<double>(val)).failed();
 \end{codeblock}
 Otherwise,
 if the floating-point conversion rank of \tcode{\placeholder{extended-floating-point-type}}
 is less than or equal to that of \tcode{long double},
 the formatting conversion occurs as if it performed the following code fragment:
 \begin{codeblock}
-bool failed = use_facet<
-  num_put<charT, ostreambuf_iterator<charT, traits>>
-    >(getloc()).put(*this, *this, fill(),
-      static_cast<long double>(val)).failed();
+bool failed = use_facet<num_put<charT, ostreambuf_iterator<charT, traits>>>(
+  getloc()).put(*this, *this, fill(), static_cast<long double>(val)).failed();
 \end{codeblock}
 Otherwise, an invocation of the operator function is conditionally supported
 with \impldef{\tcode{operator<<} for large extended floating-point types}
@@ -7114,7 +7089,7 @@ Otherwise this manipulator has no effect.
 To work around the issue that the
 \tcode{Allocator} template argument cannot be deduced,
 implementations can introduce an intermediate base class
-to \tcode{basic_syncbuf} that manages its \tcode{emit_on_sync} flag.
+to \tcode{basic_syncbuf} that manages its \exposid{emit-on-sync} flag.
 \end{note}
 
 \pnum
@@ -8121,9 +8096,9 @@ namespace std {
                       = ios_base::in | ios_base::out) override;
 
   private:
-    ios_base::openmode mode;                        // \expos
-    basic_string<charT, traits, Allocator> buf;     // \expos
-    void init_buf_ptrs();                           // \expos
+    ios_base::openmode @\exposid{mode}@;                        // \expos
+    basic_string<charT, traits, Allocator> @\exposid{buf}@;     // \expos
+    void @\exposid{init-buf-ptrs}@();                           // \expos
   };
 }
 \end{codeblock}
@@ -8144,17 +8119,17 @@ For the sake of exposition,
 the maintained data and internal pointer initialization is presented here as:
 \begin{itemize}
 \item
-  \tcode{ios_base::openmode mode}, has
+  \tcode{ios_base::openmode \exposid{mode}}, has
   \tcode{in} set if the input sequence can be read, and
   \tcode{out} set if the output sequence can be written.
 \item
-  \tcode{basic_string<charT, traits, Allocator> buf}
+  \tcode{basic_string<charT, traits, Allocator> \exposid{buf}}
   contains the underlying character sequence.
 \item
-  \tcode{init_buf_ptrs()} sets the base class'
+  \tcode{\exposid{init-buf-ptrs}()} sets the base class'
   get area\iref{streambuf.get.area} and
   put area\iref{streambuf.put.area} pointers
-  after initializing, moving from, or assigning to \tcode{buf} accordingly.
+  after initializing, moving from, or assigning to \exposid{buf} accordingly.
 \end{itemize}
 
 \rSec3[stringbuf.cons]{Constructors}
@@ -8169,7 +8144,7 @@ explicit basic_stringbuf(ios_base::openmode which);
 \effects
 Initializes the base class with
 \tcode{basic_streambuf()}\iref{streambuf.cons}, and
-\tcode{mode}
+\exposid{mode}
 with \tcode{which}.
 It is
 \impldef{whether sequence pointers are initialized to null pointers}
@@ -8195,9 +8170,9 @@ explicit basic_stringbuf(
 \effects
 Initializes the base class with
 \tcode{basic_streambuf()}\iref{streambuf.cons},
-\tcode{mode} with \tcode{which}, and
-\tcode{buf} with \tcode{s},
-then calls \tcode{init_buf_ptrs()}.
+\exposid{mode} with \tcode{which}, and
+\exposid{buf} with \tcode{s},
+then calls \tcode{\exposid{init-buf-ptrs}()}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_stringbuf}%
@@ -8210,9 +8185,9 @@ basic_stringbuf(ios_base::openmode which, const Allocator& a);
 \effects
 Initializes the base class with
 \tcode{basic_streambuf()}\iref{streambuf.cons},
-\tcode{mode} with \tcode{which}, and
-\tcode{buf} with \tcode{a},
-then calls \tcode{init_buf_ptrs()}.
+\exposid{mode} with \tcode{which}, and
+\exposid{buf} with \tcode{a},
+then calls \tcode{\exposid{init-buf-ptrs}()}.
 
 \pnum
 \ensures
@@ -8230,9 +8205,9 @@ explicit basic_stringbuf(
 \pnum
 \effects
 Initializes the base class with \tcode{basic_streambuf()}\iref{streambuf.cons},
-\tcode{mode} with \tcode{which}, and
-\tcode{buf} with \tcode{std::move(s)},
-then calls \tcode{init_buf_ptrs()}.
+\exposid{mode} with \tcode{which}, and
+\exposid{buf} with \tcode{std::move(s)},
+then calls \tcode{\exposid{init-buf-ptrs}()}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_stringbuf}%
@@ -8247,9 +8222,9 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with \tcode{basic_streambuf()}\iref{streambuf.cons},
-\tcode{mode} with \tcode{which}, and
-\tcode{buf} with \tcode{\{s,a\}},
-then calls \tcode{init_buf_ptrs()}.
+\exposid{mode} with \tcode{which}, and
+\exposid{buf} with \tcode{\{s,a\}},
+then calls \tcode{\exposid{init-buf-ptrs}()}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_stringbuf}%
@@ -8268,9 +8243,9 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with \tcode{basic_streambuf()}\iref{streambuf.cons},
-\tcode{mode} with \tcode{which}, and
-\tcode{buf} with \tcode{s},
-then calls \tcode{init_buf_ptrs()}.
+\exposid{mode} with \tcode{which}, and
+\exposid{buf} with \tcode{s},
+then calls \tcode{\exposid{init-buf-ptrs}()}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_stringbuf}%
@@ -8299,9 +8274,9 @@ is \tcode{true}.
 Creates a variable \tcode{sv} as if by
 \tcode{basic_string_view<charT, traits> sv = t},
 then value-initializes the base class,
-initializes \tcode{mode} with \tcode{which}, and
-direct-non-list-initializes \tcode{buf} with \tcode{sv, a},
-then calls \tcode{init_buf_ptrs()}.
+initializes \exposid{mode} with \tcode{which}, and
+direct-non-list-initializes \exposid{buf} with \tcode{sv, a},
+then calls \tcode{\exposid{init-buf-ptrs}()}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_stringbuf}%
@@ -8314,10 +8289,10 @@ basic_stringbuf(basic_stringbuf&& rhs, const Allocator& a);
 \pnum
 \effects
 Copy constructs the base class from \tcode{rhs} and
-initializes \tcode{mode} with \tcode{rhs.mode}.
+initializes \exposid{mode} with \tcode{rhs.mode}.
 In the first form \tcode{buf} is initialized
 from \tcode{std::move(rhs).str()}.
-In the second form \tcode{buf} is initialized
+In the second form \exposid{buf} is initialized
 from \tcode{\{std::move(rhs).str(), a\}}.
 It is
 \impldef{whether sequence pointers are copied by \tcode{basic_stringbuf} move
@@ -8422,39 +8397,39 @@ are now considered uninitialized
 (except for those characters re-initialized by the new \tcode{basic_string}).
 
 \begin{itemdecl}
-void init_buf_ptrs(); // \expos
+void @\exposid{init-buf-ptrs}@(); // \expos
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \effects
-Initializes the input and output sequences from \tcode{buf}
-according to \tcode{mode}.
+Initializes the input and output sequences from \exposid{buf}
+according to \exposid{mode}.
 
 \pnum
 \ensures
 \begin{itemize}
-\item If \tcode{ios_base::out} is set in \tcode{mode},
-  \tcode{pbase()} points to \tcode{buf.front()} and
-  \tcode{epptr() >= pbase() + buf.size()} is \tcode{true};
+\item If \tcode{ios_base::out} is set in \exposid{mode},
+  \tcode{pbase()} points to \tcode{\exposid{buf}.front()} and
+  \tcode{epptr() >= pbase() + \exposid{buf}.size()} is \tcode{true};
   \begin{itemize}
-  \item in addition, if \tcode{ios_base::ate} is set in \tcode{mode},
-    \tcode{pptr() == pbase() + buf.size()} is \tcode{true},
+  \item in addition, if \tcode{ios_base::ate} is set in \exposid{mode},
+    \tcode{pptr() == pbase() + \exposid{buf}.size()} is \tcode{true},
   \item otherwise \tcode{pptr() == pbase()} is \tcode{true}.
   \end{itemize}
-\item If \tcode{ios_base::in} is set in \tcode{mode},
-  \tcode{eback()} points to \tcode{buf.front()}, and
-  \tcode{(gptr() == eback() \&\& egptr() == eback() + buf.size())}
+\item If \tcode{ios_base::in} is set in \exposid{mode},
+  \tcode{eback()} points to \tcode{\exposid{buf}.front()}, and
+  \tcode{(gptr() == eback() \&\& egptr() == eback() + \exposid{buf}.size())}
   is \tcode{true}.
 \end{itemize}
 
 \pnum
 \begin{note}
 For efficiency reasons,
-stream buffer operations can violate invariants of \tcode{buf}
+stream buffer operations can violate invariants of \exposid{buf}
 while it is held encapsulated in the \tcode{basic_stringbuf},
 e.g., by writing to characters in the range
-\range{\tcode{buf.data() + buf.size()}}{\tcode{buf.data() + buf.capacity()}}.
+\range{\tcode{\exposid{buf}.data() + \exposid{buf}.size()}}{\tcode{\exposid{buf}.data() + \exposid{buf}.capacity()}}.
 All operations retrieving a \tcode{basic_string} from \tcode{buf}
 ensure that the \tcode{basic_string} invariants hold on the returned value.
 \end{note}
@@ -8468,7 +8443,7 @@ allocator_type get_allocator() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{buf.get_allocator()}.
+\tcode{\exposid{buf}.get_allocator()}.
 \end{itemdescr}
 
 \indexlibrarymember{str}{basic_stringbuf}%
@@ -8515,7 +8490,7 @@ basic_string<charT, traits, Allocator> str() &&;
 The underlying character sequence \tcode{buf} is empty and
 \tcode{pbase()}, \tcode{pptr()}, \tcode{epptr()}, \tcode{eback()},
 \tcode{gptr()}, and \tcode{egptr()}
-are initialized as if by calling \tcode{init_buf_ptrs()}
+are initialized as if by calling \tcode{\exposid{init-buf-ptrs}()}
 with an empty \tcode{buf}.
 
 \pnum
@@ -8541,9 +8516,9 @@ Let \tcode{sv} be \tcode{basic_string_view<charT, traits>}.
 A \tcode{sv} object referring to
 the \tcode{basic_stringbuf}'s underlying character sequence in \tcode{buf}:
 \begin{itemize}
-\item If \tcode{ios_base::out} is set in \tcode{mode},
+\item If \tcode{ios_base::out} is set in \exposid{mode},
   then \tcode{sv(pbase(), high_mark-pbase())} is returned.
-\item Otherwise, if \tcode{ios_base::in} is set in \tcode{mode},
+\item Otherwise, if \tcode{ios_base::in} is set in \exposid{mode},
   then \tcode{sv(eback(), egptr()-eback())} is returned.
 \item Otherwise, \tcode{sv()} is returned.
 \end{itemize}
@@ -8566,8 +8541,8 @@ void str(const basic_string<charT, traits, Allocator>& s);
 \effects
 Equivalent to:
 \begin{codeblock}
-buf = s;
-init_buf_ptrs();
+@\exposid{buf}@ = s;
+@\exposid{init-buf-ptrs}@();
 \end{codeblock}
 \end{itemdescr}
 
@@ -8586,8 +8561,8 @@ template<class SAlloc>
 \effects
 Equivalent to:
 \begin{codeblock}
-buf = s;
-init_buf_ptrs();
+@\exposid{buf}@ = s;
+@\exposid{init-buf-ptrs}@();
 \end{codeblock}
 \end{itemdescr}
 
@@ -8601,8 +8576,8 @@ void str(basic_string<charT, traits, Allocator>&& s);
 \effects
 Equivalent to:
 \begin{codeblock}
-buf = std::move(s);
-init_buf_ptrs();
+@\exposid{buf}@ = std::move(s);
+@\exposid{init-buf-ptrs}@();
 \end{codeblock}
 \end{itemdescr}
 
@@ -8623,8 +8598,8 @@ is \tcode{true}.
 Equivalent to:
 \begin{codeblock}
 basic_string_view<charT, traits> sv = t;
-buf = sv;
-init_buf_ptrs();
+@\exposid{buf}@ = sv;
+@\exposid{init-buf-ptrs}@();
 \end{codeblock}
 \end{itemdescr}
 
@@ -8683,7 +8658,7 @@ returns
 \tcode{false}
 and if the input sequence
 has a putback position available, and
-if \tcode{mode}
+if \exposid{mode}
 \tcode{\&}
 \tcode{ios_base::out} is
 nonzero,
@@ -8769,14 +8744,14 @@ result of any call.
 
 \pnum
 The function can make a write position available only if
-\tcode{ios_base::out} is set in \tcode{mode}.
+\tcode{ios_base::out} is set in \exposid{mode}.
 To make a write position available,
 the function reallocates (or initially allocates) an array object
 with a sufficient number of elements to hold
 the current array object (if any), plus
 at least
 one additional write position.
-If \tcode{ios_base::in} is set in \tcode{mode},
+If \tcode{ios_base::in} is set in \exposid{mode},
 the function alters the read end pointer
 \tcode{egptr()}
 to point just past the new write position.
@@ -8964,7 +8939,7 @@ namespace std {
       void str(const T& t);
 
   private:
-    basic_stringbuf<charT, traits, Allocator> sb;   // \expos
+    basic_stringbuf<charT, traits, Allocator> @\exposid{sb}@;   // \expos
   };
 }
 \end{codeblock}
@@ -8980,7 +8955,7 @@ object to control the associated storage.
 For the sake of exposition, the maintained data is presented here as:
 \begin{itemize}
 \item
-\tcode{sb}, the \tcode{stringbuf} object.
+\exposid{sb}, the \tcode{stringbuf} object.
 \end{itemize}
 
 \rSec3[istringstream.cons]{Constructors}
@@ -8994,8 +8969,8 @@ explicit basic_istringstream(ios_base::openmode which);
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(which | ios_base::in)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9010,8 +8985,8 @@ explicit basic_istringstream(
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which | ios_base::in)}\linebreak\iref{stringbuf.cons}. % avoid Overfull
 \end{itemdescr}
 
@@ -9024,8 +8999,8 @@ basic_istringstream(ios_base::openmode which, const Allocator& a);
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(which | ios_base::in, a)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9040,8 +9015,8 @@ explicit basic_istringstream(
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(std::move(s), which | ios_base::\brk{}in)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9057,8 +9032,8 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which | ios_base::in, a)}\linebreak\iref{stringbuf.cons}. % avoid Overfull
 \end{itemdescr}
 
@@ -9078,8 +9053,8 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which | ios_base::in)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9106,8 +9081,8 @@ is \tcode{true}.
 
 \pnum
 \effects
-Initializes the base class with \tcode{addressof(sb)}, and
-direct-non-list-initializes \tcode{sb} with \tcode{t, which | ios_base::in, a}.
+Initializes the base class with \tcode{addressof(\exposid{sb})}, and
+direct-non-list-initializes \exposid{sb} with \tcode{t, which | ios_base::in, a}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_istringstream}%
@@ -9121,7 +9096,7 @@ basic_istringstream(basic_istringstream&& rhs);
 Move constructs from the rvalue \tcode{rhs}. This
 is accomplished by move constructing the base class, and the contained
 \tcode{basic_stringbuf}.
-Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(addressof(sb))}
+Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(addressof(\exposid{sb}))}
 to install the contained \tcode{basic_stringbuf}.
 \end{itemdescr}
 
@@ -9138,7 +9113,7 @@ void swap(basic_istringstream& rhs);
 Equivalent to:
 \begin{codeblock}
 basic_istream<charT, traits>::swap(rhs);
-sb.swap(rhs.sb);
+@\exposid{sb}@.swap(rhs.@\exposid{sb}@);
 \end{codeblock}
 \end{itemdescr}
 
@@ -9166,7 +9141,7 @@ basic_stringbuf<charT, traits, Allocator>* rdbuf() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{const_cast<basic_stringbuf<charT, traits, Allocator>*>(addressof(sb))}.
+\tcode{const_cast<basic_stringbuf<charT, traits, Allocator>*>(addressof(\exposid{sb}))}.
 \end{itemdescr}
 
 \indexlibrarymember{str}{basic_istringstream}%
@@ -9337,7 +9312,7 @@ namespace std {
       void str(const T& t);
 
    private:
-    basic_stringbuf<charT, traits, Allocator> sb;   // \expos
+    basic_stringbuf<charT, traits, Allocator> @\exposid{sb}@;   // \expos
   };
 }
 \end{codeblock}
@@ -9353,7 +9328,7 @@ object to control the associated storage.
 For the sake of exposition, the maintained data is presented here as:
 \begin{itemize}
 \item
-\tcode{sb}, the \tcode{stringbuf} object.
+\exposid{sb}, the \tcode{stringbuf} object.
 \end{itemize}
 
 \rSec3[ostringstream.cons]{Constructors}
@@ -9367,8 +9342,8 @@ explicit basic_ostringstream(ios_base::openmode which);
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(which | ios_base::out)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9383,8 +9358,8 @@ explicit basic_ostringstream(
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which | ios_base::out)}\linebreak\iref{stringbuf.cons}. % avoid Overfull
 \end{itemdescr}
 
@@ -9397,8 +9372,8 @@ basic_ostringstream(ios_base::openmode which, const Allocator& a);
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(which | ios_base::out, a)}\linebreak\iref{stringbuf.cons}. % avoid Overfull
 \end{itemdescr}
 
@@ -9413,8 +9388,8 @@ explicit basic_ostringstream(
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(std::move(s), which | ios_base::\brk{}out)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9430,8 +9405,8 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which | ios_base::out, a)}\linebreak\iref{stringbuf.cons}. % avoid Overfull
 \end{itemdescr}
 
@@ -9451,8 +9426,8 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which | ios_base::out)}\linebreak\iref{stringbuf.cons}. % avoid Overfull
 \end{itemdescr}
 
@@ -9479,8 +9454,8 @@ is \tcode{true}.
 
 \pnum
 \effects
-Initializes the base class with \tcode{addressof(sb)}, and
-direct-non-list-initializes \tcode{sb} with \tcode{t, which | ios_base::out, a}.
+Initializes the base class with \tcode{addressof(\exposid{sb})}, and
+direct-non-list-initializes \exposid{sb} with \tcode{t, which | ios_base::out, a}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_ostringstream}%
@@ -9494,7 +9469,7 @@ basic_ostringstream(basic_ostringstream&& rhs);
 Move constructs from the rvalue \tcode{rhs}. This
 is accomplished by move constructing the base class, and the contained
 \tcode{basic_stringbuf}.
-Then calls \tcode{basic_ostream<charT, traits>::set_rdbuf(addressof(sb))}
+Then calls \tcode{basic_ostream<charT, traits>::set_rdbuf(addressof(\exposid{sb}))}
 to install the contained \tcode{basic_stringbuf}.
 \end{itemdescr}
 
@@ -9511,7 +9486,7 @@ void swap(basic_ostringstream& rhs);
 Equivalent to:
 \begin{codeblock}
 basic_ostream<charT, traits>::swap(rhs);
-sb.swap(rhs.sb);
+@\exposid{sb}@.swap(rhs.@\exposid{sb}@);
 \end{codeblock}
 \end{itemdescr}
 
@@ -9538,7 +9513,7 @@ basic_stringbuf<charT, traits, Allocator>* rdbuf() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{const_cast<basic_stringbuf<charT, traits, Allocator>*>(addressof(sb))}.
+\tcode{const_cast<basic_stringbuf<charT, traits, Allocator>*>(addressof(\exposid{sb}))}.
 \end{itemdescr}
 
 \indexlibrarymember{str}{basic_ostringstream}%
@@ -9710,7 +9685,7 @@ namespace std {
       void str(const T& t);
 
   private:
-    basic_stringbuf<charT, traits, Allocator> sb;   // \expos
+    basic_stringbuf<charT, traits, Allocator> @\exposid{sb}@;   // \expos
   };
 }
 \end{codeblock}
@@ -9727,7 +9702,7 @@ object to control the associated sequence.
 For the sake of exposition, the maintained data is presented here as
 \begin{itemize}
 \item
-\tcode{sb}, the \tcode{stringbuf} object.
+\exposid{sb}, the \tcode{stringbuf} object.
 \end{itemize}
 
 \rSec3[stringstream.cons]{Constructors}
@@ -9741,9 +9716,9 @@ explicit basic_stringstream(ios_base::openmode which);
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
 and
-\tcode{sb}
+\exposid{sb}
 with
 \tcode{basic_string\-buf<charT, traits, Allocator>(which)}.
 \end{itemdescr}
@@ -9759,9 +9734,9 @@ explicit basic_stringstream(
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
 and
-\tcode{sb}
+\exposid{sb}
 with
 \tcode{basic_string\-buf<charT, traits, Allocator>(s, which)}.
 \end{itemdescr}
@@ -9775,8 +9750,8 @@ basic_stringstream(ios_base::openmode which, const Allocator& a);
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
-and \tcode{sb} with
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(which, a)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9791,8 +9766,8 @@ explicit basic_stringstream(
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
-and \tcode{sb} with
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(std::move(s), which)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9808,8 +9783,8 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
-and \tcode{sb} with
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which, a)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9829,8 +9804,8 @@ template<class SAlloc>
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
-and \tcode{sb} with
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
+and \exposid{sb} with
 \tcode{basic_stringbuf<charT, traits, Allocator>(s, which)}\iref{stringbuf.cons}.
 \end{itemdescr}
 
@@ -9857,8 +9832,8 @@ is \tcode{true}.
 
 \pnum
 \effects
-Initializes the base class with \tcode{addressof(sb)}, and
-direct-non-list-initializes \tcode{sb} with \tcode{t, which, a}.
+Initializes the base class with \tcode{addressof(\exposid{sb})}, and
+direct-non-list-initializes \exposid{sb} with \tcode{t, which, a}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_stringstream}%
@@ -9872,7 +9847,7 @@ basic_stringstream(basic_stringstream&& rhs);
 Move constructs from the rvalue \tcode{rhs}. This
 is accomplished by move constructing the base class, and the contained
 \tcode{basic_stringbuf}.
-Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(addressof(sb))}
+Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(addressof(\exposid{sb}))}
 to install the contained \tcode{basic_stringbuf}.
 \end{itemdescr}
 
@@ -9889,7 +9864,7 @@ void swap(basic_stringstream& rhs);
 Equivalent to:
 \begin{codeblock}
 basic_iostream<charT,traits>::swap(rhs);
-sb.swap(rhs.sb);
+@\exposid{sb}@.swap(rhs.@\exposid{sb}@);
 \end{codeblock}
 \end{itemdescr}
 
@@ -9916,7 +9891,7 @@ basic_stringbuf<charT, traits, Allocator>* rdbuf() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{const_cast<basic_stringbuf<charT, traits, Allocator>*>(addressof(sb))}.
+\tcode{const_cast<basic_stringbuf<charT, traits, Allocator>*>(addressof(\exposid{sb}))}.
 \end{itemdescr}
 
 \indexlibrarymember{str}{basic_stringstream}%
@@ -10365,7 +10340,7 @@ when \tcode{way} is \tcode{ios_base::end} :
 if \tcode{ios_base::out} is set in \exposid{mode} and
 \tcode{ios_base::in} is not set in \exposid{mode},
 \item
-\tcode{buf.size()} otherwise.
+\tcode{\exposid{buf}.size()} otherwise.
 \end{itemize}
 \end{itemize}
 
@@ -10453,7 +10428,7 @@ namespace std {
     template<class ROS> void span(ROS&& s) noexcept;
 
   private:
-    basic_spanbuf<charT, traits> sb;    // \expos
+    basic_spanbuf<charT, traits> @\exposid{sb}@;    // \expos
   };
 }
 \end{codeblock}
@@ -10476,8 +10451,8 @@ explicit basic_ispanstream(std::span<charT> s, ios_base::openmode which = ios_ba
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}
+and \exposid{sb} with
 \tcode{basic_spanbuf<charT, traits>(s, which | ios_base::in)}\iref{spanbuf.cons}.
 \end{itemdescr}
 
@@ -10490,9 +10465,9 @@ basic_ispanstream(basic_ispanstream&& rhs);
 \pnum
 \effects
 Initializes the base class with \tcode{std::move(rhs)}
-and \tcode{sb} with \tcode{std::move(rhs.sb)}.
-Next, \tcode{basic_istream<charT, traits>::set_rdbuf(addressof(sb))} is called
-to install the contained \tcode{basic_spanbuf}.
+and \exposid{sb} with \tcode{std::move(rhs.\exposid{sb})}.
+Next, \tcode{basic_istream<charT, traits>::set_rdbuf(addressof(\exposid{sb}))} is called
+to install the contained \tcode{ba\-sic_\-span\-buf}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_ispanstream}%
@@ -10529,7 +10504,7 @@ void swap(basic_ispanstream& rhs);
 Equivalent to:
 \begin{codeblock}
 basic_istream<charT, traits>::swap(rhs);
-sb.swap(rhs.sb);
+@\exposid{sb}@.swap(rhs.@\exposid{sb}@);
 \end{codeblock}
 \end{itemdescr}
 
@@ -10557,7 +10532,7 @@ basic_spanbuf<charT, traits>* rdbuf() const noexcept;
 \effects
 Equivalent to:
 \begin{codeblock}
-return const_cast<basic_spanbuf<charT, traits>*>(addressof(sb));
+return const_cast<basic_spanbuf<charT, traits>*>(addressof(@\exposid{sb}@));
 \end{codeblock}
 \end{itemdescr}
 
@@ -10639,7 +10614,7 @@ namespace std {
     void span(std::span<charT> s) noexcept;
 
   private:
-    basic_spanbuf<charT, traits> sb;    // \expos
+    basic_spanbuf<charT, traits> @\exposid{sb}@;    // \expos
   };
 }
 \end{codeblock}
@@ -10656,8 +10631,8 @@ explicit basic_ospanstream(std::span<charT> s,
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}
+and \exposid{sb} with
 \tcode{basic_spanbuf<charT, traits>(s, which | ios_base::out)}\iref{spanbuf.cons}.
 \end{itemdescr}
 
@@ -10670,9 +10645,9 @@ basic_ospanstream(basic_ospanstream&& rhs) noexcept;
 \pnum
 \effects
 Initializes the base class with \tcode{std::move(rhs)}
-and \tcode{sb} with \tcode{std::move(rhs.sb)}.
-Next, \tcode{basic_ostream<charT, traits>::set_rdbuf(addressof(sb))}
-is called to install the contained \tcode{basic_spanbuf}.
+and \exposid{sb} with \tcode{std::move(rhs.\exposid{sb})}.
+Next, \tcode{basic_ostream<charT, traits>::set_rdbuf(addressof(\exposid{sb}))}
+is called to install the contained \tcode{ba\-sic_\-span\-buf}.
 \end{itemdescr}
 
 \rSec3[ospanstream.swap]{Swap}
@@ -10688,7 +10663,7 @@ void swap(basic_ospanstream& rhs);
 Equivalent to:
 \begin{codeblock}
 basic_ostream<charT, traits>::swap(rhs);
-sb.swap(rhs.sb);
+@\exposid{sb}@.swap(rhs.@\exposid{sb}@);
 \end{codeblock}
 \end{itemdescr}
 
@@ -10716,7 +10691,7 @@ basic_spanbuf<charT, traits>* rdbuf() const noexcept;
 \effects
 Equivalent to:
 \begin{codeblock}
-return const_cast<basic_spanbuf<charT, traits>*>(addressof(sb));
+return const_cast<basic_spanbuf<charT, traits>*>(addressof(@\exposid{sb}@));
 \end{codeblock}
 \end{itemdescr}
 
@@ -10778,7 +10753,7 @@ namespace std {
     void span(std::span<charT> s) noexcept;
 
   private:
-    basic_spanbuf<charT, traits> sb;    // \expos
+    basic_spanbuf<charT, traits> @\exposid{sb}@;    // \expos
   };
 }
 \end{codeblock}
@@ -10795,8 +10770,8 @@ explicit basic_spanstream(std::span<charT> s,
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}
-and \tcode{sb} with
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}
+and \exposid{sb} with
 \tcode{basic_spanbuf<charT, traits>(s, which)}\iref{spanbuf.cons}.
 \end{itemdescr}
 
@@ -10809,8 +10784,8 @@ basic_spanstream(basic_spanstream&& rhs);
 \pnum
 \effects
 Initializes the base class with \tcode{std::move(rhs)}
-and \tcode{sb} with \tcode{std::move(rhs.sb)}.
-Next, \tcode{basic_iostream<charT, traits>::set_rdbuf(addressof(sb))}
+and \exposid{sb} with \tcode{std::move(rhs.\exposid{sb})}.
+Next, \tcode{basic_iostream<charT, traits>::set_rdbuf(addressof(\exposid{sb}))}
 is called to install the contained \tcode{basic_spanbuf}.
 \end{itemdescr}
 
@@ -10827,7 +10802,7 @@ void swap(basic_spanstream& rhs);
 Equivalent to:
 \begin{codeblock}
 basic_iostream<charT, traits>::swap(rhs);
-sb.swap(rhs.sb);
+@\exposid{sb}@.swap(rhs.@\exposid{sb}@);
 \end{codeblock}
 \end{itemdescr}
 
@@ -10855,7 +10830,7 @@ basic_spanbuf<charT, traits>* rdbuf() const noexcept;
 \effects
 Equivalent to:
 \begin{codeblock}
-return const_cast<basic_spanbuf<charT, traits>*>(addressof(sb));
+return const_cast<basic_spanbuf<charT, traits>*>(addressof(@\exposid{sb}@));
 \end{codeblock}
 \end{itemdescr}
 
@@ -11834,7 +11809,7 @@ namespace std {
     void close();
 
   private:
-    basic_filebuf<charT, traits> sb;    // \expos
+    basic_filebuf<charT, traits> @\exposid{sb}@;    // \expos
   };
 }
 \end{codeblock}
@@ -11850,7 +11825,7 @@ sequence.
 For the sake of exposition, the maintained data is presented here as:
 \begin{itemize}
 \item
-\tcode{sb}, the \tcode{filebuf} object.
+\exposid{sb}, the \tcode{filebuf} object.
 \end{itemize}
 
 \rSec3[ifstream.cons]{Constructors}
@@ -11864,8 +11839,8 @@ basic_ifstream();
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream.cons}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream.cons}
+and \exposid{sb} with
 \tcode{basic_filebuf<charT, traits>()}\iref{filebuf.cons}.
 \end{itemdescr}
 
@@ -11881,8 +11856,8 @@ explicit basic_ifstream(const filesystem::path::value_type* s,
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_istream<charT, traits>(addressof(sb))}\iref{istream.cons}
-and \tcode{sb} with
+\tcode{basic_istream<charT, traits>(addressof(\exposid{sb}))}\iref{istream.cons}
+and \exposid{sb} with
 \tcode{basic_filebuf<charT, traits>()}\iref{filebuf.cons},
 then calls
 \tcode{rdbuf()->open(s, mode | ios_base::in)}.
@@ -11927,7 +11902,7 @@ basic_ifstream(basic_ifstream&& rhs);
 \pnum
 \effects
 Move constructs the base class, and the contained \tcode{basic_filebuf}.
-Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(\brk{}addressof(sb))}
+Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(\brk{}addressof(\exposid{sb}))}
 to install the contained \tcode{basic_filebuf}.
 \end{itemdescr}
 
@@ -11944,7 +11919,7 @@ void swap(basic_ifstream& rhs);
 Exchanges the state of \tcode{*this}
 and \tcode{rhs} by calling
 \tcode{basic_istream<charT, traits>::swap(rhs)} and
-\tcode{sb.swap(rhs.sb)}.
+\tcode{\exposid{sb}.swap(rhs.\exposid{sb})}.
 \end{itemdescr}
 
 \indexlibrarymember{swap}{basic_ifstream}%
@@ -11969,7 +11944,7 @@ basic_filebuf<charT, traits>* rdbuf() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{const_cast<basic_filebuf<charT, traits>*>(addressof(sb))}.
+\tcode{const_cast<basic_filebuf<charT, traits>*>(addressof(@\exposid{sb}@))}.
 \end{itemdescr}
 
 \indexlibrarymember{native_handle}{basic_ifstream}%
@@ -12093,7 +12068,7 @@ namespace std {
     void close();
 
   private:
-    basic_filebuf<charT, traits> sb;    // \expos
+    basic_filebuf<charT, traits> @\exposid{sb}@;    // \expos
   };
 }
 \end{codeblock}
@@ -12109,7 +12084,7 @@ sequence.
 For the sake of exposition, the maintained data is presented here as:
 \begin{itemize}
 \item
-\tcode{sb}, the \tcode{filebuf} object.
+\exposid{sb}, the \tcode{filebuf} object.
 \end{itemize}
 
 \rSec3[ofstream.cons]{Constructors}
@@ -12123,8 +12098,8 @@ basic_ofstream();
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream.cons}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream.cons}
+and \exposid{sb} with
 \tcode{basic_filebuf<charT, traits>()}\iref{filebuf.cons}.
 \end{itemdescr}
 
@@ -12140,8 +12115,8 @@ explicit basic_ofstream(const filesystem::path::value_type* s,
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_ostream<charT, traits>(addressof(sb))}\iref{ostream.cons}
-and \tcode{sb} with
+\tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}\iref{ostream.cons}
+and \exposid{sb} with
 \tcode{basic_filebuf<charT, traits>()}\iref{filebuf.cons},
 then calls
 \tcode{rdbuf()->open(s, mode | ios_base::out)}.
@@ -12186,7 +12161,7 @@ basic_ofstream(basic_ofstream&& rhs);
 \pnum
 \effects
 Move constructs the base class, and the contained \tcode{basic_filebuf}.
-Then calls \tcode{basic_ostream<charT, traits>::set_rdbuf(\brk{}addressof(sb))}
+Then calls \tcode{basic_ostream<charT, traits>::set_rdbuf(\brk{}addressof(\exposid{sb}))}
 to install the contained \tcode{basic_filebuf}.
 \end{itemdescr}
 
@@ -12203,7 +12178,7 @@ void swap(basic_ofstream& rhs);
 Exchanges the state of \tcode{*this}
 and \tcode{rhs} by calling
 \tcode{basic_ostream<charT, traits>::swap(rhs)} and
-\tcode{sb.swap(rhs.sb)}.
+\tcode{\exposid{sb}.swap(rhs.\exposid{sb})}.
 \end{itemdescr}
 
 \indexlibrarymember{swap}{basic_ofstream}%
@@ -12228,7 +12203,7 @@ basic_filebuf<charT, traits>* rdbuf() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{const_cast<basic_filebuf<charT, traits>*>(addressof(sb))}.
+\tcode{const_cast<basic_filebuf<charT, traits>*>(addressof(\exposid{sb}))}.
 \end{itemdescr}
 
 \indexlibrarymember{native_handle}{basic_ofstream}%
@@ -12360,7 +12335,7 @@ namespace std {
     void close();
 
   private:
-    basic_filebuf<charT, traits> sb;    // \expos
+    basic_filebuf<charT, traits> @\exposid{sb}@;    // \expos
   };
 }
 \end{codeblock}
@@ -12376,7 +12351,7 @@ object to control the associated sequences.
 For the sake of exposition, the maintained data is presented here as:
 \begin{itemize}
 \item
-\tcode{sb}, the \tcode{basic_filebuf} object.
+\exposid{sb}, the \tcode{basic_filebuf} object.
 \end{itemize}
 
 \rSec3[fstream.cons]{Constructors}
@@ -12390,9 +12365,9 @@ basic_fstream();
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
 and
-\tcode{sb} with \tcode{basic_filebuf<charT, traits>()}.
+\exposid{sb} with \tcode{basic_filebuf<charT, traits>()}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_fstream}%
@@ -12409,9 +12384,9 @@ explicit basic_fstream(
 \pnum
 \effects
 Initializes the base class with
-\tcode{basic_iostream<charT, traits>(addressof(sb))}\iref{iostream.cons}
+\tcode{basic_iostream<charT, traits>(addressof(\exposid{sb}))}\iref{iostream.cons}
 and
-\tcode{sb} with \tcode{basic_filebuf<charT, traits>()}.
+\exposid{sb} with \tcode{basic_filebuf<charT, traits>()}.
 Then calls
 \tcode{rdbuf()->open(s, mode)}.
 If that function returns a null pointer, calls
@@ -12456,7 +12431,7 @@ basic_fstream(basic_fstream&& rhs);
 \pnum
 \effects
 Move constructs the base class, and the contained \tcode{basic_filebuf}.
-Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(\brk{}addressof(sb))}
+Then calls \tcode{basic_istream<charT, traits>::set_rdbuf(\brk{}addressof(\exposid{sb}))}
 to install the contained \tcode{basic_filebuf}.
 \end{itemdescr}
 
@@ -12473,7 +12448,7 @@ void swap(basic_fstream& rhs);
 Exchanges the state of \tcode{*this}
 and \tcode{rhs} by calling
 \tcode{basic_iostream<charT,traits>::swap(rhs)} and
-\tcode{sb.swap(rhs.sb)}.
+\tcode{\exposid{sb}.swap(rhs.\exposid{sb})}.
 \end{itemdescr}
 
 \indexlibrarymember{swap}{basic_fstream}%
@@ -12499,7 +12474,7 @@ basic_filebuf<charT, traits>* rdbuf() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{const_cast<basic_filebuf<charT, traits>*>(addressof(sb))}.
+\tcode{const_cast<basic_filebuf<charT, traits>*>(addressof(\exposid{sb}))}.
 \end{itemdescr}
 
 \indexlibrarymember{native_handle}{basic_fstream}%
@@ -12661,8 +12636,8 @@ namespace std {
     int sync() override;
 
   private:
-    streambuf_type* wrapped;    // \expos
-    bool emit_on_sync{};        // \expos
+    streambuf_type* @\exposid{wrapped}@;    // \expos
+    bool @\exposid{emit-on-sync}@{};        // \expos
   };
 }
 \end{codeblock}
@@ -12672,7 +12647,7 @@ Class template \tcode{basic_syncbuf} stores character data
 written to it, known as the associated output, into internal
 buffers allocated using the object's allocator.
 The associated output is transferred to the
-wrapped stream buffer object \tcode{*wrapped}
+wrapped stream buffer object \tcode{*\exposid{wrapped}}
 when \tcode{emit()} is called
 or when the \tcode{basic_syncbuf} object is destroyed.
 Such transfers are atomic with respect to transfers
@@ -12689,7 +12664,7 @@ basic_syncbuf(streambuf_type* obuf, const Allocator& allocator);
 \begin{itemdescr}
 \pnum
 \effects
-Sets \tcode{wrapped} to \tcode{obuf}.
+Sets \exposid{wrapped} to \tcode{obuf}.
 
 \pnum
 \ensures
@@ -12823,10 +12798,10 @@ bool emit();
 \pnum
 \effects
 Atomically transfers the associated output of \tcode{*this}
-to the stream buffer \tcode{*wrapped},
+to the stream buffer \tcode{*\exposid{wrapped}},
 so that it appears in the output stream
 as a contiguous sequence of characters.
-\tcode{wrapped->pubsync()} is called
+\tcode{\exposid{wrapped}->pubsync()} is called
 if and only if a call was made to \tcode{sync()}
 since the most recent call to \tcode{emit()}, if any.
 
@@ -12849,15 +12824,15 @@ On success, the associated output is empty.
 \tcode{true} if all of the following conditions hold;
 otherwise \tcode{false}:
 \begin{itemize}
-\item \tcode{wrapped == nullptr} is \tcode{false}.
+\item \tcode{\exposid{wrapped} == nullptr} is \tcode{false}.
 \item All of the characters in the associated output were successfully transferred.
-\item The call to \tcode{wrapped->pubsync()} (if any) succeeded.
+\item The call to \tcode{\exposid{wrapped}->pubsync()} (if any) succeeded.
 \end{itemize}
 
 \pnum
 \remarks
-May call member functions of \tcode{wrapped}
-while holding a lock uniquely associated with \tcode{wrapped}.
+May call member functions of \exposid{wrapped}
+while holding a lock uniquely associated with \exposid{wrapped}.
 \end{itemdescr}
 
 \indexlibrarymember{get_wrapped}{basic_syncbuf}%
@@ -12868,7 +12843,7 @@ streambuf_type* get_wrapped() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{wrapped}.
+\exposid{wrapped}.
 \end{itemdescr}
 
 \indexlibrarymember{get_allocator}{basic_syncbuf}%
@@ -12890,7 +12865,7 @@ void set_emit_on_sync(bool b) noexcept;
 \begin{itemdescr}
 \pnum
 \effects
-\tcode{emit_on_sync = b}.
+\tcode{\exposid{emit-on-sync} = b}.
 \end{itemdescr}
 
 \rSec3[syncstream.syncbuf.virtuals]{Overridden virtual functions}
@@ -12904,9 +12879,9 @@ int sync() override;
 \pnum
 \effects
 Records that the wrapped stream buffer is to be flushed.
-Then, if \tcode{emit_on_sync} is \tcode{true}, calls \tcode{emit()}.
+Then, if \exposid{emit-on-sync} is \tcode{true}, calls \tcode{emit()}.
 \begin{note}
-If \tcode{emit_on_sync} is \tcode{false},
+If \exposid{emit-on-sync} is \tcode{false},
 the actual flush is delayed until a call to \tcode{emit()}.
 \end{note}
 
@@ -12968,10 +12943,10 @@ namespace std {
     // \ref{syncstream.osyncstream.members}, member functions
     void emit();
     streambuf_type* get_wrapped() const noexcept;
-    syncbuf_type* rdbuf() const noexcept { return const_cast<syncbuf_type*>(addressof(sb)); }
+    syncbuf_type* rdbuf() const noexcept { return const_cast<syncbuf_type*>(addressof(@\exposid{sb}@)); }
 
   private:
-    syncbuf_type sb;    // \expos
+    syncbuf_type @\exposid{sb}@;    // \expos
   };
 }
 \end{codeblock}
@@ -13013,8 +12988,8 @@ basic_osyncstream(streambuf_type* buf, const Allocator& allocator);
 \begin{itemdescr}
 \pnum
 \effects
-Initializes \tcode{sb} from \tcode{buf} and \tcode{allocator}.
-Initializes the base class with \tcode{basic_ostream<charT, traits>(addressof(sb))}.
+Initializes \exposid{sb} from \tcode{buf} and \tcode{allocator}.
+Initializes the base class with \tcode{basic_ostream<charT, traits>(addressof(\exposid{sb}))}.
 
 \pnum
 \begin{note}
@@ -13037,8 +13012,8 @@ basic_osyncstream(basic_osyncstream&& other) noexcept;
 \pnum
 \effects
 Move constructs the base class
-and \tcode{sb} from the corresponding subobjects of \tcode{other},
-and calls \tcode{basic_ostream<charT, traits>::set_rdbuf(addressof(sb))}.
+and \exposid{sb} from the corresponding subobjects of \tcode{other},
+and calls \tcode{basic_ostream<charT, traits>::set_rdbuf(addressof(\exposid{sb}))}.
 
 \pnum
 \ensures
@@ -13059,7 +13034,7 @@ void emit();
 \pnum
 \effects
 Behaves as an unformatted output function\iref{ostream.unformatted}.
-After constructing a \tcode{sentry} object, calls \tcode{sb.emit()}.
+After constructing a \tcode{sentry} object, calls \tcode{\exposid{sb}.emit()}.
 If that call returns \tcode{false},
 calls \tcode{setstate(ios_base::badbit)}.
 
@@ -13104,7 +13079,7 @@ streambuf_type* get_wrapped() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{sb.get_wrapped()}.
+\tcode{\exposid{sb}.get_wrapped()}.
 
 \pnum
 \begin{example}
@@ -15721,10 +15696,10 @@ The values of the constants are distinct.
 \lhdr{Constant}	&
 \rhdr{Meaning}	\\ \capsep
 
-\tcode{none} &
+\tcode{\libmember{none}{file_type}} &
 The type of the file has not been determined or an error occurred while
     trying to determine the type. \\ \rowsep
-\tcode{not_found} &
+\tcode{\libmember{not_found}{file_type}} &
 Pseudo-type indicating the file was not found.
 \begin{tailnote}
 The file
@@ -15732,13 +15707,13 @@ not being found is not considered an error while determining the
 type of a file.
 \end{tailnote}
 \\ \rowsep
-\tcode{regular} & Regular file \\ \rowsep
-\tcode{directory} & Directory file \\ \rowsep
-\tcode{symlink} & Symbolic link file \\ \rowsep
-\tcode{block} & Block special file \\ \rowsep
-\tcode{character} & Character special file \\ \rowsep
-\tcode{fifo} & FIFO or pipe file \\ \rowsep
-\tcode{socket} & Socket file \\ \rowsep
+\tcode{\libmember{regular}{file_type}} & Regular file \\ \rowsep
+\tcode{\libmember{directory}{file_type}} & Directory file \\ \rowsep
+\tcode{\libmember{symlink}{file_type}} & Symbolic link file \\ \rowsep
+\tcode{\libmember{block}{file_type}} & Block special file \\ \rowsep
+\tcode{\libmember{character}{file_type}} & Character special file \\ \rowsep
+\tcode{\libmember{fifo}{file_type}} & FIFO or pipe file \\ \rowsep
+\tcode{\libmember{socket}{file_type}} & Socket file \\ \rowsep
 \tcode{\textit{\impldef{additional \tcode{file_type} enumerators
 for file systems supporting additional types of file}}} &
 Implementations that support file systems having file types
@@ -15748,7 +15723,7 @@ shall supply
 for file systems supporting additional types of file}
 \tcode{file_type} constants
 to separately identify each of those additional file types \\ \rowsep
-\tcode{unknown} &
+\tcode{\libmember{unknown}{file_type}} &
 The file exists but the type cannot be determined \\
 \end{floattable}
 
@@ -15770,42 +15745,42 @@ Every other constant in the table represents a distinct bitmask element.
 \topline
 \ohdrx{2}{Option group controlling \tcode{copy_file} function effects for existing target files} \\ \rowsep
 \lhdr{Constant}	& \rhdr{Meaning}	\\ \capsep
-\tcode{none} &
+\tcode{\libmember{none}{copy_options}} &
     (Default) Error; file already exists. \\ \rowsep
-\tcode{skip_existing} &
+\tcode{\libmember{skip_existing}{copy_options}} &
     Do not overwrite existing file, do not report an error.  \\ \rowsep
-\tcode{overwrite_existing} &
+\tcode{\libmember{overwrite_existing}{copy_options}} &
     Overwrite the existing file.  \\ \rowsep
-\tcode{update_existing} &
+\tcode{\libmember{update_existing}{copy_options}} &
     Overwrite the existing file if it is older than the replacement file.  \\ \capsep
 
 \ohdrx{2}{Option group controlling \tcode{copy} function effects for subdirectories} \\ \rowsep
 \lhdr{Constant}	& \rhdr{Meaning}	\\ \capsep
-\tcode{none} &
+\tcode{\libmember{none}{copy_options}} &
     (Default) Do not copy subdirectories.  \\ \rowsep
-\tcode{recursive} &
+\tcode{\libmember{recursive}{copy_options}} &
     Recursively copy subdirectories and their contents.  \\ \capsep
 
 \ohdrx{2}{Option group controlling \tcode{copy} function effects for symbolic links} \\ \rowsep
 \lhdr{Constant}	& \rhdr{Meaning}	\\ \capsep
-\tcode{none} &
+\tcode{\libmember{none}{copy_options}} &
     (Default) Follow symbolic links.  \\ \rowsep
-\tcode{copy_symlinks} &
+\tcode{\libmember{copy_symlinks}{copy_options}} &
     Copy symbolic links as symbolic links rather than copying the files that
     they point to.  \\ \rowsep
-\tcode{skip_symlinks} &
+\tcode{\libmember{skip_symlinks}{copy_options}} &
     Ignore symbolic links.  \\ \capsep
 
 \ohdrx{2}{Option group controlling \tcode{copy} function effects for choosing the form of copying} \\ \rowsep
 \lhdr{Constant}	& \rhdr{Meaning}	\\ \capsep
-\tcode{none} &
+\tcode{\libmember{none}{copy_options}} &
     (Default) Copy content.  \\ \rowsep
-\tcode{directories_only} &
+\tcode{\libmember{directories_only}{copy_options}} &
     Copy directory structure only, do not copy non-directory files.  \\ \rowsep
-\tcode{create_symlinks} &
+\tcode{\libmember{create_symlinks}{copy_options}} &
     Make symbolic links instead of copies of files. The source path shall be
     an absolute path unless the destination path is in the current directory.  \\ \rowsep
-\tcode{create_hard_links} &
+\tcode{\libmember{create_hard_links}{copy_options}} &
     Make hard links instead of copies of files.  \\
 \end{floattable}
 
@@ -15824,46 +15799,46 @@ permissions, with the meanings listed in \tref{fs.enum.perms}.
 \lhdr{Name}	& \chdr{Value}		& \chdr{POSIX}	& \rhdr{Definition or notes}	\\
 		& \chdr{(octal)}	& \chdr{macro}	& \\ \capsep
 
-\tcode{none} & \tcode{0} & &
+\tcode{\libmember{none}{perms}} & \tcode{0} & &
   There are no permissions set for the file.  \\ \rowsep
-\tcode{owner_read} & \tcode{0400} &  \tcode{S_IRUSR} &
+\tcode{\libmember{owner_read}{perms}} & \tcode{0400} &  \tcode{S_IRUSR} &
    Read permission, owner \\ \rowsep
-\tcode{owner_write} & \tcode{0200} &  \tcode{S_IWUSR} &
+\tcode{\libmember{owner_write}{perms}} & \tcode{0200} &  \tcode{S_IWUSR} &
    Write permission, owner \\ \rowsep
-\tcode{owner_exec} & \tcode{0100} &   \tcode{S_IXUSR} &
+\tcode{\libmember{owner_exec}{perms}} & \tcode{0100} &   \tcode{S_IXUSR} &
    Execute/search permission, owner \\ \rowsep
-\tcode{owner_all} & \tcode{0700} &   \tcode{S_IRWXU} &
+\tcode{\libmember{owner_all}{perms}} & \tcode{0700} &   \tcode{S_IRWXU} &
    Read, write, execute/search by owner;\br
    \tcode{owner_read | owner_write | owner_exec} \\ \rowsep
-\tcode{group_read} & \tcode{040} &   \tcode{S_IRGRP} &
+\tcode{\libmember{group_read}{perms}} & \tcode{040} &   \tcode{S_IRGRP} &
    Read permission, group \\ \rowsep
-\tcode{group_write} & \tcode{020} &  \tcode{S_IWGRP} &
+\tcode{\libmember{group_write}{perms}} & \tcode{020} &  \tcode{S_IWGRP} &
    Write permission, group \\ \rowsep
-\tcode{group_exec} & \tcode{010} &    \tcode{S_IXGRP} &
+\tcode{\libmember{group_exec}{perms}} & \tcode{010} &    \tcode{S_IXGRP} &
    Execute/search permission, group \\ \rowsep
-\tcode{group_all} & \tcode{070} &    \tcode{S_IRWXG} &
+\tcode{\libmember{group_all}{perms}} & \tcode{070} &    \tcode{S_IRWXG} &
    Read, write, execute/search by group;\br
    \tcode{group_read | group_write | group_exec} \\ \rowsep
-\tcode{others_read} & \tcode{04} &   \tcode{S_IROTH} &
+\tcode{\libmember{others_read}{perms}} & \tcode{04} &   \tcode{S_IROTH} &
    Read permission, others \\ \rowsep
-\tcode{others_write} & \tcode{02} &  \tcode{S_IWOTH} &
+\tcode{\libmember{others_write}{perms}} & \tcode{02} &  \tcode{S_IWOTH} &
    Write permission, others \\ \rowsep
-\tcode{others_exec} & \tcode{01} &    \tcode{S_IXOTH} &
+\tcode{\libmember{others_exec}{perms}} & \tcode{01} &    \tcode{S_IXOTH} &
    Execute/search permission, others \\ \rowsep
-\tcode{others_all} & \tcode{07} &    \tcode{S_IRWXO} &
+\tcode{\libmember{others_all}{perms}} & \tcode{07} &    \tcode{S_IRWXO} &
   Read, write, execute/search by others;\br
   \tcode{others_read | others_write | others_exec} \\ \rowsep
-\tcode{all} & \tcode{0777} &   &
+\tcode{\libmember{all}{perms}} & \tcode{0777} &   &
   \tcode{owner_all | group_all | others_all} \\ \rowsep
-\tcode{set_uid} & \tcode{04000} &  \tcode{S_ISUID} &
+\tcode{\libmember{set_uid}{perms}} & \tcode{04000} &  \tcode{S_ISUID} &
    Set-user-ID on execution \\ \rowsep
-\tcode{set_gid} & \tcode{02000} &  \tcode{S_ISGID} &
+\tcode{\libmember{set_gid}{perms}} & \tcode{02000} &  \tcode{S_ISGID} &
    Set-group-ID on execution \\ \rowsep
-\tcode{sticky_bit} & \tcode{01000} &  \tcode{S_ISVTX} &
+\tcode{\libmember{sticky_bit}{perms}} & \tcode{01000} &  \tcode{S_ISVTX} &
    Operating system dependent.  \\ \rowsep
-\tcode{mask} & \tcode{07777} &   &
+\tcode{\libmember{mask}{perms}} & \tcode{07777} &   &
   \tcode{all | set_uid | set_gid | sticky_bit} \\ \rowsep
-\tcode{unknown} & \tcode{0xFFFF} &  &
+\tcode{\libmember{unknown}{perms}} & \tcode{0xFFFF} &  &
   The permissions are not known, such as when a \tcode{file_status} object
   is created without specifying the permissions \\
 \end{floattable}
@@ -15885,15 +15860,15 @@ passed to \tcode{permissions}.
 \topline
 \lhdr{Name} &
   \rhdr{Meaning} \\ \capsep
-\tcode{replace} &
+\tcode{\libmember{replace}{perm_options}} &
   \tcode{permissions} shall replace the file's permission bits with \tcode{perm} \\ \rowsep
-\tcode{add} &
+\tcode{\libmember{add}{perm_options}} &
   \tcode{permissions} shall replace the file's permission bits with
   the bitwise \logop{or} of \tcode{perm} and the file's current permission bits. \\ \rowsep
-\tcode{remove} &
+\tcode{\libmember{remove}{perm_options}} &
   \tcode{permissions} shall replace the file's permission bits with
   the bitwise \logop{and} of the complement of \tcode{perm} and the file's current permission bits. \\ \rowsep
-\tcode{nofollow} &
+\tcode{\libmember{nofollow}{perm_options}} &
   \tcode{permissions} shall change the permissions of a symbolic link itself
   rather than the permissions of the file the link resolves to. \\
 \end{floattable}
@@ -15916,11 +15891,11 @@ The \tcode{enum class} type \tcode{directory_options} is a bitmask
 \lhdr{Name}	&
 \rhdr{Meaning}	\\ \capsep
 
-\tcode{none} &
+\tcode{\libmember{none}{directory_options}} &
 (Default) Skip directory symlinks, permission denied is an error. \\ \rowsep
-\tcode{follow_directory_symlink} &
+\tcode{\libmember{follow_directory_symlink}{directory_options}} &
 Follow rather than skip directory symlinks. \\ \rowsep
-\tcode{skip_permission_denied} &
+\tcode{\libmember{skip_permission_denied}{directory_options}} &
 Skip directories that would otherwise result in permission denied. \\
 \end{floattable}
 
@@ -16095,8 +16070,7 @@ namespace std::filesystem {
         operator<<(basic_ostream<charT, traits>& os, const directory_entry& d);
 
   private:
-    filesystem::path pathobject;        // \expos
-    friend class directory_iterator;    // \expos
+    filesystem::path @\exposid{path-object}@;        // \expos
   };
 }
 \end{codeblock}
@@ -16115,13 +16089,10 @@ Such stored file attribute values are said to be \defnx{cached}{file attributes!
 
 \pnum
 \begin{note}
-For purposes of exposition,
-class \tcode{directory_iterator}\iref{fs.class.directory.iterator}
-is shown above as a friend of class \tcode{directory_entry}.
-Friendship allows the \tcode{directory_iterator} implementation to cache
+\tcode{directory_iterator} can cache
 already available attribute values
 directly into a \tcode{directory_entry} object
-without the cost of an unneeded call to \tcode{refresh()}.
+without the cost of a call to \tcode{refresh()}.
 \end{note}
 
 \pnum
@@ -16190,7 +16161,7 @@ void assign(const filesystem::path& p, error_code& ec);
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to \tcode{pathobject = p},
+Equivalent to \tcode{\exposid{path-object} = p},
 then \tcode{refresh()} or \tcode{refresh(ec)}, respectively.
 If an error occurs, the values of any cached attributes are unspecified.
 
@@ -16208,7 +16179,7 @@ void replace_filename(const filesystem::path& p, error_code& ec);
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to \tcode{pathobject.replace_filename(p)},
+Equivalent to \tcode{\exposid{path-object}.replace_filename(p)},
 then \tcode{refresh()} or \tcode{refresh(ec)}, respectively.
 If an error occurs, the values of any cached attributes are unspecified.
 
@@ -16259,7 +16230,7 @@ operator const filesystem::path&() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{pathobject}.
+\exposid{path-object}.
 \end{itemdescr}
 
 \indexlibrarymember{exists}{directory_entry}%
@@ -16499,7 +16470,7 @@ bool operator==(const directory_entry& rhs) const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{pathobject == rhs.pathobject}.
+\tcode{\exposid{path-object} == rhs.\exposid{path-object}}.
 \end{itemdescr}
 
 \indexlibrarymember{operator<=>}{directory_entry}%
@@ -16510,7 +16481,7 @@ strong_ordering operator<=>(const directory_entry& rhs) const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{pathobject <=> rhs.pathobject}.
+\tcode{\exposid{path-object} <=> rhs.\exposid{path-object}}.
 \end{itemdescr}
 
 \rSec3[fs.dir.entry.io]{Inserter}
@@ -16620,8 +16591,6 @@ in the \tcode{directory_entry} element returned by \tcode{operator*()}.
 any \tcode{directory_entry} \tcode{refresh} function.
 \begin{note}
 The exact mechanism for storing cached attribute values is not exposed to users.
-For exposition, class \tcode{directory_iterator} is shown in \ref{fs.class.directory.entry}
-as a friend of class \tcode{directory_entry}.
 \end{note}
 
 \pnum

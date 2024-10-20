@@ -464,7 +464,7 @@ namespace std::execution {
   enum class forward_progress_guarantee;
   inline constexpr get_forward_progress_guarantee_t get_forward_progress_guarantee{};
   template<class CPO>
-    inline constexpr get_completion_scheduler_t<CPO> get_completion_scheduler{};
+    constexpr get_completion_scheduler_t<CPO> get_completion_scheduler{};
 
   struct empty_env {};
   struct get_env_t { @\unspec@ };
@@ -550,7 +550,7 @@ namespace std::execution {
 
   template<class Sndr, class Env = empty_env>
       requires @\libconcept{sender_in}@<Sndr, Env>
-    inline constexpr bool sends_stopped = @\seebelow@;
+    constexpr bool sends_stopped = @\seebelow@;
 
   template<class Sndr, class Env>
     using @\exposidnc{single-sender-value-type}@ = @\seebelownc@;                 // \expos
@@ -1618,8 +1618,8 @@ namespace std::execution {
   template<class Sndr, class Rcvr>
   struct @\exposid{basic-state}@ {                                          // \expos
     @\exposid{basic-state}@(Sndr&& sndr, Rcvr&& rcvr) noexcept(@\seebelow@)
-      : rcvr(std::move(rcvr))
-      , state(@\exposid{impls-for}@<tag_of_t<Sndr>>::@\exposid{get-state}@(std::forward<Sndr>(sndr), rcvr)) { }
+      : @\exposid{rcvr}@(std::move(rcvr))
+      , @\exposid{state}@(@\exposid{impls-for}@<tag_of_t<Sndr>>::@\exposid{get-state}@(std::forward<Sndr>(sndr), @\exposid{rcvr}@)) { }
 
     Rcvr @\exposid{rcvr}@;                                                  // \expos
     @\exposid{state-type}@<Sndr, Rcvr> @\exposid{state}@;                               // \expos
@@ -2181,6 +2181,7 @@ otherwise, \tcode{std::forward<Sndr>(sndr)}.
 \returns
 \tcode{e}.
 
+\pnum
 \remarks
 The exception specification is equivalent to \tcode{noexcept(e)}.
 \end{itemdescr}
@@ -2583,7 +2584,7 @@ The expression \tcode{\exposid{just-cpo}(ts...)} is ill-formed if
 \end{itemize}
 
 Otherwise, it is expression-equivalent to
-\tcode{\exposid{make-sender}(\exposid{just-cpo}, \exposid{product-type}{ts...})}.
+\tcode{\exposid{make-sender}(\exposid{just-cpo}, \exposid{product-type}\{ts...\})}.
 
 For \tcode{just}, \tcode{just_error}, and \tcode{just_stopped},
 let \exposid{set-cpo} be
@@ -3690,7 +3691,7 @@ namespace std::execution {
   template<class Sndr, class Rcvr>
   struct @\exposid{local-state}@ : @\exposid{local-state-base}@ {                       // \expos
     using @\exposid{on-stop-callback}@ =                                    // \expos
-      stop_callback_of_t<stop_token_of_t<env_of_t<Rcvr>>, @\exposid{on-stop-request}@>;
+      stop_callback_for_t<stop_token_of_t<env_of_t<Rcvr>>, @\exposid{on-stop-request}@>;
 
     @\exposid{local-state}@(Sndr&& sndr, Rcvr& rcvr) noexcept;
     ~@\exposid{local-state}@();
@@ -4126,7 +4127,7 @@ struct @\exposid{make-state}@ {
   auto operator()(auto, auto, Sndrs&&... sndrs) const {
     using values_tuple = @\seebelow@;
     using errors_variant = @\seebelow@;
-    using stop_callback = stop_callback_of_t<stop_token_of_t<env_of_t<Rcvr>>, @\exposid{on-stop-request}@>;
+    using stop_callback = stop_callback_for_t<stop_token_of_t<env_of_t<Rcvr>>, @\exposid{on-stop-request}@>;
 
     struct @\exposid{state-type}@ {
       void @\exposid{arrive}@(Rcvr& rcvr) noexcept {                        // \expos
@@ -4827,7 +4828,7 @@ namespace std::execution {
 
   template<class Sndr, class Env = empty_env>
       requires @\libconcept{sender_in}@<Sndr, Env>
-    inline constexpr bool sends_stopped =
+    constexpr bool sends_stopped =
       !@\libconcept{same_as}@<@\exposid{type-list}@<>,
                @\exposid{gather-signatures}@<set_stopped_t, completion_signatures_of_t<Sndr, Env>,
                                  @\exposid{type-list}@, @\exposid{type-list}@>>;

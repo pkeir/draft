@@ -122,6 +122,10 @@ concept @\defexposconcept{container-compatible-range}@ =    // \expos
 \indexlibrarymemberx{unordered_set}{#1}%
 \indexlibrarymemberx{unordered_multiset}{#1}%
 \indexlibrarymemberx{unordered_multimap}{#1}%
+\indexlibrarymemberx{flat_map}{#1}%
+\indexlibrarymemberx{flat_set}{#1}%
+\indexlibrarymemberx{flat_multiset}{#1}%
+\indexlibrarymemberx{flat_multimap}{#1}%
 }
 
 \pnum
@@ -733,6 +737,10 @@ is well-formed when treated as an unevaluated operand.
 \indexlibrarymemberx{unordered_set}{#1}%
 \indexlibrarymemberx{unordered_multiset}{#1}%
 \indexlibrarymemberx{unordered_multimap}{#1}%
+\indexlibrarymemberx{flat_map}{#1}%
+\indexlibrarymemberx{flat_set}{#1}%
+\indexlibrarymemberx{flat_multiset}{#1}%
+\indexlibrarymemberx{flat_multimap}{#1}%
 }
 
 \pnum
@@ -2726,12 +2734,12 @@ and \tcode{nh} denotes a non-const rvalue of type \tcode{X::node_type}.
 \pnum
 A type \tcode{X} meets the \defnadj{associative}{container} requirements
 if \tcode{X} meets all the requirements of an allocator-aware
-container\iref{container.reqmts} and
+container\iref{container.alloc.reqmts} and
 the following types, statements, and expressions are well-formed and
 have the specified semantics,
 except that for
 \tcode{map} and \tcode{multimap}, the requirements placed on \tcode{value_type}
-in \ref{container.alloc.reqmts} apply instead to \tcode{key_type}
+in \ref{container.reqmts} apply instead to \tcode{key_type}
 and \tcode{mapped_type}.
 \begin{note}
 For example, in some cases \tcode{key_type} and \tcode{mapped_type}
@@ -2747,6 +2755,10 @@ need to be \oldconcept{CopyAssignable} even though the associated
 \indexlibrary{\idxcode{map}!\idxcode{#1}}%
 \indexlibrary{\idxcode{multiset}!\idxcode{#1}}%
 \indexlibrary{\idxcode{multimap}!\idxcode{#1}}%
+\indexlibrary{\idxcode{flat_set}!\idxcode{#1}}%
+\indexlibrary{\idxcode{flat_map}!\idxcode{#1}}%
+\indexlibrary{\idxcode{flat_multiset}!\idxcode{#1}}%
+\indexlibrary{\idxcode{flat_multimap}!\idxcode{#1}}%
 }
 
 \indexordmem{key_type}%
@@ -4225,11 +4237,11 @@ that models \tcode{\exposconcept{container-compatible-range}<value_type>},
 A type \tcode{X} meets
 the \defnadj{unordered associative}{container} requirements
 if \tcode{X} meets all the requirements of
-an allocator-aware container\iref{container.reqmts} and
+an allocator-aware container\iref{container.alloc.reqmts} and
 the following types, statements, and expressions are well-formed and
 have the specified semantics,
 except that for \tcode{unordered_map} and \tcode{unordered_multimap},
-the requirements placed on \tcode{value_type} in \ref{container.alloc.reqmts}
+the requirements placed on \tcode{value_type} in \ref{container.reqmts}
 apply instead to \tcode{key_type} and \tcode{mapped_type}.
 \begin{note}
 For example, \tcode{key_type} and \tcode{mapped_type}
@@ -6034,188 +6046,6 @@ namespace std {
 }
 \end{codeblock}
 
-\rSec2[deque.syn]{Header \tcode{<deque>} synopsis}
-
-\indexheader{deque}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{deque}, class template \tcode{deque}
-  template<class T, class Allocator = allocator<T>> class deque;
-
-  template<class T, class Allocator>
-    bool operator==(const deque<T, Allocator>& x, const deque<T, Allocator>& y);
-  template<class T, class Allocator>
-    @\placeholder{synth-three-way-result}@<T> operator<=>(const deque<T, Allocator>& x,
-    @\itcorr@                                      const deque<T, Allocator>& y);
-
-  template<class T, class Allocator>
-    void swap(deque<T, Allocator>& x, deque<T, Allocator>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  // \ref{deque.erasure}, erasure
-  template<class T, class Allocator, class U = T>
-    typename deque<T, Allocator>::size_type
-      erase(deque<T, Allocator>& c, const U& value);
-  template<class T, class Allocator, class Predicate>
-    typename deque<T, Allocator>::size_type
-      erase_if(deque<T, Allocator>& c, Predicate pred);
-
-  namespace pmr {
-    template<class T>
-      using deque = std::deque<T, polymorphic_allocator<T>>;
-  }
-}
-\end{codeblock}
-
-\rSec2[forward.list.syn]{Header \tcode{<forward_list>} synopsis}
-
-\indexheader{forward_list}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{forward.list}, class template \tcode{forward_list}
-  template<class T, class Allocator = allocator<T>> class forward_list;
-
-  template<class T, class Allocator>
-    bool operator==(const forward_list<T, Allocator>& x, const forward_list<T, Allocator>& y);
-  template<class T, class Allocator>
-    @\placeholder{synth-three-way-result}@<T> operator<=>(const forward_list<T, Allocator>& x,
-    @\itcorr@                                      const forward_list<T, Allocator>& y);
-
-  template<class T, class Allocator>
-    void swap(forward_list<T, Allocator>& x, forward_list<T, Allocator>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  // \ref{forward.list.erasure}, erasure
-  template<class T, class Allocator, class U = T>
-    typename forward_list<T, Allocator>::size_type
-      erase(forward_list<T, Allocator>& c, const U& value);
-  template<class T, class Allocator, class Predicate>
-    typename forward_list<T, Allocator>::size_type
-      erase_if(forward_list<T, Allocator>& c, Predicate pred);
-
-  namespace pmr {
-    template<class T>
-      using forward_list = std::forward_list<T, polymorphic_allocator<T>>;
-  }
-}
-\end{codeblock}
-
-\rSec2[list.syn]{Header \tcode{<list>} synopsis}
-
-\indexheader{list}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{list}, class template \tcode{list}
-  template<class T, class Allocator = allocator<T>> class list;
-
-  template<class T, class Allocator>
-    bool operator==(const list<T, Allocator>& x, const list<T, Allocator>& y);
-  template<class T, class Allocator>
-    @\placeholder{synth-three-way-result}@<T> operator<=>(const list<T, Allocator>& x,
-    @\itcorr@                                      const list<T, Allocator>& y);
-
-  template<class T, class Allocator>
-    void swap(list<T, Allocator>& x, list<T, Allocator>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  // \ref{list.erasure}, erasure
-  template<class T, class Allocator, class U = T>
-    typename list<T, Allocator>::size_type
-      erase(list<T, Allocator>& c, const U& value);
-  template<class T, class Allocator, class Predicate>
-    typename list<T, Allocator>::size_type
-      erase_if(list<T, Allocator>& c, Predicate pred);
-
-  namespace pmr {
-    template<class T>
-      using list = std::list<T, polymorphic_allocator<T>>;
-  }
-}
-\end{codeblock}
-
-\rSec2[vector.syn]{Header \tcode{<vector>} synopsis}
-
-\indexheader{vector}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{vector}, class template \tcode{vector}
-  template<class T, class Allocator = allocator<T>> class vector;
-
-  template<class T, class Allocator>
-    constexpr bool operator==(const vector<T, Allocator>& x, const vector<T, Allocator>& y);
-  template<class T, class Allocator>
-    constexpr @\placeholder{synth-three-way-result}@<T> operator<=>(const vector<T, Allocator>& x,
-              @\itcorr@                                      const vector<T, Allocator>& y);
-
-  template<class T, class Allocator>
-    constexpr void swap(vector<T, Allocator>& x, vector<T, Allocator>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  // \ref{vector.erasure}, erasure
-  template<class T, class Allocator, class U = T>
-    constexpr typename vector<T, Allocator>::size_type
-      erase(vector<T, Allocator>& c, const U& value);
-  template<class T, class Allocator, class Predicate>
-    constexpr typename vector<T, Allocator>::size_type
-      erase_if(vector<T, Allocator>& c, Predicate pred);
-
-  namespace pmr {
-    template<class T>
-      using vector = std::vector<T, polymorphic_allocator<T>>;
-  }
-
-  // \ref{vector.bool}, specialization of \tcode{vector} for \tcode{bool}
-  // \ref{vector.bool.pspc}, partial class template specialization \tcode{vector<bool, Allocator>}
-  template<class Allocator>
-    class vector<bool, Allocator>;
-
-  template<class T>
-    constexpr bool @\exposid{is-vector-bool-reference}@ = @\seebelow@;          // \expos
-
-  // hash support
-  template<class T> struct hash;
-  template<class Allocator> struct hash<vector<bool, Allocator>>;
-
-  // \ref{vector.bool.fmt}, formatter specialization for \tcode{vector<bool>}
-  template<class T, class charT> requires @\exposid{is-vector-bool-reference}@<T>
-    struct formatter<T, charT>;
-}
-\end{codeblock}
-
-\rSec2[inplace.vector.syn]{Header \tcode{<inplace_vector>} synopsis}
-
-\indexheader{inplace_vector}%
-\begin{codeblock}
-// mostly freestanding
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{inplace.vector}, class template \tcode{inplace_vector}
-  template<class T, size_t N> class inplace_vector;             // partially freestanding
-
-  // \ref{inplace.vector.erasure}, erasure
-  template<class T, size_t N, class U = T>
-    constexpr typename inplace_vector<T, N>::size_type
-      erase(inplace_vector<T, N>& c, const U& value);
-  template<class T, size_t N, class Predicate>
-    constexpr typename inplace_vector<T, N>::size_type
-      erase_if(inplace_vector<T, N>& c, Predicate pred);
-}
-\end{codeblock}
-
 \rSec2[array]{Class template \tcode{array}}
 \indexlibraryglobal{array}%
 
@@ -6460,7 +6290,7 @@ template<class T, size_t N>
 \pnum
 \mandates
 \tcode{is_array_v<T>} is \tcode{false} and
-\tcode{is_constructible_v<T, T\&>} is \tcode{true}.
+\tcode{is_constructible_v<remove_cv_t<T>, T\&>} is \tcode{true}.
 
 \pnum
 \expects
@@ -6481,7 +6311,7 @@ template<class T, size_t N>
 \pnum
 \mandates
 \tcode{is_array_v<T>} is \tcode{false} and
-\tcode{is_move_constructible_v<T>} is \tcode{true}.
+\tcode{is_constructible_v<remove_cv_t<T>, T>} is \tcode{true}.
 
 \pnum
 \expects
@@ -6538,6 +6368,42 @@ template<size_t I, class T, size_t N>
 A reference to the $\tcode{I}^\text{th}$ element of \tcode{a},
 where indexing is zero-based.
 \end{itemdescr}
+
+\rSec2[deque.syn]{Header \tcode{<deque>} synopsis}
+
+\indexheader{deque}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{deque}, class template \tcode{deque}
+  template<class T, class Allocator = allocator<T>> class deque;
+
+  template<class T, class Allocator>
+    bool operator==(const deque<T, Allocator>& x, const deque<T, Allocator>& y);
+  template<class T, class Allocator>
+    @\placeholder{synth-three-way-result}@<T> operator<=>(const deque<T, Allocator>& x,
+    @\itcorr@                                      const deque<T, Allocator>& y);
+
+  template<class T, class Allocator>
+    void swap(deque<T, Allocator>& x, deque<T, Allocator>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  // \ref{deque.erasure}, erasure
+  template<class T, class Allocator, class U = T>
+    typename deque<T, Allocator>::size_type
+      erase(deque<T, Allocator>& c, const U& value);
+  template<class T, class Allocator, class Predicate>
+    typename deque<T, Allocator>::size_type
+      erase_if(deque<T, Allocator>& c, Predicate pred);
+
+  namespace pmr {
+    template<class T>
+      using deque = std::deque<T, polymorphic_allocator<T>>;
+  }
+}
+\end{codeblock}
 
 \rSec2[deque]{Class template \tcode{deque}}
 
@@ -6993,6 +6859,42 @@ return r;
 \end{codeblock}
 \end{itemdescr}
 
+\rSec2[forward.list.syn]{Header \tcode{<forward_list>} synopsis}
+
+\indexheader{forward_list}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{forward.list}, class template \tcode{forward_list}
+  template<class T, class Allocator = allocator<T>> class forward_list;
+
+  template<class T, class Allocator>
+    bool operator==(const forward_list<T, Allocator>& x, const forward_list<T, Allocator>& y);
+  template<class T, class Allocator>
+    @\placeholder{synth-three-way-result}@<T> operator<=>(const forward_list<T, Allocator>& x,
+    @\itcorr@                                      const forward_list<T, Allocator>& y);
+
+  template<class T, class Allocator>
+    void swap(forward_list<T, Allocator>& x, forward_list<T, Allocator>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  // \ref{forward.list.erasure}, erasure
+  template<class T, class Allocator, class U = T>
+    typename forward_list<T, Allocator>::size_type
+      erase(forward_list<T, Allocator>& c, const U& value);
+  template<class T, class Allocator, class Predicate>
+    typename forward_list<T, Allocator>::size_type
+      erase_if(forward_list<T, Allocator>& c, Predicate pred);
+
+  namespace pmr {
+    template<class T>
+      using forward_list = std::forward_list<T, polymorphic_allocator<T>>;
+  }
+}
+\end{codeblock}
+
 \rSec2[forward.list]{Class template \tcode{forward_list}}
 
 \rSec3[forward.list.overview]{Overview}
@@ -7011,7 +6913,7 @@ that goal have been omitted.
 A \tcode{forward_list} meets all of the requirements
 of a container\iref{container.reqmts},
 except that the \tcode{size()} member function is not provided and
-\tcode{operator==} has linear complexity,
+\tcode{operator==} has linear complexity.
 A \tcode{forward_list} also meets all of the requirements
 for an allocator-aware container\iref{container.alloc.reqmts}.
 In addition, a \tcode{forward_list}
@@ -7894,6 +7796,42 @@ template<class T, class Allocator, class Predicate>
 Equivalent to: \tcode{return c.remove_if(pred);}
 \end{itemdescr}
 
+\rSec2[list.syn]{Header \tcode{<list>} synopsis}
+
+\indexheader{list}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{list}, class template \tcode{list}
+  template<class T, class Allocator = allocator<T>> class list;
+
+  template<class T, class Allocator>
+    bool operator==(const list<T, Allocator>& x, const list<T, Allocator>& y);
+  template<class T, class Allocator>
+    @\placeholder{synth-three-way-result}@<T> operator<=>(const list<T, Allocator>& x,
+    @\itcorr@                                      const list<T, Allocator>& y);
+
+  template<class T, class Allocator>
+    void swap(list<T, Allocator>& x, list<T, Allocator>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  // \ref{list.erasure}, erasure
+  template<class T, class Allocator, class U = T>
+    typename list<T, Allocator>::size_type
+      erase(list<T, Allocator>& c, const U& value);
+  template<class T, class Allocator, class Predicate>
+    typename list<T, Allocator>::size_type
+      erase_if(list<T, Allocator>& c, Predicate pred);
+
+  namespace pmr {
+    template<class T>
+      using list = std::list<T, polymorphic_allocator<T>>;
+  }
+}
+\end{codeblock}
+
 \rSec2[list]{Class template \tcode{list}}
 
 \rSec3[list.overview]{Overview}
@@ -8643,6 +8581,58 @@ template<class T, class Allocator, class Predicate>
 Equivalent to: \tcode{return c.remove_if(pred);}
 \end{itemdescr}
 
+\rSec2[vector.syn]{Header \tcode{<vector>} synopsis}
+
+\indexheader{vector}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{vector}, class template \tcode{vector}
+  template<class T, class Allocator = allocator<T>> class vector;
+
+  template<class T, class Allocator>
+    constexpr bool operator==(const vector<T, Allocator>& x, const vector<T, Allocator>& y);
+  template<class T, class Allocator>
+    constexpr @\placeholder{synth-three-way-result}@<T> operator<=>(const vector<T, Allocator>& x,
+              @\itcorr@                                      const vector<T, Allocator>& y);
+
+  template<class T, class Allocator>
+    constexpr void swap(vector<T, Allocator>& x, vector<T, Allocator>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  // \ref{vector.erasure}, erasure
+  template<class T, class Allocator, class U = T>
+    constexpr typename vector<T, Allocator>::size_type
+      erase(vector<T, Allocator>& c, const U& value);
+  template<class T, class Allocator, class Predicate>
+    constexpr typename vector<T, Allocator>::size_type
+      erase_if(vector<T, Allocator>& c, Predicate pred);
+
+  namespace pmr {
+    template<class T>
+      using vector = std::vector<T, polymorphic_allocator<T>>;
+  }
+
+  // \ref{vector.bool}, specialization of \tcode{vector} for \tcode{bool}
+  // \ref{vector.bool.pspc}, partial class template specialization \tcode{vector<bool, Allocator>}
+  template<class Allocator>
+    class vector<bool, Allocator>;
+
+  template<class T>
+    constexpr bool @\exposid{is-vector-bool-reference}@ = @\seebelow@;          // \expos
+
+  // hash support
+  template<class T> struct hash;
+  template<class Allocator> struct hash<vector<bool, Allocator>>;
+
+  // \ref{vector.bool.fmt}, formatter specialization for \tcode{vector<bool>}
+  template<class T, class charT> requires @\exposid{is-vector-bool-reference}@<T>
+    struct formatter<T, charT>;
+}
+\end{codeblock}
+
 \rSec2[vector]{Class template \tcode{vector}}
 
 \rSec3[vector.overview]{Overview}
@@ -9266,7 +9256,6 @@ namespace std {
 
     // bit reference
     class @\libmember{reference}{vector<bool>}@ {
-      friend class vector;
       constexpr reference() noexcept;
 
     public:
@@ -9490,6 +9479,28 @@ template<class FormatContext>
 Equivalent to: \tcode{return \exposid{underlying_}.format(ref, ctx);}
 \end{itemdescr}
 
+\rSec2[inplace.vector.syn]{Header \tcode{<inplace_vector>} synopsis}
+
+\indexheader{inplace_vector}%
+\begin{codeblock}
+// mostly freestanding
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{inplace.vector}, class template \tcode{inplace_vector}
+  template<class T, size_t N> class inplace_vector;             // partially freestanding
+
+  // \ref{inplace.vector.erasure}, erasure
+  template<class T, size_t N, class U = T>
+    constexpr typename inplace_vector<T, N>::size_type
+      erase(inplace_vector<T, N>& c, const U& value);
+  template<class T, size_t N, class Predicate>
+    constexpr typename inplace_vector<T, N>::size_type
+      erase_if(inplace_vector<T, N>& c, Predicate pred);
+}
+\end{codeblock}
+
 \rSec2[inplace.vector]{Class template \tcode{inplace_vector}}
 
 \rSec3[inplace.vector.overview]{Overview}
@@ -9627,7 +9638,7 @@ namespace std {
     constexpr const_reverse_iterator crbegin() const noexcept;
     constexpr const_reverse_iterator crend()   const noexcept;
 
-    // \ref{inplace.vector.capacity} size/capacity
+    // \ref{inplace.vector.capacity}, size/capacity
     constexpr bool empty() const noexcept;
     constexpr size_type size() const noexcept;
     static constexpr size_type max_size() noexcept;
@@ -9769,7 +9780,7 @@ template<@\exposconcept{container-compatible-range}@<T> R>
 \begin{itemdescr}
 \pnum
 \effects
-Constructs an \tcode{inplace_vector} object with
+Constructs an \tcode{inplace_vector} with
 the elements of the range \tcode{rg}.
 
 \pnum
@@ -10248,66 +10259,6 @@ namespace std {
 }
 \end{codeblock}
 
-\rSec2[associative.set.syn]{Header \tcode{<set>} synopsis}%
-
-\indexheader{set}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{set}, class template \tcode{set}
-  template<class Key, class Compare = less<Key>, class Allocator = allocator<Key>>
-    class set;
-
-  template<class Key, class Compare, class Allocator>
-    bool operator==(const set<Key, Compare, Allocator>& x,
-                    const set<Key, Compare, Allocator>& y);
-  template<class Key, class Compare, class Allocator>
-    @\placeholder{synth-three-way-result}@<Key> operator<=>(const set<Key, Compare, Allocator>& x,
-    @\itcorr@                                        const set<Key, Compare, Allocator>& y);
-
-  template<class Key, class Compare, class Allocator>
-    void swap(set<Key, Compare, Allocator>& x,
-              set<Key, Compare, Allocator>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  // \ref{set.erasure}, erasure for \tcode{set}
-  template<class Key, class Compare, class Allocator, class Predicate>
-    typename set<Key, Compare, Allocator>::size_type
-      erase_if(set<Key, Compare, Allocator>& c, Predicate pred);
-
-  // \ref{multiset}, class template \tcode{multiset}
-  template<class Key, class Compare = less<Key>, class Allocator = allocator<Key>>
-    class multiset;
-
-  template<class Key, class Compare, class Allocator>
-    bool operator==(const multiset<Key, Compare, Allocator>& x,
-                    const multiset<Key, Compare, Allocator>& y);
-  template<class Key, class Compare, class Allocator>
-    @\placeholder{synth-three-way-result}@<Key> operator<=>(const multiset<Key, Compare, Allocator>& x,
-    @\itcorr@                                        const multiset<Key, Compare, Allocator>& y);
-
-  template<class Key, class Compare, class Allocator>
-    void swap(multiset<Key, Compare, Allocator>& x,
-              multiset<Key, Compare, Allocator>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  // \ref{multiset.erasure}, erasure for \tcode{multiset}
-  template<class Key, class Compare, class Allocator, class Predicate>
-    typename multiset<Key, Compare, Allocator>::size_type
-      erase_if(multiset<Key, Compare, Allocator>& c, Predicate pred);
-
-  namespace pmr {
-    template<class Key, class Compare = less<Key>>
-      using set = std::set<Key, Compare, polymorphic_allocator<Key>>;
-
-    template<class Key, class Compare = less<Key>>
-      using multiset = std::multiset<Key, Compare, polymorphic_allocator<Key>>;
-  }
-}
-\end{codeblock}
-
 \rSec2[map]{Class template \tcode{map}}
 
 \rSec3[map.overview]{Overview}
@@ -10380,7 +10331,6 @@ namespace std {
     using insert_return_type     = @\placeholdernc{insert-return-type}@<iterator, node_type>;
 
     class value_compare {
-      friend class map;
     protected:
       Compare comp;
       value_compare(Compare c) : comp(c) {}
@@ -11117,7 +11067,6 @@ namespace std {
     using node_type              = @\unspec@;
 
     class value_compare {
-      friend class multimap;
     protected:
       Compare comp;
       value_compare(Compare c) : comp(c) { }
@@ -11400,6 +11349,66 @@ for (auto i = c.begin(), last = c.end(); i != last; ) {
 return original_size - c.size();
 \end{codeblock}
 \end{itemdescr}
+
+\rSec2[associative.set.syn]{Header \tcode{<set>} synopsis}%
+
+\indexheader{set}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{set}, class template \tcode{set}
+  template<class Key, class Compare = less<Key>, class Allocator = allocator<Key>>
+    class set;
+
+  template<class Key, class Compare, class Allocator>
+    bool operator==(const set<Key, Compare, Allocator>& x,
+                    const set<Key, Compare, Allocator>& y);
+  template<class Key, class Compare, class Allocator>
+    @\placeholder{synth-three-way-result}@<Key> operator<=>(const set<Key, Compare, Allocator>& x,
+    @\itcorr@                                        const set<Key, Compare, Allocator>& y);
+
+  template<class Key, class Compare, class Allocator>
+    void swap(set<Key, Compare, Allocator>& x,
+              set<Key, Compare, Allocator>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  // \ref{set.erasure}, erasure for \tcode{set}
+  template<class Key, class Compare, class Allocator, class Predicate>
+    typename set<Key, Compare, Allocator>::size_type
+      erase_if(set<Key, Compare, Allocator>& c, Predicate pred);
+
+  // \ref{multiset}, class template \tcode{multiset}
+  template<class Key, class Compare = less<Key>, class Allocator = allocator<Key>>
+    class multiset;
+
+  template<class Key, class Compare, class Allocator>
+    bool operator==(const multiset<Key, Compare, Allocator>& x,
+                    const multiset<Key, Compare, Allocator>& y);
+  template<class Key, class Compare, class Allocator>
+    @\placeholder{synth-three-way-result}@<Key> operator<=>(const multiset<Key, Compare, Allocator>& x,
+    @\itcorr@                                        const multiset<Key, Compare, Allocator>& y);
+
+  template<class Key, class Compare, class Allocator>
+    void swap(multiset<Key, Compare, Allocator>& x,
+              multiset<Key, Compare, Allocator>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  // \ref{multiset.erasure}, erasure for \tcode{multiset}
+  template<class Key, class Compare, class Allocator, class Predicate>
+    typename multiset<Key, Compare, Allocator>::size_type
+      erase_if(multiset<Key, Compare, Allocator>& c, Predicate pred);
+
+  namespace pmr {
+    template<class Key, class Compare = less<Key>>
+      using set = std::set<Key, Compare, polymorphic_allocator<Key>>;
+
+    template<class Key, class Compare = less<Key>>
+      using multiset = std::multiset<Key, Compare, polymorphic_allocator<Key>>;
+  }
+}
+\end{codeblock}
 
 \rSec2[set]{Class template \tcode{set}}
 
@@ -12163,74 +12172,6 @@ namespace std {
         std::unordered_multimap<Key, T, Hash, Pred,
                                 polymorphic_allocator<pair<const Key, T>>>;
 
-  }
-}
-\end{codeblock}
-
-\rSec2[unord.set.syn]{Header \tcode{<unordered_set>} synopsis}
-
-\indexheader{unordered_set}%
-\indexlibraryglobal{unordered_set}%
-\indexlibraryglobal{unordered_multiset}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{unord.set}, class template \tcode{unordered_set}
-  template<class Key,
-           class Hash = hash<Key>,
-           class Pred = equal_to<Key>,
-           class Alloc = allocator<Key>>
-    class unordered_set;
-
-  // \ref{unord.multiset}, class template \tcode{unordered_multiset}
-  template<class Key,
-           class Hash = hash<Key>,
-           class Pred = equal_to<Key>,
-           class Alloc = allocator<Key>>
-    class unordered_multiset;
-
-  template<class Key, class Hash, class Pred, class Alloc>
-    bool operator==(const unordered_set<Key, Hash, Pred, Alloc>& a,
-                    const unordered_set<Key, Hash, Pred, Alloc>& b);
-
-  template<class Key, class Hash, class Pred, class Alloc>
-    bool operator==(const unordered_multiset<Key, Hash, Pred, Alloc>& a,
-                    const unordered_multiset<Key, Hash, Pred, Alloc>& b);
-
-  template<class Key, class Hash, class Pred, class Alloc>
-    void swap(unordered_set<Key, Hash, Pred, Alloc>& x,
-              unordered_set<Key, Hash, Pred, Alloc>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  template<class Key, class Hash, class Pred, class Alloc>
-    void swap(unordered_multiset<Key, Hash, Pred, Alloc>& x,
-              unordered_multiset<Key, Hash, Pred, Alloc>& y)
-      noexcept(noexcept(x.swap(y)));
-
-  // \ref{unord.set.erasure}, erasure for \tcode{unordered_set}
-  template<class K, class H, class P, class A, class Predicate>
-    typename unordered_set<K, H, P, A>::size_type
-      erase_if(unordered_set<K, H, P, A>& c, Predicate pred);
-
-  // \ref{unord.multiset.erasure}, erasure for \tcode{unordered_multiset}
-  template<class K, class H, class P, class A, class Predicate>
-    typename unordered_multiset<K, H, P, A>::size_type
-      erase_if(unordered_multiset<K, H, P, A>& c, Predicate pred);
-
-  namespace pmr {
-    template<class Key,
-             class Hash = hash<Key>,
-             class Pred = equal_to<Key>>
-      using unordered_set = std::unordered_set<Key, Hash, Pred,
-                                               polymorphic_allocator<Key>>;
-
-    template<class Key,
-             class Hash = hash<Key>,
-             class Pred = equal_to<Key>>
-      using unordered_multiset = std::unordered_multiset<Key, Hash, Pred,
-                                                         polymorphic_allocator<Key>>;
   }
 }
 \end{codeblock}
@@ -13454,6 +13395,74 @@ return original_size - c.size();
 \end{codeblock}
 \end{itemdescr}
 
+\rSec2[unord.set.syn]{Header \tcode{<unordered_set>} synopsis}
+
+\indexheader{unordered_set}%
+\indexlibraryglobal{unordered_set}%
+\indexlibraryglobal{unordered_multiset}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{unord.set}, class template \tcode{unordered_set}
+  template<class Key,
+           class Hash = hash<Key>,
+           class Pred = equal_to<Key>,
+           class Alloc = allocator<Key>>
+    class unordered_set;
+
+  // \ref{unord.multiset}, class template \tcode{unordered_multiset}
+  template<class Key,
+           class Hash = hash<Key>,
+           class Pred = equal_to<Key>,
+           class Alloc = allocator<Key>>
+    class unordered_multiset;
+
+  template<class Key, class Hash, class Pred, class Alloc>
+    bool operator==(const unordered_set<Key, Hash, Pred, Alloc>& a,
+                    const unordered_set<Key, Hash, Pred, Alloc>& b);
+
+  template<class Key, class Hash, class Pred, class Alloc>
+    bool operator==(const unordered_multiset<Key, Hash, Pred, Alloc>& a,
+                    const unordered_multiset<Key, Hash, Pred, Alloc>& b);
+
+  template<class Key, class Hash, class Pred, class Alloc>
+    void swap(unordered_set<Key, Hash, Pred, Alloc>& x,
+              unordered_set<Key, Hash, Pred, Alloc>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  template<class Key, class Hash, class Pred, class Alloc>
+    void swap(unordered_multiset<Key, Hash, Pred, Alloc>& x,
+              unordered_multiset<Key, Hash, Pred, Alloc>& y)
+      noexcept(noexcept(x.swap(y)));
+
+  // \ref{unord.set.erasure}, erasure for \tcode{unordered_set}
+  template<class K, class H, class P, class A, class Predicate>
+    typename unordered_set<K, H, P, A>::size_type
+      erase_if(unordered_set<K, H, P, A>& c, Predicate pred);
+
+  // \ref{unord.multiset.erasure}, erasure for \tcode{unordered_multiset}
+  template<class K, class H, class P, class A, class Predicate>
+    typename unordered_multiset<K, H, P, A>::size_type
+      erase_if(unordered_multiset<K, H, P, A>& c, Predicate pred);
+
+  namespace pmr {
+    template<class Key,
+             class Hash = hash<Key>,
+             class Pred = equal_to<Key>>
+      using unordered_set = std::unordered_set<Key, Hash, Pred,
+                                               polymorphic_allocator<Key>>;
+
+    template<class Key,
+             class Hash = hash<Key>,
+             class Pred = equal_to<Key>>
+      using unordered_multiset = std::unordered_multiset<Key, Hash, Pred,
+                                                         polymorphic_allocator<Key>>;
+  }
+}
+\end{codeblock}
+
 \rSec2[unord.set]{Class template \tcode{unordered_set}}%
 \indexlibraryglobal{unordered_set}
 
@@ -14403,132 +14412,6 @@ namespace std {
 }
 \end{codeblock}
 
-\rSec2[stack.syn]{Header \tcode{<stack>} synopsis}
-
-\indexheader{stack}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{stack}, class template \tcode{stack}
-  template<class T, class Container = deque<T>> class stack;
-
-  template<class T, class Container>
-    bool operator==(const stack<T, Container>& x, const stack<T, Container>& y);
-  template<class T, class Container>
-    bool operator!=(const stack<T, Container>& x, const stack<T, Container>& y);
-  template<class T, class Container>
-    bool operator< (const stack<T, Container>& x, const stack<T, Container>& y);
-  template<class T, class Container>
-    bool operator> (const stack<T, Container>& x, const stack<T, Container>& y);
-  template<class T, class Container>
-    bool operator<=(const stack<T, Container>& x, const stack<T, Container>& y);
-  template<class T, class Container>
-    bool operator>=(const stack<T, Container>& x, const stack<T, Container>& y);
-  template<class T, @\libconcept{three_way_comparable}@ Container>
-    compare_three_way_result_t<Container>
-      operator<=>(const stack<T, Container>& x, const stack<T, Container>& y);
-
-  template<class T, class Container>
-    void swap(stack<T, Container>& x, stack<T, Container>& y) noexcept(noexcept(x.swap(y)));
-  template<class T, class Container, class Alloc>
-    struct uses_allocator<stack<T, Container>, Alloc>;
-
-  // \ref{container.adaptors.format}, formatter specialization for \tcode{stack}
-  template<class charT, class T, @\libconcept{formattable}@<charT> Container>
-    struct formatter<stack<T, Container>, charT>;
-}
-\end{codeblock}
-
-\rSec2[flat.map.syn]{Header \tcode{<flat_map>} synopsis}
-
-\indexheader{flat_map}%
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{flat.map}, class template \tcode{flat_map}
-  template<class Key, class T, class Compare = less<Key>,
-           class KeyContainer = vector<Key>, class MappedContainer = vector<T>>
-    class flat_map;
-
-  struct sorted_unique_t { explicit sorted_unique_t() = default; };
-  inline constexpr sorted_unique_t sorted_unique{};
-
-  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
-           class Allocator>
-    struct uses_allocator<flat_map<Key, T, Compare, KeyContainer, MappedContainer>,
-                          Allocator>;
-
-  // \ref{flat.map.erasure}, erasure for \tcode{flat_map}
-  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
-           class Predicate>
-    typename flat_map<Key, T, Compare, KeyContainer, MappedContainer>::size_type
-      erase_if(flat_map<Key, T, Compare, KeyContainer, MappedContainer>& c, Predicate pred);
-
-  // \ref{flat.multimap}, class template \tcode{flat_multimap}
-  template<class Key, class T, class Compare = less<Key>,
-           class KeyContainer = vector<Key>, class MappedContainer = vector<T>>
-    class flat_multimap;
-
-  struct sorted_equivalent_t { explicit sorted_equivalent_t() = default; };
-  inline constexpr sorted_equivalent_t sorted_equivalent{};
-
-  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
-           class Allocator>
-    struct uses_allocator<flat_multimap<Key, T, Compare, KeyContainer, MappedContainer>,
-                          Allocator>;
-
-  // \ref{flat.multimap.erasure}, erasure for \tcode{flat_multimap}
-  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
-           class Predicate>
-    typename flat_multimap<Key, T, Compare, KeyContainer, MappedContainer>::size_type
-      erase_if(flat_multimap<Key, T, Compare, KeyContainer, MappedContainer>& c, Predicate pred);
-}
-\end{codeblock}
-
-\rSec2[flat.set.syn]{Header \tcode{<flat_set>} synopsis}%
-\indexheader{flat_set}%
-
-\begin{codeblock}
-#include <compare>              // see \ref{compare.syn}
-#include <initializer_list>     // see \ref{initializer.list.syn}
-
-namespace std {
-  // \ref{flat.set}, class template \tcode{flat_set}
-  template<class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
-    class flat_set;
-
-  struct sorted_unique_t { explicit sorted_unique_t() = default; };
-  inline constexpr sorted_unique_t sorted_unique{};
-
-  template<class Key, class Compare, class KeyContainer, class Allocator>
-    struct uses_allocator<flat_set<Key, Compare, KeyContainer>, Allocator>;
-
-  // \ref{flat.set.erasure}, erasure for \tcode{flat_set}
-  template<class Key, class Compare, class KeyContainer, class Predicate>
-    typename flat_set<Key, Compare, KeyContainer>::size_type
-      erase_if(flat_set<Key, Compare, KeyContainer>& c, Predicate pred);
-
-  // \ref{flat.multiset}, class template \tcode{flat_multiset}
-  template<class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
-    class flat_multiset;
-
-  struct sorted_equivalent_t { explicit sorted_equivalent_t() = default; };
-  inline constexpr sorted_equivalent_t sorted_equivalent{};
-
-  template<class Key, class Compare, class KeyContainer, class Allocator>
-    struct uses_allocator<flat_multiset<Key, Compare, KeyContainer>, Allocator>;
-
-  // \ref{flat.multiset.erasure}, erasure for \tcode{flat_multiset}
-  template<class Key, class Compare, class KeyContainer, class Predicate>
-    typename flat_multiset<Key, Compare, KeyContainer>::size_type
-      erase_if(flat_multiset<Key, Compare, KeyContainer>& c, Predicate pred);
-}
-\end{codeblock}
-
 \rSec2[queue]{Class template \tcode{queue}}
 
 \rSec3[queue.defn]{Definition}
@@ -15288,8 +15171,9 @@ template<@\exposconcept{container-compatible-range}@<T> R, class Alloc>
 \pnum
 \effects
 Initializes
-\tcode{c} with \tcode{ranges::to<Container>(std::forward<R>(rg), a)};
-calls \tcode{make_heap(c.\linebreak begin(), c.end(), comp)}.
+\tcode{c} with \tcode{ranges::to<Container>(std::forward<R>(rg), a)}
+and value-initializes \tcode{comp};
+calls \tcode{make_heap(c.begin(), c.end(), comp)}.
 \end{itemdescr}
 
 \rSec3[priqueue.members]{Members}
@@ -15394,6 +15278,44 @@ template<class T, class Container, class Compare>
 \effects
 As if by \tcode{x.swap(y)}.
 \end{itemdescr}
+
+\rSec2[stack.syn]{Header \tcode{<stack>} synopsis}
+
+\indexheader{stack}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{stack}, class template \tcode{stack}
+  template<class T, class Container = deque<T>> class stack;
+
+  template<class T, class Container>
+    bool operator==(const stack<T, Container>& x, const stack<T, Container>& y);
+  template<class T, class Container>
+    bool operator!=(const stack<T, Container>& x, const stack<T, Container>& y);
+  template<class T, class Container>
+    bool operator< (const stack<T, Container>& x, const stack<T, Container>& y);
+  template<class T, class Container>
+    bool operator> (const stack<T, Container>& x, const stack<T, Container>& y);
+  template<class T, class Container>
+    bool operator<=(const stack<T, Container>& x, const stack<T, Container>& y);
+  template<class T, class Container>
+    bool operator>=(const stack<T, Container>& x, const stack<T, Container>& y);
+  template<class T, @\libconcept{three_way_comparable}@ Container>
+    compare_three_way_result_t<Container>
+      operator<=>(const stack<T, Container>& x, const stack<T, Container>& y);
+
+  template<class T, class Container>
+    void swap(stack<T, Container>& x, stack<T, Container>& y) noexcept(noexcept(x.swap(y)));
+  template<class T, class Container, class Alloc>
+    struct uses_allocator<stack<T, Container>, Alloc>;
+
+  // \ref{container.adaptors.format}, formatter specialization for \tcode{stack}
+  template<class charT, class T, @\libconcept{formattable}@<charT> Container>
+    struct formatter<stack<T, Container>, charT>;
+}
+\end{codeblock}
 
 \rSec2[stack]{Class template \tcode{stack}}
 
@@ -15753,6 +15675,54 @@ template<class T, class Container>
 As if by \tcode{x.swap(y)}.
 \end{itemdescr}
 
+\rSec2[flat.map.syn]{Header \tcode{<flat_map>} synopsis}
+
+\indexheader{flat_map}%
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{flat.map}, class template \tcode{flat_map}
+  template<class Key, class T, class Compare = less<Key>,
+           class KeyContainer = vector<Key>, class MappedContainer = vector<T>>
+    class flat_map;
+
+  struct sorted_unique_t { explicit sorted_unique_t() = default; };
+  inline constexpr sorted_unique_t sorted_unique{};
+
+  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
+           class Allocator>
+    struct uses_allocator<flat_map<Key, T, Compare, KeyContainer, MappedContainer>,
+                          Allocator>;
+
+  // \ref{flat.map.erasure}, erasure for \tcode{flat_map}
+  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
+           class Predicate>
+    typename flat_map<Key, T, Compare, KeyContainer, MappedContainer>::size_type
+      erase_if(flat_map<Key, T, Compare, KeyContainer, MappedContainer>& c, Predicate pred);
+
+  // \ref{flat.multimap}, class template \tcode{flat_multimap}
+  template<class Key, class T, class Compare = less<Key>,
+           class KeyContainer = vector<Key>, class MappedContainer = vector<T>>
+    class flat_multimap;
+
+  struct sorted_equivalent_t { explicit sorted_equivalent_t() = default; };
+  inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
+           class Allocator>
+    struct uses_allocator<flat_multimap<Key, T, Compare, KeyContainer, MappedContainer>,
+                          Allocator>;
+
+  // \ref{flat.multimap.erasure}, erasure for \tcode{flat_multimap}
+  template<class Key, class T, class Compare, class KeyContainer, class MappedContainer,
+           class Predicate>
+    typename flat_multimap<Key, T, Compare, KeyContainer, MappedContainer>::size_type
+      erase_if(flat_multimap<Key, T, Compare, KeyContainer, MappedContainer>& c, Predicate pred);
+}
+\end{codeblock}
+
 \rSec2[flat.map]{Class template \tcode{flat_map}}
 
 \rSec3[flat.map.overview]{Overview}
@@ -16002,7 +15972,7 @@ namespace std {
     const_reverse_iterator crend() const noexcept;
 
     // \ref{flat.map.capacity}, capacity
-    [[nodiscard]] bool empty() const noexcept;
+    bool empty() const noexcept;
     size_type size() const noexcept;
     size_type max_size() const noexcept;
 
@@ -17190,7 +17160,7 @@ namespace std {
     const_reverse_iterator crend() const noexcept;
 
     // capacity
-    [[nodiscard]] bool empty() const noexcept;
+    bool empty() const noexcept;
     size_type size() const noexcept;
     size_type max_size() const noexcept;
 
@@ -17542,6 +17512,46 @@ but can be empty.
 \end{note}
 \end{itemdescr}
 
+\rSec2[flat.set.syn]{Header \tcode{<flat_set>} synopsis}%
+\indexheader{flat_set}%
+
+\begin{codeblock}
+#include <compare>              // see \ref{compare.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
+
+namespace std {
+  // \ref{flat.set}, class template \tcode{flat_set}
+  template<class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
+    class flat_set;
+
+  struct sorted_unique_t { explicit sorted_unique_t() = default; };
+  inline constexpr sorted_unique_t sorted_unique{};
+
+  template<class Key, class Compare, class KeyContainer, class Allocator>
+    struct uses_allocator<flat_set<Key, Compare, KeyContainer>, Allocator>;
+
+  // \ref{flat.set.erasure}, erasure for \tcode{flat_set}
+  template<class Key, class Compare, class KeyContainer, class Predicate>
+    typename flat_set<Key, Compare, KeyContainer>::size_type
+      erase_if(flat_set<Key, Compare, KeyContainer>& c, Predicate pred);
+
+  // \ref{flat.multiset}, class template \tcode{flat_multiset}
+  template<class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
+    class flat_multiset;
+
+  struct sorted_equivalent_t { explicit sorted_equivalent_t() = default; };
+  inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+  template<class Key, class Compare, class KeyContainer, class Allocator>
+    struct uses_allocator<flat_multiset<Key, Compare, KeyContainer>, Allocator>;
+
+  // \ref{flat.multiset.erasure}, erasure for \tcode{flat_multiset}
+  template<class Key, class Compare, class KeyContainer, class Predicate>
+    typename flat_multiset<Key, Compare, KeyContainer>::size_type
+      erase_if(flat_multiset<Key, Compare, KeyContainer>& c, Predicate pred);
+}
+\end{codeblock}
+
 \rSec2[flat.set]{Class template \tcode{flat_set}}
 
 \rSec3[flat.set.overview]{Overview}
@@ -17746,7 +17756,7 @@ namespace std {
     const_reverse_iterator crend() const noexcept;
 
     // capacity
-    [[nodiscard]] bool empty() const noexcept;
+    bool empty() const noexcept;
     size_type size() const noexcept;
     size_type max_size() const noexcept;
 
@@ -18041,7 +18051,7 @@ The returned iterator points to the element
 whose key is equivalent to \tcode{x}.
 \end{itemdescr}
 
-\indexlibrarymember{insert}{flatset}%
+\indexlibrarymember{insert}{flat_set}%
 \begin{itemdecl}
 template<class InputIterator>
   void insert(InputIterator first, InputIterator last);
@@ -18134,7 +18144,7 @@ ranges::swap(@\exposid{c}@, y.@\exposid{c}@);
 \end{codeblock}
 \end{itemdescr}
 
-\indexlibrarymember{extract}{flatset}%
+\indexlibrarymember{extract}{flat_set}%
 \begin{itemdecl}
 container_type extract() &&;
 \end{itemdecl}
@@ -18409,7 +18419,7 @@ namespace std {
     const_reverse_iterator crend() const noexcept;
 
     // capacity
-    [[nodiscard]] bool empty() const noexcept;
+    bool empty() const noexcept;
     size_type size() const noexcept;
     size_type max_size() const noexcept;
 
@@ -23207,7 +23217,7 @@ namespace std {
       constexpr reference operator[](const array<OtherIndexType, rank()>& indices) const;
 
     constexpr size_type size() const noexcept;
-    [[nodiscard]] constexpr bool empty() const noexcept;
+    constexpr bool empty() const noexcept;
 
     friend constexpr void swap(mdspan& x, mdspan& y) noexcept;
 
@@ -23228,7 +23238,7 @@ namespace std {
     constexpr bool is_exhaustive() const
       { return @\exposid{map_}@.is_exhaustive(); }
     constexpr bool is_strided() const
-      { return @\exposid{map_.}@is_strided(); }
+      { return @\exposid{map_}@.is_strided(); }
     constexpr index_type stride(rank_type r) const
       { return @\exposid{map_}@.stride(r); }
 
@@ -23673,7 +23683,7 @@ is representable as a value of type \tcode{size_type}\iref{basic.fundamental}.
 
 \indexlibrarymember{empty}{mdspan}%
 \begin{itemdecl}
-[[nodiscard]] constexpr bool empty() const noexcept;
+constexpr bool empty() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
