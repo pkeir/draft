@@ -333,9 +333,10 @@ whose integer conversion ranks\iref{conv.rank} are no greater than that of
 \pnum
 The type
 \indexlibraryglobal{max_align_t}%
-\tcode{max_align_t} is a trivial standard-layout type whose alignment requirement
+\tcode{max_align_t} is a trivially copyable standard-layout type whose alignment requirement
 is at least as great as that of every scalar type, and whose alignment
 requirement is supported in every context\iref{basic.align}.
+\tcode{std::is_trivially_default_constructible_v<max_align_t>} is \tcode{true}.
 
 \xrefc{7.19}
 
@@ -557,6 +558,7 @@ the values of these macros with greater values.
   // also in \libheader{algorithm}, \libheader{ranges}, \libheader{string}, \libheader{deque}, \libheader{list}, \libheader{forward_list}, \libheader{vector}
 #define @\defnlibxname{cpp_lib_algorithm_iterator_requirements}@   202207L
   // also in \libheader{algorithm}, \libheader{numeric}, \libheader{memory}
+#define @\defnlibxname{cpp_lib_aligned_accessor}@                  202411L // also in \libheader{mdspan}
 #define @\defnlibxname{cpp_lib_allocate_at_least}@                 202302L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_allocator_traits_is_always_equal}@  201411L
   // freestanding, also in \libheader{memory}, \libheader{scoped_allocator}, \libheader{string}, \libheader{deque}, \libheader{forward_list}, \libheader{list},
@@ -575,7 +577,7 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_atomic_is_always_lock_free}@        201603L // freestanding, also in \libheader{atomic}
 #define @\defnlibxname{cpp_lib_atomic_lock_free_type_aliases}@     201907L // also in \libheader{atomic}
 #define @\defnlibxname{cpp_lib_atomic_min_max}@                    202403L // freestanding, also in \libheader{atomic}
-#define @\defnlibxname{cpp_lib_atomic_ref}@                        201806L // freestanding, also in \libheader{atomic}
+#define @\defnlibxname{cpp_lib_atomic_ref}@                        202411L // freestanding, also in \libheader{atomic}
 #define @\defnlibxname{cpp_lib_atomic_shared_ptr}@                 201711L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_atomic_value_initialization}@       201911L // freestanding, also in \libheader{atomic}, \libheader{memory}
 #define @\defnlibxname{cpp_lib_atomic_wait}@                       201907L // freestanding, also in \libheader{atomic}
@@ -596,17 +598,19 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_chrono}@                            202306L // also in \libheader{chrono}
 #define @\defnlibxname{cpp_lib_chrono_udls}@                       201304L // also in \libheader{chrono}
 #define @\defnlibxname{cpp_lib_clamp}@                             201603L // also in \libheader{algorithm}
-#define @\defnlibxname{cpp_lib_common_reference}@                  202302L // also in \libheader{type_traits}
-#define @\defnlibxname{cpp_lib_common_reference_wrapper}@          202302L // also in \libheader{functional}
+#define @\defnlibxname{cpp_lib_common_reference}@                  202302L // freestanding, also in \libheader{type_traits}
+#define @\defnlibxname{cpp_lib_common_reference_wrapper}@          202302L // freestanding, also in \libheader{functional}
 #define @\defnlibxname{cpp_lib_complex_udls}@                      201309L // also in \libheader{complex}
 #define @\defnlibxname{cpp_lib_concepts}@                          202207L
   // freestanding, also in \libheader{concepts}, \libheader{compare}
 #define @\defnlibxname{cpp_lib_constexpr_algorithms}@              202306L // also in \libheader{algorithm}, \libheader{utility}
+#define @\defnlibxname{cpp_lib_constexpr_atomic}@                  202411L // also in \libheader{atomic}
 #define @\defnlibxname{cpp_lib_constexpr_bitset}@                  202207L // also in \libheader{bitset}
-#define @\defnlibxname{cpp_lib_constexpr_charconv}@                202207L // also in \libheader{charconv}
+#define @\defnlibxname{cpp_lib_constexpr_charconv}@                202207L // freestanding, also in \libheader{charconv}
 #define @\defnlibxname{cpp_lib_constexpr_cmath}@                   202306L // also in \libheader{cmath}, \libheader{cstdlib}
 #define @\defnlibxname{cpp_lib_constexpr_complex}@                 202306L // also in \libheader{complex}
 #define @\defnlibxname{cpp_lib_constexpr_dynamic_alloc}@           201907L // also in \libheader{memory}
+#define @\defnlibxname{cpp_lib_constexpr_exceptions}@              202411L // also in \libheader{exception}
 #define @\defnlibxname{cpp_lib_constexpr_functional}@              201907L // freestanding, also in \libheader{functional}
 #define @\defnlibxname{cpp_lib_constexpr_iterator}@                201811L // freestanding, also in \libheader{iterator}
 #define @\defnlibxname{cpp_lib_constexpr_memory}@                  YYYYMML // freestanding, also in \libheader{memory}
@@ -618,13 +622,13 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_constexpr_typeinfo}@                202106L // freestanding, also in \libheader{typeinfo}
 #define @\defnlibxname{cpp_lib_constexpr_utility}@                 201811L // freestanding, also in \libheader{utility}
 #define @\defnlibxname{cpp_lib_constexpr_vector}@                  201907L // also in \libheader{vector}
-#define @\defnlibxname{cpp_lib_constrained_equality}@              202403L // freestanding,
-  // also in \libheader{utility}, \libheader{tuple}, \libheader{optional}, \libheader{variant}
+#define @\defnlibxname{cpp_lib_constrained_equality}@              202411L // freestanding,
+  // also in \libheader{utility}, \libheader{tuple}, \libheader{optional}, \libheader{variant}, \libheader{expected}
 #define @\defnlibxname{cpp_lib_containers_ranges}@                 202202L
   // also in \libheader{vector}, \libheader{list}, \libheader{forward_list}, \libheader{map}, \libheader{set}, \libheader{unordered_map}, \libheader{unordered_set},
   // \libheader{deque}, \libheader{queue}, \libheader{stack}, \libheader{string}
 #define @\defnlibxname{cpp_lib_copyable_function}@                 202306L // also in \libheader{functional}
-#define @\defnlibxname{cpp_lib_coroutine}@                         201902L // also in \libheader{coroutine}
+#define @\defnlibxname{cpp_lib_coroutine}@                         201902L // freestanding, also in \libheader{coroutine}
 #define @\defnlibxname{cpp_lib_debugging}@                         202403L // freestanding, also in \libheader{debugging}
 #define @\defnlibxname{cpp_lib_destroying_delete}@                 201806L // freestanding, also in \libheader{new}
 #define @\defnlibxname{cpp_lib_enable_shared_from_this}@           201603L // also in \libheader{memory}
@@ -693,20 +697,21 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_is_aggregate}@                      201703L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_constant_evaluated}@             201811L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_final}@                          201402L // freestanding, also in \libheader{type_traits}
-#define @\defnlibxname{cpp_lib_is_implicit_lifetime}@              202302L // also in \libheader{type_traits}
+#define @\defnlibxname{cpp_lib_is_implicit_lifetime}@              202302L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_invocable}@                      201703L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_layout_compatible}@              201907L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_nothrow_convertible}@            201806L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_null_pointer}@                   201309L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_pointer_interconvertible}@       201907L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_is_scoped_enum}@                    202011L // freestanding, also in \libheader{type_traits}
+#define @\defnlibxname{cpp_lib_is_sufficiently_aligned}@           202411L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_is_swappable}@                      201603L // freestanding, also in \libheader{type_traits}
-#define @\defnlibxname{cpp_lib_is_virtual_base_of}@                202406L // also in \libheader{type_traits}
-#define @\defnlibxname{cpp_lib_is_within_lifetime}@                202306L // also in \libheader{type_traits}
+#define @\defnlibxname{cpp_lib_is_virtual_base_of}@                202406L // freestanding, also in \libheader{type_traits}
+#define @\defnlibxname{cpp_lib_is_within_lifetime}@                202306L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_jthread}@                           201911L // also in \libheader{stop_token}, \libheader{thread}
 #define @\defnlibxname{cpp_lib_latch}@                             201907L // also in \libheader{latch}
 #define @\defnlibxname{cpp_lib_launder}@                           201606L // freestanding, also in \libheader{new}
-#define @\defnlibxname{cpp_lib_linalg}@                            202311L // also in \libheader{linalg}
+#define @\defnlibxname{cpp_lib_linalg}@                            202412L // also in \libheader{linalg}
 #define @\defnlibxname{cpp_lib_list_remove_return_type}@           201806L // also in \libheader{forward_list}, \libheader{list}
 #define @\defnlibxname{cpp_lib_logical_traits}@                    201510L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_make_from_tuple}@                   201606L // freestanding, also in \libheader{tuple}
@@ -715,7 +720,7 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_map_try_emplace}@                   201411L // also in \libheader{map}
 #define @\defnlibxname{cpp_lib_math_constants}@                    201907L // also in \libheader{numbers}
 #define @\defnlibxname{cpp_lib_math_special_functions}@            201603L // also in \libheader{cmath}
-#define @\defnlibxname{cpp_lib_mdspan}@                            202406L // also in \libheader{mdspan}
+#define @\defnlibxname{cpp_lib_mdspan}@                            202406L // freestanding, also in \libheader{mdspan}
 #define @\defnlibxname{cpp_lib_memory_resource}@                   201603L // also in \libheader{memory_resource}
 #define @\defnlibxname{cpp_lib_modules}@                           202207L // freestanding
 #define @\defnlibxname{cpp_lib_move_iterator_concept}@             202207L // freestanding, also in \libheader{iterator}
@@ -739,6 +744,7 @@ the values of these macros with greater values.
   // also in \libheader{algorithm}, \libheader{functional}, \libheader{iterator}, \libheader{memory}, \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_as_const}@                   202311L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_as_rvalue}@                  202207L // freestanding, also in \libheader{ranges}
+#define @\defnlibxname{cpp_lib_ranges_cache_latest}@               202411L // also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_cartesian_product}@          202207L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_chunk}@                      202202L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_chunk_by}@                   202202L // freestanding, also in \libheader{ranges}
@@ -757,8 +763,8 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_ranges_to_container}@               202202L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_zip}@                        202110L
   // freestanding, also in \libheader{ranges}, \libheader{tuple}, \libheader{utility}
-#define @\defnlibxname{cpp_lib_ratio}@                             202306L // also in \libheader{ratio}
-#define @\defnlibxname{cpp_lib_raw_memory_algorithms}@             201606L // also in \libheader{memory}
+#define @\defnlibxname{cpp_lib_ratio}@                             202306L // freestanding, also in \libheader{ratio}
+#define @\defnlibxname{cpp_lib_raw_memory_algorithms}@             202411L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_rcu}@                               202306L // also in \libheader{rcu}
 #define @\defnlibxname{cpp_lib_reference_from_temporary}@          202202L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_reference_wrapper}@                 202403L // freestanding, also in \libheader{functional}
@@ -776,11 +782,12 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_shared_ptr_weak_type}@              201606L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_shared_timed_mutex}@                201402L // also in \libheader{shared_mutex}
 #define @\defnlibxname{cpp_lib_shift}@                             202202L // also in \libheader{algorithm}
+#define @\defnlibxname{cpp_lib_simd}@                              202411L // also in \libheader{simd}
 #define @\defnlibxname{cpp_lib_smart_ptr_for_overwrite}@           202002L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_smart_ptr_owner_equality}@          202306L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_source_location}@                   201907L // freestanding, also in \libheader{source_location}
 #define @\defnlibxname{cpp_lib_span}@                              202311L // freestanding, also in \libheader{span}
-#define @\defnlibxname{cpp_lib_span_initializer_list}@             202311L // also in \libheader{span}
+#define @\defnlibxname{cpp_lib_span_initializer_list}@             202311L // freestanding, also in \libheader{span}
 #define @\defnlibxname{cpp_lib_spanstream}@                        202106L // also in \libheader{spanstream}
 #define @\defnlibxname{cpp_lib_ssize}@                             201902L // freestanding, also in \libheader{iterator}
 #define @\defnlibxname{cpp_lib_sstream_from_string_view}@          202306L // also in \libheader{sstream}
@@ -792,12 +799,12 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_string_resize_and_overwrite}@       202110L // also in \libheader{string}
 #define @\defnlibxname{cpp_lib_string_udls}@                       201304L // also in \libheader{string}
 #define @\defnlibxname{cpp_lib_string_view}@                       202403L // also in \libheader{string}, \libheader{string_view}
-#define @\defnlibxname{cpp_lib_submdspan}@                         202403L // also in \libheader{mdspan}
+#define @\defnlibxname{cpp_lib_submdspan}@                         202411L // freestanding, also in \libheader{mdspan}
 #define @\defnlibxname{cpp_lib_syncbuf}@                           201803L // also in \libheader{syncstream}
 #define @\defnlibxname{cpp_lib_text_encoding}@                     202306L // also in \libheader{text_encoding}
 #define @\defnlibxname{cpp_lib_three_way_comparison}@              201907L // freestanding, also in \libheader{compare}
 #define @\defnlibxname{cpp_lib_to_address}@                        201711L // freestanding, also in \libheader{memory}
-#define @\defnlibxname{cpp_lib_to_array}@                          201907L // also in \libheader{array}
+#define @\defnlibxname{cpp_lib_to_array}@                          201907L // freestanding, also in \libheader{array}
 #define @\defnlibxname{cpp_lib_to_chars}@                          202306L // also in \libheader{charconv}
 #define @\defnlibxname{cpp_lib_to_string}@                         202306L // also in \libheader{string}
 #define @\defnlibxname{cpp_lib_to_underlying}@                     202102L // freestanding, also in \libheader{utility}
@@ -1240,7 +1247,7 @@ Annex C Rationale Section C.5.2.4 --- Rounding and rounding constants.
 
 \indexlibrarymember{min_exponent}{numeric_limits}%
 \begin{itemdecl}
-static constexpr int  min_exponent;
+static constexpr int min_exponent;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -1260,7 +1267,7 @@ Meaningful for all floating-point types.
 
 \indexlibrarymember{min_exponent10}{numeric_limits}%
 \begin{itemdecl}
-static constexpr int  min_exponent10;
+static constexpr int min_exponent10;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -1278,7 +1285,7 @@ Meaningful for all floating-point types.
 
 \indexlibrarymember{max_exponent}{numeric_limits}%
 \begin{itemdecl}
-static constexpr int  max_exponent;
+static constexpr int max_exponent;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -1298,7 +1305,7 @@ Meaningful for all floating-point types.
 
 \indexlibrarymember{max_exponent10}{numeric_limits}%
 \begin{itemdecl}
-static constexpr int  max_exponent10;
+static constexpr int max_exponent10;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -1621,9 +1628,9 @@ namespace std {
     static constexpr int max_exponent   = +128;
     static constexpr int max_exponent10 = + 38;
 
-    static constexpr bool has_infinity             = true;
-    static constexpr bool has_quiet_NaN            = true;
-    static constexpr bool has_signaling_NaN        = true;
+    static constexpr bool has_infinity      = true;
+    static constexpr bool has_quiet_NaN     = true;
+    static constexpr bool has_signaling_NaN = true;
 
     static constexpr float infinity()      noexcept { return @\textit{value}@; }
     static constexpr float quiet_NaN()     noexcept { return @\textit{value}@; }
@@ -1878,6 +1885,34 @@ macros that specify limits of integer types.
 \indexlibraryglobal{uint_least64_t}%
 \indexlibraryglobal{uintmax_t}%
 \indexlibraryglobal{uintptr_t}%
+\indexlibraryglobal{INTN_MIN}%
+\indexlibraryglobal{INTN_MAX}%
+\indexlibraryglobal{UINTN_MAX}%
+\indexlibraryglobal{INT_FASTN_MIN}%
+\indexlibraryglobal{INT_FASTN_MAX}%
+\indexlibraryglobal{UINT_FASTN_MAX}%
+\indexlibraryglobal{INT_LEASTN_MIN}%
+\indexlibraryglobal{INT_LEASTN_MAX}%
+\indexlibraryglobal{UINT_LEASTN_MAX}%
+\indexlibraryglobal{INTMAX_MIN}%
+\indexlibraryglobal{INTMAX_MAX}%
+\indexlibraryglobal{UINTMAX_MAX}%
+\indexlibraryglobal{INTPTR_MIN}%
+\indexlibraryglobal{INTPTR_MAX}%
+\indexlibraryglobal{UINTPTR_MAX}%
+\indexlibraryglobal{PTRDIFF_MIN}%
+\indexlibraryglobal{PTRDIFF_MAX}%
+\indexlibraryglobal{SIZE_MAX}%
+\indexlibraryglobal{SIG_ATOMIC_MIN}%
+\indexlibraryglobal{SIG_ATOMIC_MAX}%
+\indexlibraryglobal{WCHAR_MAX}%
+\indexlibraryglobal{WCHAR_MIN}%
+\indexlibraryglobal{WINT_MIN}%
+\indexlibraryglobal{WINT_MAX}%
+\indexlibraryglobal{INTN_C}%
+\indexlibraryglobal{UINTN_C}%
+\indexlibraryglobal{INTMAX_C}%
+\indexlibraryglobal{UINTMAX_C}%
 \begin{codeblock}
 // all freestanding
 namespace std {
@@ -2941,7 +2976,7 @@ namespace std {
   class bad_alloc : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -2954,7 +2989,7 @@ exceptions by the implementation to report a failure to allocate storage.
 
 \indexlibrarymember{what}{bad_alloc}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -2972,7 +3007,7 @@ namespace std {
   class bad_array_new_length : public bad_alloc {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -2985,7 +3020,7 @@ greater than an \impldef{maximum size of an allocated object} limit\iref{expr.ne
 
 \indexlibrarymember{what}{bad_array_new_length}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3215,8 +3250,8 @@ namespace std {
     size_t hash_code() const noexcept;
     const char* name() const noexcept;
 
-    type_info(const type_info&) = delete;                   // cannot be copied
-    type_info& operator=(const type_info&) = delete;        // cannot be copied
+    type_info(const type_info&) = delete;
+    type_info& operator=(const type_info&) = delete;
   };
 }
 \end{codeblock}
@@ -3310,7 +3345,7 @@ namespace std {
   class bad_cast : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -3326,7 +3361,7 @@ expression\iref{expr.dynamic.cast}.
 
 \indexlibrarymember{what}{bad_cast}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3344,7 +3379,7 @@ namespace std {
   class bad_typeid : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -3360,7 +3395,7 @@ expression\iref{expr.typeid}.
 
 \indexlibrarymember{what}{bad_typeid}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3775,16 +3810,16 @@ namespace std {
   terminate_handler set_terminate(terminate_handler f) noexcept;
   [[noreturn]] void terminate() noexcept;
 
-  int uncaught_exceptions() noexcept;
+  constexpr int uncaught_exceptions() noexcept;
 
   using exception_ptr = @\unspec@;
 
-  exception_ptr current_exception() noexcept;
-  [[noreturn]] void rethrow_exception(exception_ptr p);
-  template<class E> exception_ptr make_exception_ptr(E e) noexcept;
+  constexpr exception_ptr current_exception() noexcept;
+  [[noreturn]] constexpr void rethrow_exception(exception_ptr p);
+  template<class E> constexpr exception_ptr make_exception_ptr(E e) noexcept;
 
-  template<class T> [[noreturn]] void throw_with_nested(T&& t);
-  template<class E> void rethrow_if_nested(const E& e);
+  template<class T> [[noreturn]] constexpr void throw_with_nested(T&& t);
+  template<class E> constexpr void rethrow_if_nested(const E& e);
 }
 \end{codeblock}
 
@@ -3796,11 +3831,11 @@ namespace std {
 namespace std {
   class exception {
   public:
-    exception() noexcept;
-    exception(const exception&) noexcept;
-    exception& operator=(const exception&) noexcept;
-    virtual ~exception();
-    virtual const char* what() const noexcept;
+    constexpr exception() noexcept;
+    constexpr exception(const exception&) noexcept;
+    constexpr exception& operator=(const exception&) noexcept;
+    constexpr virtual ~exception();
+    constexpr virtual const char* what() const noexcept;
   };
 }
 \end{codeblock}
@@ -3833,8 +3868,8 @@ constraints specified for \tcode{exception::what()} (see below).
 \indexlibraryctor{exception}%
 \indexlibrarymember{operator=}{exception}%
 \begin{itemdecl}
-exception(const exception& rhs) noexcept;
-exception& operator=(const exception& rhs) noexcept;
+constexpr exception(const exception& rhs) noexcept;
+constexpr exception& operator=(const exception& rhs) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3846,7 +3881,7 @@ then the value of the expression \tcode{strcmp(what(), rhs.what())} shall equal 
 
 \indexlibrarydtor{exception}%
 \begin{itemdecl}
-virtual ~exception();
+constexpr virtual ~exception();
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3858,13 +3893,15 @@ Destroys an object of class
 
 \indexlibrarymember{what}{exception}%
 \begin{itemdecl}
-virtual const char* what() const noexcept;
+constexpr virtual const char* what() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-An \impldef{return value of \tcode{exception::what}} \ntbs{}.
+An \impldef{return value of \tcode{exception::what}} \ntbs{},
+which during constant evaluation is encoded with
+the ordinary literal encoding\iref{lex.ccon}.
 
 \pnum
 \remarks
@@ -3885,7 +3922,7 @@ namespace std {
   class bad_exception : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -3900,7 +3937,7 @@ when the currently active exception object fails to copy.
 
 \indexlibrarymember{what}{bad_exception}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4007,13 +4044,13 @@ May also be called directly by the program.
 
 \indexlibraryglobal{uncaught_exceptions}%
 \begin{itemdecl}
-int uncaught_exceptions() noexcept;
+constexpr int uncaught_exceptions() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-The number of uncaught exceptions\iref{except.uncaught}.
+The number of uncaught exceptions\iref{except.throw} in the current thread.
 
 \pnum
 \remarks
@@ -4068,11 +4105,14 @@ concurrent access to that rethrown exception object can introduce a data race.
 Changes in the number of \tcode{exception_ptr} objects that refer to a
 particular exception do not introduce a data race.
 \end{note}
+
+\pnum
+All member functions are marked \tcode{constexpr}.
 \end{itemdescr}
 
 \indexlibraryglobal{current_exception}%
 \begin{itemdecl}
-exception_ptr current_exception() noexcept;
+constexpr exception_ptr current_exception() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4103,7 +4143,7 @@ to avoid infinite recursion.
 
 \indexlibraryglobal{rethrow_exception}%
 \begin{itemdecl}
-[[noreturn]] void rethrow_exception(exception_ptr p);
+[[noreturn]] constexpr void rethrow_exception(exception_ptr p);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4131,7 +4171,7 @@ otherwise, throws $u$.
 
 \indexlibraryglobal{make_exception_ptr}%
 \begin{itemdecl}
-template<class E> exception_ptr make_exception_ptr(E e) noexcept;
+template<class E> constexpr exception_ptr make_exception_ptr(E e) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4160,18 +4200,18 @@ efficiency reasons.
 namespace std {
   class nested_exception {
   public:
-    nested_exception() noexcept;
-    nested_exception(const nested_exception&) noexcept = default;
-    nested_exception& operator=(const nested_exception&) noexcept = default;
-    virtual ~nested_exception() = default;
+    constexpr nested_exception() noexcept;
+    constexpr nested_exception(const nested_exception&) noexcept = default;
+    constexpr nested_exception& operator=(const nested_exception&) noexcept = default;
+    constexpr virtual ~nested_exception() = default;
 
     // access functions
-    [[noreturn]] void rethrow_nested() const;
-    exception_ptr nested_ptr() const noexcept;
+    [[noreturn]] constexpr void rethrow_nested() const;
+    constexpr exception_ptr nested_ptr() const noexcept;
   };
 
-  template<class T> [[noreturn]] void throw_with_nested(T&& t);
-  template<class E> void rethrow_if_nested(const E& e);
+  template<class T> [[noreturn]] constexpr void throw_with_nested(T&& t);
+  template<class E> constexpr void rethrow_if_nested(const E& e);
 }
 \end{codeblock}
 
@@ -4188,7 +4228,7 @@ polymorphic class. Its presence can be tested for with \keyword{dynamic_cast}.
 
 \indexlibraryctor{nested_exception}%
 \begin{itemdecl}
-nested_exception() noexcept;
+constexpr nested_exception() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4199,7 +4239,7 @@ The constructor calls \tcode{current_exception()} and stores the returned value.
 
 \indexlibrarymember{rethrow_nested}{nested_exception}%
 \begin{itemdecl}
-[[noreturn]] void rethrow_nested() const;
+[[noreturn]] constexpr void rethrow_nested() const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4211,7 +4251,7 @@ Otherwise, it throws the stored exception captured by \tcode{*this}.
 
 \indexlibrarymember{nested_ptr}{nested_exception}%
 \begin{itemdecl}
-exception_ptr nested_ptr() const noexcept;
+constexpr exception_ptr nested_ptr() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4222,7 +4262,7 @@ The stored exception captured by this \tcode{nested_exception} object.
 
 \indexlibrarymember{throw_with_nested}{nested_exception}%
 \begin{itemdecl}
-template<class T> [[noreturn]] void throw_with_nested(T&& t);
+template<class T> [[noreturn]] constexpr void throw_with_nested(T&& t);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4245,7 +4285,7 @@ and constructed from \tcode{std::forward<T>(t)}, otherwise
 
 \indexlibrarymember{rethrow_if_nested}{nested_exception}%
 \begin{itemdecl}
-template<class E> void rethrow_if_nested(const E& e);
+template<class E> constexpr void rethrow_if_nested(const E& e);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5295,7 +5335,8 @@ is expression-equivalent\iref{defns.expression.equivalent} to:
   Otherwise, if the expressions
   \tcode{E == F}, \tcode{E < F}, and \tcode{F < E}
   are all well-formed and
-  each of \tcode{decltype(E == F)} and \tcode{decltype(E < F)} models
+  each of \tcode{decltype(E == F)}, \tcode{decltype(E < F)}, and
+  \tcode{decltype(F < E)} models
   \exposconcept{boolean-testable},
 \begin{codeblock}
 E == F ? partial_ordering::equivalent :
@@ -5952,21 +5993,16 @@ function.
 \rSec2[cstdarg.syn]{Header \tcode{<cstdarg>} synopsis}
 
 \indexheader{cstdarg}%
-\indexlibraryglobal{va_list}%
-\indexlibraryglobal{va_start}%
-\indexlibraryglobal{va_copy}%
-\indexlibraryglobal{va_end}%
-\indexlibraryglobal{va_arg}%
 \begin{codeblock}
 // all freestanding
 namespace std {
-  using va_list = @\seebelow@;
+  using @\libglobal{va_list}@ = @\seebelow@;
 }
 
-#define va_arg(V, P) @\seebelow@
-#define va_copy(VDST, VSRC) @\seebelow@
-#define va_end(V) @\seebelow@
-#define va_start(V, P) @\seebelow@
+#define @\libmacro{va_arg}@(V, P) @\seebelow@
+#define @\libmacro{va_copy}@(VDST, VSRC) @\seebelow@
+#define @\libmacro{va_end}@(V) @\seebelow@
+#define @\libmacro{va_start}@(V, P) @\seebelow@
 \end{codeblock}
 
 \pnum
@@ -5978,8 +6014,7 @@ In lieu of the default argument promotions specified in \IsoC{} 6.5.2.2,
 the definition in~\ref{expr.call} applies.
 \item
 The restrictions that C places on the second parameter to the
-\indexlibraryglobal{va_start}%
-\tcode{va_start} macro in header \libheader{stdarg.h}
+\libmacro{va_start} macro in header \libheader{stdarg.h}
 are different in this document.
 The parameter
 \tcode{parmN}
@@ -6217,16 +6252,18 @@ void f(bool b[], size_t n);
 \libheader{stdalign.h} \\
 \libheaderdef{stdarg.h} \\
 \libheader{stdatomic.h} \\
+\libheader{stdbit.h} \\
 \libheader{stdbool.h} \\
-\libheaderdef{stddef.h} \\
 \columnbreak
+\libheader{stdckdint.h} \\
+\libheaderdef{stddef.h} \\
 \libheaderdef{stdint.h} \\
 \libheaderdef{stdio.h} \\
 \libheaderdef{stdlib.h} \\
 \libheaderdef{string.h} \\
+\columnbreak
 \libheader{tgmath.h} \\
 \libheaderdef{time.h} \\
-\columnbreak
 \libheaderdef{uchar.h} \\
 \libheaderdef{wchar.h} \\
 \libheaderdef{wctype.h} \\
@@ -6284,7 +6321,6 @@ define a macro named \tcode{alignas}.
 \rSec2[stdbool.h.syn]{Header \tcode{<stdbool.h>} synopsis}
 
 \indexheader{stdbool.h}%
-\indexhdr{stdbool.h}%
 \pnum
 The contents of the \Cpp{} header \libheader{stdbool.h} are the same as the C
 standard library header \libheader{stdbool.h}, with the following changes:
@@ -6330,7 +6366,9 @@ other than
 \libheaderref{iso646.h},
 \libheaderref{stdalign.h},\newline
 \libheaderref{stdatomic.h},
-\libheaderref{stdbool.h}, and
+\libheaderref{stdbit.h},
+\libheaderref{stdbool.h},
+\libheaderref{stdckdint.h}, and\newline
 \libheaderref{tgmath.h},
 each of
 which has a name of the form

@@ -38,28 +38,9 @@ as long as these data structures have iterator types
 satisfying the assumptions on the algorithms.
 
 \pnum
-The entities defined in the \tcode{std::ranges} namespace in this Clause
-are not found by argument-dependent name lookup\iref{basic.lookup.argdep}.
-When found by unqualified\iref{basic.lookup.unqual} name lookup
-for the \grammarterm{postfix-expression} in a function call\iref{expr.call},
-they inhibit argument-dependent name lookup.
-
-\begin{example}
-\begin{codeblock}
-void foo() {
-  using namespace std::ranges;
-  std::vector<int> vec{1,2,3};
-  find(begin(vec), end(vec), 2);        // \#1
-}
-\end{codeblock}
-The function call expression at \tcode{\#1} invokes \tcode{std::ranges::find},
-not \tcode{std::find}, despite that
-(a) the iterator type returned from \tcode{begin(vec)} and \tcode{end(vec)}
-may be associated with namespace \tcode{std} and
-(b) \tcode{std::find} is more specialized\iref{temp.func.order} than
-\tcode{std::ranges::find} since the former requires
-its first two parameters to have the same type.
-\end{example}
+The entities defined in the \tcode{std::ranges} namespace in this Clause and
+specified as function templates are
+algorithm function objects\iref{alg.func.obj}.
 
 \pnum
 For purposes of determining the existence of data races,
@@ -1463,7 +1444,7 @@ namespace std {
     template<@\libconcept{bidirectional_iterator}@ I, @\libconcept{sentinel_for}@<I> S,
              @\exposconcept{indirectly-binary-right-foldable}@<iter_value_t<I>, I> F>
       requires @\libconcept{constructible_from}@<iter_value_t<I>, iter_reference_t<I>>
-    constexpr auto fold_right_last(I first, S last, F f);
+      constexpr auto fold_right_last(I first, S last, F f);
 
     template<@\libconcept{bidirectional_range}@ R,
              @\exposconcept{indirectly-binary-right-foldable}@<range_value_t<R>, iterator_t<R>> F>
@@ -1697,14 +1678,14 @@ namespace std {
              @\libconcept{weakly_incrementable}@ O, @\libconcept{copy_constructible}@ F, class Proj1 = identity,
              class Proj2 = identity>
       requires @\libconcept{indirectly_writable}@<O, indirect_result_t<F&, projected<I1, Proj1>,
-                                             projected<I2, Proj2>>>
+                                   projected<I2, Proj2>>>
       constexpr binary_transform_result<I1, I2, O>
         transform(I1 first1, S1 last1, I2 first2, S2 last2, O result,
                   F binary_op, Proj1 proj1 = {}, Proj2 proj2 = {});
     template<@\libconcept{input_range}@ R1, @\libconcept{input_range}@ R2, @\libconcept{weakly_incrementable}@ O,
              @\libconcept{copy_constructible}@ F, class Proj1 = identity, class Proj2 = identity>
       requires @\libconcept{indirectly_writable}@<O, indirect_result_t<F&, projected<iterator_t<R1>, Proj1>,
-                                             projected<iterator_t<R2>, Proj2>>>
+                                   projected<iterator_t<R2>, Proj2>>>
       constexpr binary_transform_result<borrowed_iterator_t<R1>, borrowed_iterator_t<R2>, O>
         transform(R1&& r1, R2&& r2, O result,
                   F binary_op, Proj1 proj1 = {}, Proj2 proj2 = {});
@@ -2219,7 +2200,7 @@ namespace std {
     constexpr void stable_sort(RandomAccessIterator first, RandomAccessIterator last);
   template<class RandomAccessIterator, class Compare>
     constexpr void stable_sort(RandomAccessIterator first, RandomAccessIterator last,
-                     Compare comp);
+                               Compare comp);
   template<class ExecutionPolicy, class RandomAccessIterator>
     void stable_sort(ExecutionPolicy&& exec,                    // see \ref{algorithms.parallel.overloads}
                      RandomAccessIterator first, RandomAccessIterator last);
@@ -2715,7 +2696,7 @@ namespace std {
                 OutputIterator result);
   template<class InputIterator1, class InputIterator2, class OutputIterator, class Compare>
     constexpr OutputIterator
-                set_union(InputIterator1 first1, InputIterator1 last1,
+      set_union(InputIterator1 first1, InputIterator1 last1,
                 InputIterator2 first2, InputIterator2 last2,
                 OutputIterator result, Compare comp);
   template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
@@ -4132,7 +4113,7 @@ if no such iterator is found.
 
 \pnum
 \complexity
-At most \tcode{(last1-first1) * (last2-first2)} applications
+At most \tcode{(last1 - first1) * (last2 - first2)} applications
 of the corresponding predicate and any projections.
 \end{itemdescr}
 
@@ -4625,7 +4606,7 @@ template<class ExecutionPolicy, class ForwardIterator1, class ForwardIterator2,
 \begin{itemdescr}
 \pnum
 \returns
-The first iterator \tcode{i} in the range \range{first1}{last1 - (last2-first2)}
+The first iterator \tcode{i} in the range \range{first1}{last1 - (last2 - first2)}
 such that
 for every non-negative integer \tcode{n} less than \tcode{last2 - first2}
 the following corresponding conditions hold:
@@ -4724,9 +4705,9 @@ and \tcode{*(i + n) == value} otherwise.
 
 \pnum
 \returns
-The first iterator \tcode{i} in the range \range{first}{last-count}
+The first iterator \tcode{i} in the range \range{first}{last - count}
 such that for every non-negative integer \tcode{n} less than \tcode{count}
-the condition $E$ is true.
+the condition $E$ is \tcode{true}.
 Returns \tcode{last} if no such iterator is found.
 
 \pnum
@@ -6279,7 +6260,7 @@ let $E$ be
 \expects
 \begin{itemize}
 \item
-  The ranges \range{first}{last} and \range{result}{result+(last-first)}
+  The ranges \range{first}{last} and \range{result}{result + (last - first)}
   do not overlap.
 \item
   For the overloads in namespace \tcode{std}:
@@ -9472,7 +9453,7 @@ of the first corresponding pair of elements that are not equivalent.
 \tcode{ranges::lexicographical_compare(I1, S1, I2, S2, Comp, Proj1, Proj2)}
 can be implemented as:
 \begin{codeblock}
-for ( ; first1 != last1 && first2 != last2 ; ++first1, (void) ++first2) {
+for (; first1 != last1 && first2 != last2; ++first1, (void)++first2) {
   if (invoke(comp, invoke(proj1, *first1), invoke(proj2, *first2))) return true;
   if (invoke(comp, invoke(proj2, *first2), invoke(proj1, *first1))) return false;
 }
@@ -11157,13 +11138,29 @@ are destroyed in an unspecified order
 before allowing the exception to propagate.
 
 \pnum
+\begin{note}
+When new objects are created by
+the algorithms specified in \ref{specialized.algorithms},
+the lifetime ends for any existing objects
+(including potentially-overlapping subobjects \ref{intro.object})
+in storage that is reused \ref{basic.life}.
+\end{note}
+
+\pnum
 Some algorithms specified in \ref{specialized.algorithms}
-make use of the exposition-only function template
-\tcode{\placeholdernc{voidify}}:
+make use of the following exposition-only function templates:
 \begin{codeblock}
 template<class T>
   constexpr void* @\placeholdernc{voidify}@(T& obj) noexcept {
     return addressof(obj);
+  }
+
+template<class I>
+  decltype(auto) @\exposid{deref-move}@(I& it) {
+    if constexpr (is_lvalue_reference_v<decltype(*it)>)
+      return std::move(*it);
+    else
+      return *it;
   }
 \end{codeblock}
 
@@ -11258,7 +11255,8 @@ concept @\defexposconcept{nothrow-forward-range}@ = // \expos
 \indexlibraryglobal{uninitialized_default_construct}%
 \begin{itemdecl}
 template<class NoThrowForwardIterator>
-  void uninitialized_default_construct(NoThrowForwardIterator first, NoThrowForwardIterator last);
+  constexpr void uninitialized_default_construct(NoThrowForwardIterator first,
+                                                 NoThrowForwardIterator last);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11277,10 +11275,10 @@ for (; first != last; ++first)
 namespace ranges {
   template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S>
     requires @\libconcept{default_initializable}@<iter_value_t<I>>
-    I uninitialized_default_construct(I first, S last);
+    constexpr I uninitialized_default_construct(I first, S last);
   template<@\exposconcept{nothrow-forward-range}@ R>
     requires @\libconcept{default_initializable}@<range_value_t<R>>
-    borrowed_iterator_t<R> uninitialized_default_construct(R&& r);
+    constexpr borrowed_iterator_t<R> uninitialized_default_construct(R&& r);
 }
 \end{itemdecl}
 
@@ -11298,7 +11296,8 @@ return first;
 \indexlibraryglobal{uninitialized_default_construct_n}%
 \begin{itemdecl}
 template<class NoThrowForwardIterator, class Size>
-  NoThrowForwardIterator uninitialized_default_construct_n(NoThrowForwardIterator first, Size n);
+  constexpr NoThrowForwardIterator
+    uninitialized_default_construct_n(NoThrowForwardIterator first, Size n);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11318,7 +11317,7 @@ return first;
 namespace ranges {
   template<@\exposconcept{nothrow-forward-iterator}@ I>
     requires @\libconcept{default_initializable}@<iter_value_t<I>>
-    I uninitialized_default_construct_n(I first, iter_difference_t<I> n);
+    constexpr I uninitialized_default_construct_n(I first, iter_difference_t<I> n);
 }
 \end{itemdecl}
 
@@ -11337,7 +11336,8 @@ return uninitialized_default_construct(counted_iterator(first, n),
 \indexlibraryglobal{uninitialized_value_construct}%
 \begin{itemdecl}
 template<class NoThrowForwardIterator>
-  void uninitialized_value_construct(NoThrowForwardIterator first, NoThrowForwardIterator last);
+  constexpr void uninitialized_value_construct(NoThrowForwardIterator first,
+                                               NoThrowForwardIterator last);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11356,10 +11356,10 @@ for (; first != last; ++first)
 namespace ranges {
   template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S>
     requires @\libconcept{default_initializable}@<iter_value_t<I>>
-    I uninitialized_value_construct(I first, S last);
+    constexpr I uninitialized_value_construct(I first, S last);
   template<@\exposconcept{nothrow-forward-range}@ R>
     requires @\libconcept{default_initializable}@<range_value_t<R>>
-    borrowed_iterator_t<R> uninitialized_value_construct(R&& r);
+    constexpr borrowed_iterator_t<R> uninitialized_value_construct(R&& r);
 }
 \end{itemdecl}
 
@@ -11377,7 +11377,8 @@ return first;
 \indexlibraryglobal{uninitialized_value_construct_n}%
 \begin{itemdecl}
 template<class NoThrowForwardIterator, class Size>
-  NoThrowForwardIterator uninitialized_value_construct_n(NoThrowForwardIterator first, Size n);
+  constexpr NoThrowForwardIterator
+    uninitialized_value_construct_n(NoThrowForwardIterator first, Size n);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11397,7 +11398,7 @@ return first;
 namespace ranges {
   template<@\exposconcept{nothrow-forward-iterator}@ I>
     requires @\libconcept{default_initializable}@<iter_value_t<I>>
-    I uninitialized_value_construct_n(I first, iter_difference_t<I> n);
+    constexpr I uninitialized_value_construct_n(I first, iter_difference_t<I> n);
 }
 \end{itemdecl}
 
@@ -11416,8 +11417,8 @@ return uninitialized_value_construct(counted_iterator(first, n),
 \indexlibraryglobal{uninitialized_copy}%
 \begin{itemdecl}
 template<class InputIterator, class NoThrowForwardIterator>
-  NoThrowForwardIterator uninitialized_copy(InputIterator first, InputIterator last,
-                                            NoThrowForwardIterator result);
+  constexpr NoThrowForwardIterator uninitialized_copy(InputIterator first, InputIterator last,
+                                                      NoThrowForwardIterator result);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11429,7 +11430,7 @@ template<class InputIterator, class NoThrowForwardIterator>
 \effects
 Equivalent to:
 \begin{codeblock}
-for (; first != last; ++result, (void) ++first)
+for (; first != last; ++result, (void)++first)
   ::new (@\placeholdernc{voidify}@(*result))
     typename iterator_traits<NoThrowForwardIterator>::value_type(*first);
 \end{codeblock}
@@ -11445,11 +11446,11 @@ namespace ranges {
   template<@\libconcept{input_iterator}@ I, @\libconcept{sentinel_for}@<I> S1,
            @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S2>
     requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
-    uninitialized_copy_result<I, O>
+    constexpr uninitialized_copy_result<I, O>
       uninitialized_copy(I ifirst, S1 ilast, O ofirst, S2 olast);
   template<@\libconcept{input_range}@ IR, @\exposconcept{nothrow-forward-range}@ OR>
     requires @\libconcept{constructible_from}@<range_value_t<OR>, range_reference_t<IR>>
-    uninitialized_copy_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
+    constexpr uninitialized_copy_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
       uninitialized_copy(IR&& in_range, OR&& out_range);
 }
 \end{itemdecl}
@@ -11472,8 +11473,8 @@ return {std::move(ifirst), ofirst};
 \indexlibraryglobal{uninitialized_copy_n}%
 \begin{itemdecl}
 template<class InputIterator, class Size, class NoThrowForwardIterator>
-  NoThrowForwardIterator uninitialized_copy_n(InputIterator first, Size n,
-                                              NoThrowForwardIterator result);
+  constexpr NoThrowForwardIterator uninitialized_copy_n(InputIterator first, Size n,
+                                                        NoThrowForwardIterator result);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11485,7 +11486,7 @@ template<class InputIterator, class Size, class NoThrowForwardIterator>
 \effects
 Equivalent to:
 \begin{codeblock}
-for ( ; n > 0; ++result, (void) ++first, --n)
+for (; n > 0; ++result, (void)++first, --n)
   ::new (@\placeholdernc{voidify}@(*result))
     typename iterator_traits<NoThrowForwardIterator>::value_type(*first);
 \end{codeblock}
@@ -11500,7 +11501,7 @@ for ( ; n > 0; ++result, (void) ++first, --n)
 namespace ranges {
   template<@\libconcept{input_iterator}@ I, @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S>
     requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
-    uninitialized_copy_n_result<I, O>
+    constexpr uninitialized_copy_n_result<I, O>
       uninitialized_copy_n(I ifirst, iter_difference_t<I> n, O ofirst, S olast);
 }
 \end{itemdecl}
@@ -11526,8 +11527,8 @@ return {std::move(t.in).base(), t.out};
 \indexlibraryglobal{uninitialized_move}%
 \begin{itemdecl}
 template<class InputIterator, class NoThrowForwardIterator>
-  NoThrowForwardIterator uninitialized_move(InputIterator first, InputIterator last,
-                                            NoThrowForwardIterator result);
+  constexpr NoThrowForwardIterator uninitialized_move(InputIterator first, InputIterator last,
+                                                      NoThrowForwardIterator result);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11541,7 +11542,7 @@ Equivalent to:
 \begin{codeblock}
 for (; first != last; (void)++result, ++first)
   ::new (@\placeholdernc{voidify}@(*result))
-    typename iterator_traits<NoThrowForwardIterator>::value_type(std::move(*first));
+    typename iterator_traits<NoThrowForwardIterator>::value_type(@\exposid{deref-move}@(first));
 return result;
 \end{codeblock}
 \end{itemdescr}
@@ -11552,11 +11553,11 @@ namespace ranges {
   template<@\libconcept{input_iterator}@ I, @\libconcept{sentinel_for}@<I> S1,
            @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S2>
     requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
-    uninitialized_move_result<I, O>
+    constexpr uninitialized_move_result<I, O>
       uninitialized_move(I ifirst, S1 ilast, O ofirst, S2 olast);
   template<@\libconcept{input_range}@ IR, @\exposconcept{nothrow-forward-range}@ OR>
     requires @\libconcept{constructible_from}@<range_value_t<OR>, range_rvalue_reference_t<IR>>
-    uninitialized_move_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
+    constexpr uninitialized_move_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
       uninitialized_move(IR&& in_range, OR&& out_range);
 }
 \end{itemdecl}
@@ -11586,7 +11587,7 @@ left in a valid, but unspecified state.
 \indexlibraryglobal{uninitialized_move_n}%
 \begin{itemdecl}
 template<class InputIterator, class Size, class NoThrowForwardIterator>
-  pair<InputIterator, NoThrowForwardIterator>
+  constexpr pair<InputIterator, NoThrowForwardIterator>
     uninitialized_move_n(InputIterator first, Size n, NoThrowForwardIterator result);
 \end{itemdecl}
 
@@ -11599,9 +11600,9 @@ template<class InputIterator, class Size, class NoThrowForwardIterator>
 \effects
 Equivalent to:
 \begin{codeblock}
-for (; n > 0; ++result, (void) ++first, --n)
+for (; n > 0; ++result, (void)++first, --n)
   ::new (@\placeholdernc{voidify}@(*result))
-    typename iterator_traits<NoThrowForwardIterator>::value_type(std::move(*first));
+    typename iterator_traits<NoThrowForwardIterator>::value_type(@\exposid{deref-move}@(first));
 return {first, result};
 \end{codeblock}
 \end{itemdescr}
@@ -11611,7 +11612,7 @@ return {first, result};
 namespace ranges {
   template<@\libconcept{input_iterator}@ I, @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S>
     requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
-    uninitialized_move_n_result<I, O>
+    constexpr uninitialized_move_n_result<I, O>
       uninitialized_move_n(I ifirst, iter_difference_t<I> n, O ofirst, S olast);
 }
 \end{itemdecl}
@@ -11643,7 +11644,8 @@ are left in a valid but unspecified state.
 \indexlibraryglobal{uninitialized_fill}%
 \begin{itemdecl}
 template<class NoThrowForwardIterator, class T>
-  void uninitialized_fill(NoThrowForwardIterator first, NoThrowForwardIterator last, const T& x);
+  constexpr void uninitialized_fill(NoThrowForwardIterator first,
+                                    NoThrowForwardIterator last, const T& x);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11662,10 +11664,10 @@ for (; first != last; ++first)
 namespace ranges {
   template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S, class T>
     requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
-    I uninitialized_fill(I first, S last, const T& x);
+    constexpr I uninitialized_fill(I first, S last, const T& x);
   template<@\exposconcept{nothrow-forward-range}@ R, class T>
     requires @\libconcept{constructible_from}@<range_value_t<R>, const T&>
-    borrowed_iterator_t<R> uninitialized_fill(R&& r, const T& x);
+    constexpr borrowed_iterator_t<R> uninitialized_fill(R&& r, const T& x);
 }
 \end{itemdecl}
 
@@ -11683,7 +11685,8 @@ return first;
 \indexlibraryglobal{uninitialized_fill_n}%
 \begin{itemdecl}
 template<class NoThrowForwardIterator, class Size, class T>
-  NoThrowForwardIterator uninitialized_fill_n(NoThrowForwardIterator first, Size n, const T& x);
+  constexpr NoThrowForwardIterator
+    uninitialized_fill_n(NoThrowForwardIterator first, Size n, const T& x);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11703,7 +11706,7 @@ return first;
 namespace ranges {
   template<@\exposconcept{nothrow-forward-iterator}@ I, class T>
     requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
-    I uninitialized_fill_n(I first, iter_difference_t<I> n, const T& x);
+    constexpr I uninitialized_fill_n(I first, iter_difference_t<I> n, const T& x);
 }
 \end{itemdecl}
 
@@ -11732,14 +11735,22 @@ namespace ranges {
 \begin{itemdescr}
 \pnum
 \constraints
-The expression \tcode{::new (declval<void*>()) T(declval<Args>()...)}
+\tcode{is_unbounded_array_v<T>} is \tcode{false}.
+The expression \tcode{::new (declval<void*>()) T(\linebreak{}declval<Args>()...)}
 is well-formed when treated as an unevaluated operand\iref{term.unevaluated.operand}.
+
+\pnum
+\mandates
+If \tcode{is_array_v<T>} is \tcode{true}, \tcode{sizeof...(Args)} is zero.
 
 \pnum
 \effects
 Equivalent to:
 \begin{codeblock}
-return ::new (@\placeholdernc{voidify}@(*location)) T(std::forward<Args>(args)...);
+if constexpr (is_array_v<T>)
+  return ::new (@\placeholdernc{voidify}@(*location)) T[1]();
+else
+  return ::new (@\placeholdernc{voidify}@(*location)) T(std::forward<Args>(args)...);
 \end{codeblock}
 \end{itemdescr}
 
@@ -11910,7 +11921,8 @@ return generate_random(subrange<O, S>(std::move(first), last), g);
 \begin{itemdecl}
 template<class R, class G, class D>
   requires @\libconcept{output_range}@<R, invoke_result_t<D&, G&>> && @\libconcept{invocable}@<D&, G&> &&
-           @\libconcept{uniform_random_bit_generator}@<remove_cvref_t<G>>
+           @\libconcept{uniform_random_bit_generator}@<remove_cvref_t<G>> &&
+           is_arithmetic_v<invoke_result_t<D&, G&>>
 constexpr borrowed_iterator_t<R> ranges::generate_random(R&& r, G&& g, D&& d);
 \end{itemdecl}
 
@@ -11942,7 +11954,7 @@ ranges::generate(std::forward<R>(r), [&d, &g] { return invoke(d, g); });
 
 \pnum
 \returns
-\tcode{ranges::end(r)}
+\tcode{ranges::end(r)}.
 
 \pnum
 \remarks
@@ -11959,7 +11971,8 @@ as produced by invocation of \tcode{invoke(d, g)}.
 
 \begin{itemdecl}
 template<class G, class D, @\libconcept{output_iterator}@<invoke_result_t<D&, G&>> O, @\libconcept{sentinel_for}@<O> S>
-  requires @\libconcept{invocable}@<D&, G&> && @\libconcept{uniform_random_bit_generator}@<remove_cvref_t<G>>
+  requires @\libconcept{invocable}@<D&, G&> && @\libconcept{uniform_random_bit_generator}@<remove_cvref_t<G>> &&
+           is_arithmetic_v<invoke_result_t<D&, G&>>
 constexpr O ranges::generate_random(O first, S last, G&& g, D&& d);
 \end{itemdecl}
 

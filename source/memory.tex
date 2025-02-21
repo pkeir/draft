@@ -83,6 +83,8 @@ namespace std {
   void* align(size_t alignment, size_t size, void*& ptr, size_t& space);            // freestanding
   template<size_t N, class T>
     constexpr T* assume_aligned(T* ptr);                                            // freestanding
+  template<size_t Alignment, class T>
+    bool is_sufficiently_aligned(T* ptr);
 
   // \ref{obj.lifetime}, explicit lifetime management
   template<class T>
@@ -185,14 +187,14 @@ namespace std {
     concept @\exposconcept{nothrow-forward-range}@ = @\seebelow@;     // \expos
 
   template<class NoThrowForwardIterator>
-    void uninitialized_default_construct(NoThrowForwardIterator first,              // freestanding
-                                         NoThrowForwardIterator last);
+    constexpr void uninitialized_default_construct(NoThrowForwardIterator first,    // freestanding
+                                                   NoThrowForwardIterator last);
   template<class ExecutionPolicy, class NoThrowForwardIterator>
     void uninitialized_default_construct(ExecutionPolicy&& exec,                    // see \ref{algorithms.parallel.overloads}
                                          NoThrowForwardIterator first,
                                          NoThrowForwardIterator last);
   template<class NoThrowForwardIterator, class Size>
-    NoThrowForwardIterator
+    constexpr NoThrowForwardIterator
       uninitialized_default_construct_n(NoThrowForwardIterator first, Size n);      // freestanding
   template<class ExecutionPolicy, class NoThrowForwardIterator, class Size>
     NoThrowForwardIterator
@@ -202,25 +204,26 @@ namespace std {
   namespace ranges {
     template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S>
       requires @\libconcept{default_initializable}@<iter_value_t<I>>
-        I uninitialized_default_construct(I first, S last);                         // freestanding
+        constexpr I uninitialized_default_construct(I first, S last);               // freestanding
     template<@\exposconcept{nothrow-forward-range}@ R>
       requires @\libconcept{default_initializable}@<range_value_t<R>>
-        borrowed_iterator_t<R> uninitialized_default_construct(R&& r);              // freestanding
+        constexpr borrowed_iterator_t<R> uninitialized_default_construct(R&& r);    // freestanding
 
     template<@\exposconcept{nothrow-forward-iterator}@ I>
       requires @\libconcept{default_initializable}@<iter_value_t<I>>
-        I uninitialized_default_construct_n(I first, iter_difference_t<I> n);       // freestanding
+        constexpr I uninitialized_default_construct_n(I first,                      // freestanding
+                                                      iter_difference_t<I> n);
   }
 
   template<class NoThrowForwardIterator>
-    void uninitialized_value_construct(NoThrowForwardIterator first,                // freestanding
-                                       NoThrowForwardIterator last);
+    constexpr void uninitialized_value_construct(NoThrowForwardIterator first,      // freestanding
+                                                 NoThrowForwardIterator last);
   template<class ExecutionPolicy, class NoThrowForwardIterator>
     void uninitialized_value_construct(ExecutionPolicy&& exec,                      // see \ref{algorithms.parallel.overloads}
                                        NoThrowForwardIterator first,
                                        NoThrowForwardIterator last);
   template<class NoThrowForwardIterator, class Size>
-    NoThrowForwardIterator
+    constexpr NoThrowForwardIterator
       uninitialized_value_construct_n(NoThrowForwardIterator first, Size n);        // freestanding
   template<class ExecutionPolicy, class NoThrowForwardIterator, class Size>
     NoThrowForwardIterator
@@ -230,27 +233,29 @@ namespace std {
   namespace ranges {
     template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S>
       requires @\libconcept{default_initializable}@<iter_value_t<I>>
-        I uninitialized_value_construct(I first, S last);                           // freestanding
+        constexpr I uninitialized_value_construct(I first, S last);                 // freestanding
     template<@\exposconcept{nothrow-forward-range}@ R>
       requires @\libconcept{default_initializable}@<range_value_t<R>>
-        borrowed_iterator_t<R> uninitialized_value_construct(R&& r);                // freestanding
+        constexpr borrowed_iterator_t<R> uninitialized_value_construct(R&& r);      // freestanding
 
     template<@\exposconcept{nothrow-forward-iterator}@ I>
       requires @\libconcept{default_initializable}@<iter_value_t<I>>
-        I uninitialized_value_construct_n(I first, iter_difference_t<I> n);         // freestanding
+        constexpr I uninitialized_value_construct_n(I first,                        // freestanding
+                                                    iter_difference_t<I> n);
   }
 
   template<class InputIterator, class NoThrowForwardIterator>
-    NoThrowForwardIterator uninitialized_copy(InputIterator first,                  // freestanding
-                                              InputIterator last,
-                                              NoThrowForwardIterator result);
+    constexpr NoThrowForwardIterator uninitialized_copy(InputIterator first,        // freestanding
+                                                        InputIterator last,
+                                                        NoThrowForwardIterator result);
   template<class ExecutionPolicy, class ForwardIterator, class NoThrowForwardIterator>
     NoThrowForwardIterator uninitialized_copy(ExecutionPolicy&& exec,               // see \ref{algorithms.parallel.overloads}
                                               ForwardIterator first, ForwardIterator last,
                                               NoThrowForwardIterator result);
   template<class InputIterator, class Size, class NoThrowForwardIterator>
-    NoThrowForwardIterator uninitialized_copy_n(InputIterator first, Size n,        // freestanding
-                                                NoThrowForwardIterator result);
+    constexpr NoThrowForwardIterator uninitialized_copy_n(InputIterator first,      // freestanding
+                                                          Size n,
+                                                          NoThrowForwardIterator result);
   template<class ExecutionPolicy, class ForwardIterator, class Size,
            class NoThrowForwardIterator>
     NoThrowForwardIterator uninitialized_copy_n(ExecutionPolicy&& exec,             // see \ref{algorithms.parallel.overloads}
@@ -263,32 +268,32 @@ namespace std {
     template<@\libconcept{input_iterator}@ I, @\libconcept{sentinel_for}@<I> S1,
              @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S2>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
-        uninitialized_copy_result<I, O>
+        constexpr uninitialized_copy_result<I, O>
           uninitialized_copy(I ifirst, S1 ilast, O ofirst, S2 olast);               // freestanding
     template<@\libconcept{input_range}@ IR, @\exposconcept{nothrow-forward-range}@ OR>
       requires @\libconcept{constructible_from}@<range_value_t<OR>, range_reference_t<IR>>
-        uninitialized_copy_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
+        constexpr uninitialized_copy_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
           uninitialized_copy(IR&& in_range, OR&& out_range);                        // freestanding
 
     template<class I, class O>
       using uninitialized_copy_n_result = in_out_result<I, O>;                      // freestanding
     template<@\libconcept{input_iterator}@ I, @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
-        uninitialized_copy_n_result<I, O>
+        constexpr uninitialized_copy_n_result<I, O>
           uninitialized_copy_n(I ifirst, iter_difference_t<I> n,                    // freestanding
                                O ofirst, S olast);
   }
 
   template<class InputIterator, class NoThrowForwardIterator>
-    NoThrowForwardIterator uninitialized_move(InputIterator first,                  // freestanding
-                                              InputIterator last,
-                                              NoThrowForwardIterator result);
+    constexpr NoThrowForwardIterator uninitialized_move(InputIterator first,        // freestanding
+                                                        InputIterator last,
+                                                        NoThrowForwardIterator result);
   template<class ExecutionPolicy, class ForwardIterator, class NoThrowForwardIterator>
     NoThrowForwardIterator uninitialized_move(ExecutionPolicy&& exec,               // see \ref{algorithms.parallel.overloads}
                                               ForwardIterator first, ForwardIterator last,
                                               NoThrowForwardIterator result);
   template<class InputIterator, class Size, class NoThrowForwardIterator>
-    pair<InputIterator, NoThrowForwardIterator>
+    constexpr pair<InputIterator, NoThrowForwardIterator>
       uninitialized_move_n(InputIterator first, Size n,                             // freestanding
                            NoThrowForwardIterator result);
   template<class ExecutionPolicy, class ForwardIterator, class Size,
@@ -303,11 +308,11 @@ namespace std {
     template<@\libconcept{input_iterator}@ I, @\libconcept{sentinel_for}@<I> S1,
              @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S2>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
-        uninitialized_move_result<I, O>
+        constexpr uninitialized_move_result<I, O>
           uninitialized_move(I ifirst, S1 ilast, O ofirst, S2 olast);               // freestanding
     template<@\libconcept{input_range}@ IR, @\exposconcept{nothrow-forward-range}@ OR>
       requires @\libconcept{constructible_from}@<range_value_t<OR>, range_rvalue_reference_t<IR>>
-        uninitialized_move_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
+        constexpr uninitialized_move_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
           uninitialized_move(IR&& in_range, OR&& out_range);                        // freestanding
 
     template<class I, class O>
@@ -315,20 +320,20 @@ namespace std {
     template<@\libconcept{input_iterator}@ I,
              @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
-        uninitialized_move_n_result<I, O>
+        constexpr uninitialized_move_n_result<I, O>
           uninitialized_move_n(I ifirst, iter_difference_t<I> n,                    // freestanding
                                O ofirst, S olast);
   }
 
   template<class NoThrowForwardIterator, class T>
-    void uninitialized_fill(NoThrowForwardIterator first,                           // freestanding
-                            NoThrowForwardIterator last, const T& x);
+    constexpr void uninitialized_fill(NoThrowForwardIterator first,                 // freestanding
+                                      NoThrowForwardIterator last, const T& x);
   template<class ExecutionPolicy, class NoThrowForwardIterator, class T>
     void uninitialized_fill(ExecutionPolicy&& exec,                                 // see \ref{algorithms.parallel.overloads}
                             NoThrowForwardIterator first, NoThrowForwardIterator last,
                             const T& x);
   template<class NoThrowForwardIterator, class Size, class T>
-    NoThrowForwardIterator
+    constexpr NoThrowForwardIterator
       uninitialized_fill_n(NoThrowForwardIterator first, Size n, const T& x);       // freestanding
   template<class ExecutionPolicy, class NoThrowForwardIterator, class Size, class T>
     NoThrowForwardIterator
@@ -338,14 +343,15 @@ namespace std {
   namespace ranges {
     template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S, class T>
       requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
-        I uninitialized_fill(I first, S last, const T& x);                          // freestanding
+        constexpr I uninitialized_fill(I first, S last, const T& x);                // freestanding
     template<@\exposconcept{nothrow-forward-range}@ R, class T>
       requires @\libconcept{constructible_from}@<range_value_t<R>, const T&>
-        borrowed_iterator_t<R> uninitialized_fill(R&& r, const T& x);               // freestanding
+        constexpr borrowed_iterator_t<R> uninitialized_fill(R&& r, const T& x);     // freestanding
 
     template<@\exposconcept{nothrow-forward-iterator}@ I, class T>
       requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
-        I uninitialized_fill_n(I first, iter_difference_t<I> n, const T& x);        // freestanding
+        constexpr I uninitialized_fill_n(I first,                                   // freestanding
+                                         iter_difference_t<I> n, const T& x);
   }
 
   // \ref{specialized.construct}, \tcode{construct_at}
@@ -839,9 +845,9 @@ template<size_t N, class T>
 
 \pnum
 \expects
-\tcode{ptr} points to an object \tcode{X} of
+\tcode{ptr} points to an object $X$ of
 a type similar\iref{conv.qual} to \tcode{T},
-where \tcode{X} has alignment \tcode{N}\iref{basic.align}.
+where $X$ has alignment \tcode{N}\iref{basic.align}.
 
 \pnum
 \returns
@@ -853,15 +859,37 @@ Nothing.
 
 \pnum
 \begin{note}
-The alignment assumption on an object \tcode{X}
+The alignment assumption on an object $X$
 expressed by a call to \tcode{assume_aligned}
 might result in generation of more efficient code.
 It is up to the program to ensure that the assumption actually holds.
 The call does not cause the implementation to verify or enforce this.
 An implementation might only make the assumption
-for those operations on \tcode{X} that access \tcode{X}
+for those operations on $X$ that access $X$
 through the pointer returned by \tcode{assume_aligned}.
 \end{note}
+\end{itemdescr}
+
+\indexlibraryglobal{is_sufficiently_aligned}%
+\begin{itemdecl}
+template<size_t Alignment, class T>
+  bool is_sufficiently_aligned(T* ptr);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{p} points to
+an object \tcode{X} of a type similar\iref{conv.qual} to \tcode{T}.
+
+\pnum
+\returns
+\tcode{true} if \tcode{X} has alignment at least \tcode{Alignment},
+otherwise \tcode{false}.
+
+\pnum
+\throws
+Nothing.
 \end{itemdescr}
 
 \rSec2[obj.lifetime]{Explicit lifetime management}
@@ -1632,7 +1660,7 @@ static constexpr size_type max_size(const Alloc& a) noexcept;
 \pnum
 \returns
 \tcode{a.max_size()} if that expression is well-formed; otherwise,
-\tcode{numeric_limits<size_type>::\brk{}max()/sizeof(value_type)}.
+\tcode{numeric_limits<size_type>::\brk{}max() / sizeof(value_type)}.
 \end{itemdescr}
 
 \indexlibrarymember{select_on_container_copy_construction}{allocator_traits}%
@@ -2085,6 +2113,14 @@ namespace std {
 \end{codeblock}
 
 \pnum
+A program that instantiates the definition of \tcode{unique_ptr<T, D>}
+is ill-formed if \tcode{T*} is an invalid type.
+\begin{note}
+This prevents the instantiation of specializations such as
+\tcode{unique_ptr<T\&, D>} and \tcode{unique_ptr<int() const, D>}.
+\end{note}
+
+\pnum
 The default type for the template parameter \tcode{D} is
 \tcode{default_delete}. A client-supplied template argument
 \tcode{D} shall be a function
@@ -2435,8 +2471,12 @@ constexpr add_lvalue_reference_t<T> operator*() const noexcept(noexcept(*declval
 
 \begin{itemdescr}
 \pnum
+\mandates
+\tcode{reference_converts_from_temporary_v<add_lvalue_reference_t<T>, decltype(\linebreak{}*declval<pointer>())>} is \tcode{false}.
+
+\pnum
 \expects
-\tcode{get() != nullptr}.
+\tcode{get() != nullptr} is \tcode{true}.
 
 \pnum
 \returns
@@ -3282,10 +3322,10 @@ that is a specialization of \tcode{enable_shared_from_this}\iref{util.smartptr.e
 then \tcode{remove_cv_t<Y>*} shall be implicitly convertible to \tcode{T*} and
 the constructor evaluates the statement:
 \begin{codeblock}
-if (p != nullptr && p->weak_this.expired())
-  p->weak_this = shared_ptr<remove_cv_t<Y>>(*this, const_cast<remove_cv_t<Y>*>(p));
+if (p != nullptr && p->@\exposid{weak-this}@.expired())
+  p->@\exposid{weak-this}@ = shared_ptr<remove_cv_t<Y>>(*this, const_cast<remove_cv_t<Y>*>(p));
 \end{codeblock}
-The assignment to the \tcode{weak_this} member is not atomic and
+The assignment to the \exposid{weak-this} member is not atomic and
 conflicts with any potentially concurrent access to the same object\iref{intro.multithread}.
 
 \indexlibraryctor{shared_ptr}%
@@ -3961,15 +4001,15 @@ an exception thrown from \tcode{allocate} or from the initialization of the obje
   \tcode{allocate_shared} shall initialize this (sub)object
   via the expression
   \begin{itemize}
-  \item \tcode{allocator_traits<A2>::construct(a2, pv, v)} or
-  \item \tcode{allocator_traits<A2>::construct(a2, pv, l...)}
+  \item \tcode{allocator_traits<A2>::construct(a2, pu, v)} or
+  \item \tcode{allocator_traits<A2>::construct(a2, pu, l...)}
   \end{itemize}
   respectively,
-  where \tcode{pv} points to storage
-  suitable to hold an object of type \tcode{U} and
-  \tcode{a2} of type \tcode{A2} is a rebound copy of
-  the allocator \tcode{a} passed to \tcode{allocate_shared}
-  such that its \tcode{value_type} is \tcode{remove_cv_t<U>}.
+  where \tcode{pu} is a pointer of type \tcode{remove_cv_t<U>*}
+  pointing to storage
+  suitable to hold an object of type \tcode{remove_cv_t<U>} and
+  \tcode{a2} of type \tcode{A2} is a potentially rebound copy of
+  the allocator \tcode{a} passed to \tcode{allocate_shared}.
 \item
   When a (sub)object of non-array type \tcode{U} is specified to have
   a default initial value,
@@ -3980,13 +4020,13 @@ an exception thrown from \tcode{allocate} or from the initialization of the obje
 \item
   When a (sub)object of non-array type \tcode{U} is specified to have
   a default initial value,
-  \tcode{allocate_shared} shall initialize this (sub)object
-  via the expression \tcode{allocator_traits<A2>::construct(a2, pv)},
-  where \tcode{pv} points to storage
-  suitable to hold an object of type \tcode{U} and
-  \tcode{a2} of type \tcode{A2} is a rebound copy of
-  the allocator \tcode{a} passed to \tcode{allocate_shared}
-  such that its \tcode{value_type} is \tcode{remove_cv_t<U>}.
+  \tcode{allocate_shared} initializes this (sub)object
+  via the expression \tcode{allocator_traits<A2>::construct(a2, pu)},
+  where \tcode{pu} is a pointer of type \tcode{remove_cv_t<U>*}
+  pointing to storage
+  suitable to hold an object of type \tcode{remove_cv_t<U>} and
+  \tcode{a2} of type \tcode{A2} is a potentially rebound copy of
+  the allocator \tcode{a} passed to \tcode{allocate_shared}.
 \item
   When a (sub)object of non-array type \tcode{U} is initialized by
   \tcode{make_shared_for_overwrite} or\linebreak % avoid Overfull
@@ -4003,18 +4043,20 @@ an exception thrown from \tcode{allocate} or from the initialization of the obje
   of their original construction.
 \item
   When a (sub)object of non-array type \tcode{U}
-  that was initialized by \tcode{make_shared} is to be destroyed,
-  it is destroyed via the expression \tcode{pv->\~{}U()} where
-  \tcode{pv} points to that object of type \tcode{U}.
+  that was initialized by \tcode{make_shared},
+  \tcode{make_shared_for_overwrite}, or \tcode{allocate_shared_for_overwrite}
+  is to be destroyed,
+  it is destroyed via the expression \tcode{pu->\~{}U()} where
+  \tcode{pu} points to that object of type \tcode{U}.
 \item
   When a (sub)object of non-array type \tcode{U}
   that was initialized by \tcode{allocate_shared} is to be destroyed,
   it is destroyed via the expression
-  \tcode{allocator_traits<A2>::destroy(a2, pv)} where
-  \tcode{pv} points to that object of type \tcode{remove_cv_t<U>} and
-  \tcode{a2} of type \tcode{A2} is a rebound copy of
-  the allocator \tcode{a} passed to \tcode{allocate_shared}
-  such that its \tcode{value_type} is \tcode{remove_cv_t<U>}.
+  \tcode{allocator_traits<A2>::destroy(a2, pu)} where
+  \tcode{pu} is a pointer of type \tcode{remove_cv_t<U>*}
+  pointing to that object of type \tcode{remove_cv_t<U>} and
+  \tcode{a2} of type \tcode{A2} is a potentially rebound copy of
+  the allocator \tcode{a} passed to \tcode{allocate_shared}.
 \end{itemize}
 \begin{note}
 These functions will typically allocate more memory than \tcode{sizeof(T)} to
@@ -4973,7 +5015,7 @@ namespace std {
     constexpr weak_ptr<T const> weak_from_this() const noexcept;
 
   private:
-    mutable weak_ptr<T> weak_this;  // \expos
+    mutable weak_ptr<T> @\exposid{weak-this}@;  // \expos
   };
 }
 \end{codeblock}
@@ -4991,7 +5033,7 @@ constexpr enable_shared_from_this(const enable_shared_from_this<T>&) noexcept;
 \begin{itemdescr}
 \pnum
 \effects
-Value-initializes \tcode{weak_this}.
+Value-initializes \exposid{weak-this}.
 \end{itemdescr}
 
 \indexlibrarymember{operator=}{enable_shared_from_this}%
@@ -5006,7 +5048,7 @@ constexpr enable_shared_from_this<T>& operator=(const enable_shared_from_this<T>
 
 \pnum
 \begin{note}
-\tcode{weak_this} is not changed.
+\exposid{weak-this} is not changed.
 \end{note}
 \end{itemdescr}
 
@@ -5020,7 +5062,7 @@ constexpr shared_ptr<T const> shared_from_this() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{shared_ptr<T>(weak_this)}.
+\tcode{shared_ptr<T>(\exposid{weak-this})}.
 \end{itemdescr}
 
 \indexlibraryglobal{weak_ptr}%
@@ -5033,7 +5075,7 @@ constexpr weak_ptr<T const> weak_from_this() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{weak_this}.
+\exposid{weak-this}.
 \end{itemdescr}
 
 \rSec2[util.smartptr.hash]{Smart pointer hash support}

@@ -318,6 +318,26 @@ the selected constructor is odr-used\iref{basic.def.odr} and
 the destructor of \tcode{T} is potentially invoked\iref{class.dtor}.
 
 \pnum
+\indextext{exception handling!uncaught}%
+An exception is considered \defnx{uncaught}{uncaught exception}
+after completing the initialization of the exception object
+until completing the activation of a handler for the exception\iref{except.handle}.
+\begin{note}
+As a consequence, an exception is considered uncaught
+during any stack unwinding resulting from it being thrown.
+\end{note}
+
+\pnum
+\indexlibraryglobal{uncaught_exceptions}%
+If an exception is rethrown\iref{expr.throw,propagation},
+it is considered uncaught from the point of rethrow
+until the rethrown exception is caught.
+\begin{note}
+The function \tcode{std::uncaught_exceptions}\iref{uncaught.exceptions}
+returns the number of uncaught exceptions in the current thread.
+\end{note}
+
+\pnum
 \indextext{exception handling!rethrow}%
 \indextext{rethrow|see{exception handling, rethrow}}%
 An exception is considered caught when a handler for that exception
@@ -331,7 +351,7 @@ it is rethrown.
 \indextext{exception handling!terminate called@\tcode{terminate} called}%
 \indextext{\idxcode{terminate}!called}%
 If the exception handling mechanism
-handling an uncaught exception\iref{except.uncaught}
+handling an uncaught exception
 directly invokes a function that exits via an
 exception, the function \tcode{std::terminate} is invoked\iref{except.terminate}.
 \begin{example}
@@ -751,7 +771,7 @@ as a suffix of a function declarator\iref{dcl.fct}.
 \begin{bnf}
 \nontermdef{noexcept-specifier}\br
     \keyword{noexcept} \terminal{(} constant-expression \terminal{)}\br
-    \keyword{noexcept}\br
+    \keyword{noexcept}
 \end{bnf}
 
 \pnum
@@ -846,7 +866,7 @@ $E$ implicitly invokes a function
 (such as an overloaded operator,
 an allocation function in a \grammarterm{new-expression},
 a constructor for a function argument,
-or a destructor if $E$ is a full-expression\iref{intro.execution})
+or a destructor)
 that has a potentially-throwing exception specification,
 or
 \item
@@ -1003,8 +1023,10 @@ needed.
 The function \tcode{std::terminate}\iref{except.terminate}
 is used by the exception
 handling mechanism for coping with errors related to the exception handling
-mechanism itself. The function
-\tcode{std::current_exception()}\iref{propagation} and the class
+mechanism itself.
+The function \tcode{std::uncaught_exceptions}\iref{uncaught.exceptions}
+reports how many exceptions are uncaught in the current thread.
+The function \tcode{std::current_exception}\iref{propagation} and the class
 \tcode{std::nested_exception}\iref{except.nested} can be used by a program to
 capture the currently handled exception.
 
@@ -1012,9 +1034,10 @@ capture the currently handled exception.
 
 \pnum
 \indextext{\idxcode{terminate}}%
-% FIXME: What does it mean to abandon exception handling?
-In some situations, exception handling is abandoned
-for less subtle error handling techniques.
+Some errors in a program cannot be recovered from, such as when an exception
+is not handled or a \tcode{std::thread} object is destroyed while its thread
+function is still executing. In such cases,
+the function \tcode{std::terminate}\iref{exception.terminate} is invoked.
 \begin{note}
 These situations are:
 \indextext{\idxcode{terminate}!called}%
@@ -1108,8 +1131,6 @@ whose promise type has an \tcode{unhandled_stopped} member function.
 
 \pnum
 \indextext{\idxcode{terminate}}%
-In such cases,
-the function \tcode{std::terminate} is invoked\iref{exception.terminate}.
 In the situation where no matching handler is found, it is
 \impldef{stack unwinding before invocation of \tcode{std::terminate}}
 whether or not the stack is unwound
@@ -1128,21 +1149,4 @@ An implementation is not permitted to finish stack unwinding
 prematurely based on a determination that the unwind process
 will eventually cause an invocation of the function
 \tcode{std::terminate}.
-
-\rSec2[except.uncaught]{The \tcode{std::uncaught_exceptions} function}%
-\indexlibraryglobal{uncaught_exceptions}
-
-\pnum
-An exception is considered uncaught
-after completing the initialization of the exception object\iref{except.throw}
-until completing the activation of a handler for the exception\iref{except.handle}.
-\begin{note}
-As a consequence, an exception is considered uncaught
-during any stack unwinding resulting from it being thrown.
-\end{note}
-If an exception is rethrown\iref{expr.throw,propagation},
-it is considered uncaught from the point of rethrow
-until the rethrown exception is caught.
-The function \tcode{std::uncaught_exceptions}\iref{uncaught.exceptions}
-returns the number of uncaught exceptions in the current thread.%
 \indextext{exception handling|)}

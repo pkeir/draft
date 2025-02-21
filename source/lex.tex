@@ -90,7 +90,7 @@ This information is given for the convenience of users of this document and
 does not constitute an endorsement by ISO or IEC of this product.
 \end{footnote}
 scalar values.
-A sequence of translation character set elements is then formed
+A sequence of translation character set elements\iref{lex.charset} is then formed
 by mapping each Unicode scalar value
 to the corresponding translation character set element.
 In the resulting sequence,
@@ -102,8 +102,8 @@ is replaced by a single new-line character.
 
 For any other kind of input file supported by the implementation,
 characters are mapped, in an
-\impldef{mapping physical source file characters to translation character set} manner,
-to a sequence of translation character set elements\iref{lex.charset},
+\impldef{mapping input file characters to translation character set} manner,
+to a sequence of translation character set elements,
 representing end-of-line indicators as new-line characters.
 
 \item
@@ -140,7 +140,7 @@ or \tcode{>}. A partial comment
 would arise from a source file ending with an unclosed \tcode{/*}
 comment.
 \end{footnote}
-Each comment is replaced by one space character. New-line characters are
+Each comment\iref{lex.comment} is replaced by one space character. New-line characters are
 retained. Whether each nonempty sequence of whitespace characters other
 than new-line is retained or replaced by one space character is
 unspecified.
@@ -153,8 +153,8 @@ except when matching a
 \grammarterm{r-char-sequence},
 \grammarterm{h-char-sequence}, or
 \grammarterm{q-char-sequence},
-\grammarterm{universal-character-name}s are recognized and
-replaced by the designated element of the translation character set.
+\grammarterm{universal-character-name}s are recognized\iref{lex.universal.char} and
+replaced by the designated element of the translation character set\iref{lex.charset}.
 The process of dividing a source file's
 characters into preprocessing tokens is context-dependent.
 \begin{example}
@@ -162,28 +162,30 @@ See the handling of \tcode{<} within a \tcode{\#include} preprocessing
 directive\iref{cpp.include}.
 \end{example}
 
-\item Preprocessing directives are executed, macro invocations are
-expanded, and \tcode{_Pragma} unary operator expressions are executed.
-A \tcode{\#include} preprocessing directive causes the named header or
+\item The source file is analyzed as a \grammarterm{preprocessing-file}\iref{cpp.pre}.
+Preprocessing directives\iref{cpp} are executed, macro invocations are
+expanded\iref{cpp.replace}, and \tcode{_Pragma} unary operator expressions are executed\iref{cpp.pragma.op}.
+A \tcode{\#include} preprocessing directive\iref{cpp.include} causes the named header or
 source file to be processed from phase 1 through phase 4, recursively.
 All preprocessing directives are then deleted.
 
 \item
-For a sequence of two or more adjacent \grammarterm{string-literal} tokens,
+For a sequence of two or more adjacent \grammarterm{string-literal} preprocessing tokens,
 a common \grammarterm{encoding-prefix} is determined
 as specified in \ref{lex.string}.
-Each such \grammarterm{string-literal} token is then considered to have
+Each such \grammarterm{string-literal} preprocessing token is then considered to have
 that common \grammarterm{encoding-prefix}.
 
 \item
-Adjacent \grammarterm{string-literal} tokens are concatenated\iref{lex.string}.
+Adjacent \grammarterm{string-literal} preprocessing tokens are concatenated\iref{lex.string}.
 
-\item Whitespace characters separating tokens are no longer
-significant. Each preprocessing token is converted into a
-token\iref{lex.token}. The resulting tokens
-constitute a \defn{translation unit} and
+\item
+Each preprocessing token is converted into a token\iref{lex.token}.
+Whitespace characters separating tokens are no longer significant.
+The resulting tokens constitute a \defn{translation unit} and
 are syntactically and
-semantically analyzed and translated.
+semantically analyzed as a \grammarterm{translation-unit}\iref{basic.link} and
+translated.
 \begin{note}
 The process of analyzing and translating the tokens can occasionally
 result in one token being replaced by a sequence of other
@@ -396,8 +398,7 @@ for the respective Unicode encoding form.
 
 \begin{bnf}
 \nontermdef{n-char-sequence}\br
-    n-char\br
-    n-char-sequence n-char
+    n-char \opt{n-char-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -412,8 +413,7 @@ for the respective Unicode encoding form.
 
 \begin{bnf}
 \nontermdef{simple-hexadecimal-digit-sequence}\br
-    hexadecimal-digit\br
-    simple-hexadecimal-digit-sequence hexadecimal-digit
+    hexadecimal-digit \opt{simple-hexadecimal-digit-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -510,11 +510,6 @@ characters \tcode{//} and \tcode{/*} have no special meaning within a
 \end{bnf}
 
 \pnum
-Each preprocessing token that is converted to a token\iref{lex.token}
-shall have the lexical form of a keyword, an identifier, a literal,
-or an operator or punctuator.
-
-\pnum
 A preprocessing token is the minimal lexical element of the language in translation
 phases 3 through 6.
 In this document,
@@ -547,6 +542,22 @@ thereof) serves as more than preprocessing token separation. Whitespace
 can appear within a preprocessing token only as part of a header name or
 between the quotation characters in a character literal or
 string literal.
+
+\pnum
+Each preprocessing token that is converted to a token\iref{lex.token}
+shall have the lexical form of a keyword, an identifier, a literal,
+or an operator or punctuator.
+
+\pnum
+The \grammarterm{import-keyword} is produced
+by processing an \keyword{import} directive\iref{cpp.import},
+the \grammarterm{module-keyword} is produced
+by preprocessing a \keyword{module} directive\iref{cpp.module}, and
+the \grammarterm{export-keyword} is produced
+by preprocessing either of the previous two directives.
+\begin{note}
+None has any observable spelling.
+\end{note}
 
 \pnum
 If the input stream has been parsed into preprocessing tokens up to a
@@ -587,23 +598,13 @@ within a \grammarterm{has-include-expression}.
 \end{itemize}
 \end{itemize}
 
+\pnum
 \begin{example}
 \begin{codeblock}
 #define R "x"
 const char* s = R"y";           // ill-formed raw string, not \tcode{"x" "y"}
 \end{codeblock}
 \end{example}
-
-\pnum
-The \grammarterm{import-keyword} is produced
-by preprocessing an \keyword{import} directive\iref{cpp.import},
-the \grammarterm{module-keyword} is produced
-by preprocessing a \keyword{module} directive\iref{cpp.module}, and
-the \grammarterm{export-keyword} is produced
-by preprocessing either of the previous two directives.
-\begin{note}
-None has any observable spelling.
-\end{note}
 
 \pnum
 \begin{example}
@@ -639,8 +640,7 @@ violates a constraint on increment operators, even though the parse
 
 \begin{bnf}
 \nontermdef{h-char-sequence}\br
-    h-char\br
-    h-char-sequence h-char
+    h-char \opt{h-char-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -650,8 +650,7 @@ violates a constraint on increment operators, even though the parse
 
 \begin{bnf}
 \nontermdef{q-char-sequence}\br
-    q-char\br
-    q-char-sequence q-char
+    q-char \opt{q-char-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -660,16 +659,16 @@ violates a constraint on increment operators, even though the parse
 \end{bnf}
 
 \pnum
+The sequences in both forms of \grammarterm{header-name}{s} are mapped in an
+\impldef{mapping header name to header or external source file} manner to headers or to
+external source file names as specified in~\ref{cpp.include}.
 \begin{note}
-Header name preprocessing tokens only appear within
+Header name preprocessing tokens appear only within
 a \tcode{\#include} preprocessing directive,
 a \tcode{__has_include} preprocessing expression, or
 after certain occurrences of an \tcode{import} token
 (see~\ref{lex.pptoken}).
 \end{note}
-The sequences in both forms of \grammarterm{header-name}{s} are mapped in an
-\impldef{mapping header name to header or external source file} manner to headers or to
-external source file names as specified in~\ref{cpp.include}.
 
 \pnum
 The appearance of either of the characters \tcode{'} or \tcode{\textbackslash} or of
@@ -679,12 +678,12 @@ is conditionally-supported with \impldef{meaning of \tcode{'}, \tcode{\textbacks
 \tcode{/*}, or \tcode{//} in a \grammarterm{q-char-sequence} or an
 \grammarterm{h-char-sequence}} semantics, as is the appearance of the character
 \tcode{"} in an \grammarterm{h-char-sequence}.
-\begin{footnote}
+\begin{note}
 Thus, a sequence of characters
 that resembles an escape sequence can result in an error, be interpreted as the
 character corresponding to the escape sequence, or have a completely different meaning,
 depending on the implementation.
-\end{footnote}
+\end{note}
 \indextext{header!name|)}
 
 \rSec1[lex.ppnumber]{Preprocessing numbers}
@@ -873,8 +872,7 @@ literals, and alternative tokens containing alphabetic characters.
 \indextext{name!length of}%
 \indextext{name}%
 \begin{note}
-The character properties XID_Start and XID_Continue are Derived Core Properties
-as described by \UAX{44} of the Unicode Standard.
+The character properties XID_Start and XID_Continue are described by \UAX{44} of the Unicode Standard.
 \begin{footnote}
 On systems in which linkers cannot accept extended
 characters, an encoding of the \grammarterm{universal-character-name} can be used in
@@ -1216,7 +1214,7 @@ the sequence of
 \grammarterm{octal-digit}s,
 \grammarterm{digit}s, or
 \grammarterm{hexadecimal-digit}s
-is interpreted as a base $N$ integer as shown in table \tref{lex.icon.base};
+is interpreted as a base $N$ integer as shown in \tref{lex.icon.base};
 the lexically first digit of the sequence of digits is the most significant.
 \begin{note}
 The prefix and any optional separating single quotes are ignored
@@ -1375,8 +1373,7 @@ is ill-formed if it cannot be represented by \tcode{std::size_t}.
 
 \begin{bnf}
 \nontermdef{c-char-sequence}\br
-    c-char\br
-    c-char-sequence c-char
+    c-char \opt{c-char-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -1417,8 +1414,7 @@ is ill-formed if it cannot be represented by \tcode{std::size_t}.
 
 \begin{bnf}
 \nontermdef{simple-octal-digit-sequence}\br
-    octal-digit\br
-    simple-octal-digit-sequence octal-digit
+    octal-digit \opt{simple-octal-digit-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -1426,7 +1422,7 @@ is ill-formed if it cannot be represented by \tcode{std::size_t}.
     \terminal{\textbackslash} octal-digit\br
     \terminal{\textbackslash} octal-digit octal-digit\br
     \terminal{\textbackslash} octal-digit octal-digit octal-digit\br
-    \terminal{\textbackslash o\{} simple-octal-digit-sequence \terminal{\}}\br
+    \terminal{\textbackslash o\{} simple-octal-digit-sequence \terminal{\}}
 \end{bnf}
 
 \begin{bnf}
@@ -1746,8 +1742,7 @@ chosen in an \impldef{choice of larger or smaller value of
 
 \begin{bnf}
 \nontermdef{s-char-sequence}\br
-    s-char\br
-    s-char-sequence s-char
+    s-char \opt{s-char-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -1770,8 +1765,7 @@ chosen in an \impldef{choice of larger or smaller value of
 
 \begin{bnf}
 \nontermdef{r-char-sequence}\br
-    r-char\br
-    r-char-sequence r-char
+    r-char \opt{r-char-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -1782,8 +1776,7 @@ chosen in an \impldef{choice of larger or smaller value of
 
 \begin{bnf}
 \nontermdef{d-char-sequence}\br
-    d-char\br
-    d-char-sequence d-char
+    d-char \opt{d-char-sequence}
 \end{bnf}
 
 \begin{bnf}
@@ -2225,7 +2218,7 @@ let \placeholder{str} be the literal without its \grammarterm{ud-suffix}
 and let \placeholder{len} be the number of code units in \placeholder{str}
 (i.e., its length excluding the terminating null character).
 If \placeholder{S} contains a literal operator template with
-a non-type template parameter for which \placeholder{str} is
+a constant template parameter for which \placeholder{str} is
 a well-formed \grammarterm{template-argument},
 the literal \placeholder{L} is treated as a call of the form
 \begin{codeblock}

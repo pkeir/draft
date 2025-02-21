@@ -150,7 +150,7 @@ are not so constrained.
 
 \pnum
 \begin{note}
-Class objects can be assigned\iref{over.ass,class.copy.assign},
+Class objects can be assigned\iref{over.assign,class.copy.assign},
 passed as arguments to functions\iref{dcl.init,class.copy.ctor}, and
 returned by functions (except objects of classes for which copying or moving has
 been restricted; see~\ref{dcl.fct.def.delete} and \ref{class.access}).
@@ -171,15 +171,6 @@ move assignment operator\iref{special,class.copy.ctor,class.copy.assign},
 and move assignment operator is trivial, and
 \item that has a trivial, non-deleted destructor\iref{class.dtor}.
 \end{itemize}
-
-\pnum
-A \defnadj{trivial}{class} is a class that is trivially copyable and
-has one or more eligible default constructors\iref{class.default.ctor},
-all of which are trivial.
-\begin{note}
-In particular, a trivially copyable or trivial class does not have
-virtual functions or virtual base classes.
-\end{note}
 
 \pnum
 A class \tcode{S} is a \defnadj{standard-layout}{class} if it:
@@ -266,31 +257,31 @@ defined with the
 \begin{note}
 Standard-layout classes are useful for communicating with
 code written in other programming languages. Their layout is specified
-in~\ref{class.mem}.
+in~\ref{class.mem.general} and~\ref{expr.rel}.
 \end{note}
 
 \pnum
 \begin{example}
 \begin{codeblock}
-struct N {          // neither trivial nor standard-layout
+struct N {          // neither trivially copyable nor standard-layout
   int i;
   int j;
   virtual ~N();
 };
 
-struct T {          // trivial but not standard-layout
+struct T {          // trivially copyable but not standard-layout
   int i;
 private:
   int j;
 };
 
-struct SL {         // standard-layout but not trivial
+struct SL {         // standard-layout but not trivially copyable
   int i;
   int j;
   ~SL();
 };
 
-struct POD {        // both trivial and standard-layout
+struct POD {        // both trivially copyable and standard-layout
   int i;
   int j;
 };
@@ -492,8 +483,7 @@ if its \grammarterm{template-name} names a class template.
 
 \begin{bnf}
 \nontermdef{virt-specifier-seq}\br
-    virt-specifier\br
-    virt-specifier-seq virt-specifier
+    virt-specifier \opt{virt-specifier-seq}
 \end{bnf}
 
 \begin{bnf}
@@ -1231,28 +1221,28 @@ A defaulted default constructor for class \tcode{X} is defined as deleted if
 of reference type,
 
 \item any non-variant non-static data member of const-qualified type
-(or possibly multi-dimensional array thereof)
+(or possibly multidimensional array thereof)
 with no \grammarterm{brace-or-equal-initializer}
 is not const-default-constructible\iref{dcl.init},
 
 \item \tcode{X} is a union and all of its variant members are of const-qualified
-type (or possibly multi-dimensional array thereof),
+type (or possibly multidimensional array thereof),
 
 \item \tcode{X} is a non-union class and all members of any anonymous union member are
-of const-qualified type (or possibly multi-dimensional array thereof),
+of const-qualified type (or possibly multidimensional array thereof),
 
 \item any potentially constructed subobject, except for a non-static data member
 with a \grammarterm{brace-or-equal-initializer}
 or a variant member of a union where another non-static data member
 has a \grammarterm{brace-or-equal-initializer},
-has class type \tcode{M} (or possibly multi-dimensional array thereof)
+has class type \tcode{M} (or possibly multidimensional array thereof)
 and overload resolution\iref{over.match}
 as applied to find \tcode{M}'s corresponding constructor
 either does not result in a usable candidate\iref{over.match.general}
 or, in the case of a variant member, selects a non-trivial function, or
 
 \item any potentially constructed subobject has
-class type \tcode{M} (or possibly multi-dimensional array thereof) and
+class type \tcode{M} (or possibly multidimensional array thereof) and
 \tcode{M} has
 a destructor that is deleted or inaccessible from the defaulted default
 constructor.
@@ -1519,14 +1509,14 @@ A defaulted copy/\brk{}move constructor for a class
   \tcode{X} is defined as deleted\iref{dcl.fct.def.delete} if \tcode{X} has:
 \begin{itemize}
 \item a potentially constructed subobject of type
-  \tcode{M} (or possibly multi-dimensional array thereof) for which
+  \tcode{M} (or possibly multidimensional array thereof) for which
   overload resolution\iref{over.match}, as applied to find
   \tcode{M}'s corresponding constructor,
   either does not result in a usable candidate\iref{over.match.general} or,
   in the case of a variant member, selects a non-trivial function,
 
 \item any potentially constructed subobject of
-  class type \tcode{M} (or possibly multi-dimensional array thereof)
+  class type \tcode{M} (or possibly multidimensional array thereof)
   where \tcode{M} has
   a destructor that is deleted or inaccessible from the defaulted
   constructor, or,
@@ -1789,12 +1779,12 @@ A defaulted copy/move assignment operator for
 class \tcode{X} is defined as deleted if \tcode{X} has:
 \begin{itemize}
 \item a non-static data member of \keyword{const} non-class
-  type (or possibly multi-dimensional array thereof), or
+  type (or possibly multidimensional array thereof), or
 
 \item a non-static data member of reference type, or
 
 \item a direct non-static data member of class type \tcode{M}
-  (or possibly multi-dimensional array thereof) or
+  (or possibly multidimensional array thereof) or
   a direct base class \tcode{M}
   that cannot be copied/moved because overload resolution
  \iref{over.match}, as applied to find \tcode{M}'s corresponding
@@ -1814,7 +1804,7 @@ overload resolution\iref{over.match,over.over}.
 Because a copy/move assignment operator is implicitly declared for a class
 if not declared by the user,
 a base class copy/move assignment operator is always hidden
-by the corresponding assignment operator of a derived class\iref{over.ass}.
+by the corresponding assignment operator of a derived class\iref{over.assign}.
 \begin{note}
 A \grammarterm{using-declaration} in a derived class \tcode{C}
 that names an assignment operator from a base class
@@ -2033,7 +2023,7 @@ A defaulted destructor for a class
   \tcode{X} is defined as deleted if
 \begin{itemize}
 \item any potentially constructed subobject has class type
-  \tcode{M} (or possibly multi-dimensional array thereof) and
+  \tcode{M} (or possibly multidimensional array thereof) and
   \tcode{M} has a destructor that is deleted or
   is inaccessible from the defaulted destructor or,
   in the case of a variant member, is non-trivial,
@@ -2378,11 +2368,10 @@ Z a6 = { 3, 4 };                // error: no implicit conversion
 \end{note}
 
 \pnum
-A non-explicit copy/move constructor\iref{class.copy.ctor} is
-a converting constructor.
 \begin{note}
-An implicitly-declared copy/move constructor is not an explicit constructor;
-it can be called for implicit type conversions.
+A non-explicit copy/move constructor\iref{class.copy.ctor},
+including one implicitly declared,
+is a converting constructor.
 \end{note}
 
 \rSec3[class.conv.fct]{Conversion functions}%
@@ -3128,7 +3117,7 @@ and empty otherwise.
 Otherwise, $S(\mathtt{E})$ is empty.
 \end{itemize}
 In an assignment expression of the form \tcode{E1 = E2}
-that uses either the built-in assignment operator\iref{expr.ass}
+that uses either the built-in assignment operator\iref{expr.assign}
 or a trivial assignment operator\iref{class.copy.assign},
 for each element \tcode{X} of $S($\tcode{E1}$)$ and
 each anonymous union member \tcode{X}\iref{class.union.anon} that
@@ -3331,13 +3320,13 @@ definition, if they are defined at all.
 
 \pnum
 \indextext{nested class!local class}%
-If class \tcode{X} is a local class, a nested class \tcode{Y} may be
-declared in class \tcode{X} and later defined in the definition of class
-\tcode{X} or be later defined in the same scope as the definition of
-class \tcode{X}.
 \indextext{restriction!local class}%
 A class nested within
 a local class is a local class.
+A member of a local class \tcode{X} shall be
+declared only in the definition of \tcode{X} or,
+if the member is a nested class,
+in the nearest enclosing block scope of \tcode{X}.
 
 \pnum
 \indextext{restriction!static member local class}%
@@ -5234,7 +5223,7 @@ complex g = { 1, 2 };           // initialized by calling \tcode{complex(double,
 \end{example}
 \begin{note}
 \indextext{initialization!overloaded assignment and}%
-Overloading of the assignment operator\iref{over.ass}
+Overloading of the assignment operator\iref{over.assign}
 has no effect on initialization.
 \end{note}
 
@@ -5295,7 +5284,7 @@ user-defined type conversions; see~\ref{dcl.init.aggr}.
 If
 \tcode{T}
 is a class type with no default constructor,
-any declaration of an object of type
+any initializing declaration of an object of type
 \tcode{T}
 (or array thereof) is ill-formed if no
 \grammarterm{initializer}
@@ -5942,7 +5931,7 @@ A* pa = &bobj;                          // undefined behavior: upcast to a base 
 B bobj;                                 // definition of \tcode{bobj}
 
 extern X xobj;
-int* p3 = &xobj.i;                      // OK, \tcode{X} is a trivial class
+int* p3 = &xobj.i;                      // OK, all constructors of \tcode{X} are trivial
 X xobj;
 \end{codeblock}
 For another example,
@@ -6178,25 +6167,26 @@ B::B(V* v, A* a) {
 \indextext{constructor!copy!elision}%
 \indextext{constructor!move!elision}%
 When certain criteria are met, an implementation is
-allowed to omit the copy/move construction of a class object,
-even if the constructor selected for the copy/move operation and/or the
+allowed to omit the creation of a class object from
+a source object of the same type (ignoring cv-qualification),
+even if the selected constructor and/or the
 destructor for the object have
 \indextext{side effects}%
 side effects.  In such cases, the
 implementation treats the source and target of the
-omitted copy/move operation as simply two different ways of
+omitted initialization as simply two different ways of
 referring to the same object. If the first parameter of the
 selected constructor is an rvalue reference to the object's type,
 the destruction of that object occurs when the target would have been destroyed;
 otherwise, the destruction occurs at the later of the times when the
 two objects would have been destroyed without the
 optimization.
-\begin{footnote}
+\begin{note}
 Because only one object is destroyed instead of two,
-and one copy/move constructor
-is not executed, there is still one object destroyed for each one constructed.
-\end{footnote}
-This elision of copy/move operations, called
+and the creation of one object is omitted,
+there is still one object destroyed for each one constructed.
+\end{note}
+This elision of object creation, called
 \indexdefn{copy elision|see{constructor, copy, elision}}%
 \indexdefn{elision!copy|see{constructor, copy, elision}}%
 \indexdefn{constructor!copy!elision}\indexdefn{constructor!move!elision}\term{copy elision},
@@ -6204,34 +6194,35 @@ is permitted in the
 following circumstances (which may be combined to
 eliminate multiple copies):
 \begin{itemize}
-\item in a \tcode{return} statement in a function with a class return type,
+\item in a \tcode{return} statement\iref{stmt.return} in
+a function with a class return type,
 when the \grammarterm{expression} is the name of a non-volatile
-object with automatic storage duration (other than a function parameter or a variable
+object $o$ with automatic storage duration (other than a function parameter or a variable
 introduced by the \grammarterm{exception-declaration} of a
-\grammarterm{handler}\iref{except.handle})
-with the same type (ignoring cv-qualification) as
-the function return type, the copy/move operation can be
-omitted by constructing the object directly
-into the function call's return object
+\grammarterm{handler}\iref{except.handle}),
+the copy-initialization of the result object can be
+omitted by constructing $o$ directly
+into the function call's result object;
 
 \item in a \grammarterm{throw-expression}\iref{expr.throw}, when the operand
-is the name of a non-volatile object with automatic storage duration
-(other than a function or catch-clause parameter)
+is the name of a non-volatile object $o$ with automatic storage duration
+(other than a function parameter or
+a variable introduced by
+the \grammarterm{exception-declaration} of a \grammarterm{handler})
 that belongs to a scope that does not contain
 the innermost enclosing \grammarterm{compound-statement}
 associated with a \grammarterm{try-block} (if there is one),
-the copy/move operation can be omitted by
-constructing the object directly into the exception object
+the copy-initialization of the exception object can be omitted by
+constructing $o$ directly into the exception object;
 
 \item in a coroutine\iref{dcl.fct.def.coroutine}, a copy of a coroutine parameter
 can be omitted and references to that copy replaced with references to the
 corresponding parameter if the meaning of the program will be unchanged except for
-the execution of a constructor and destructor for the parameter copy object
+the execution of a constructor and destructor for the parameter copy object;
 
 \item when the \grammarterm{exception-declaration} of a
-\grammarterm{handler}\iref{except.handle} declares an object of the same
-type (except for cv-qualification) as the exception
-object\iref{except.throw}, the copy operation can be omitted by treating
+\grammarterm{handler}\iref{except.handle} declares an object $o$,
+the copy-initialization of $o$ can be omitted by treating
 the \grammarterm{exception-declaration} as an alias for the exception
 object if the meaning of the program will be unchanged except for the execution
 of constructors and destructors for the object declared by the

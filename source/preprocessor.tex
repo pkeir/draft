@@ -75,8 +75,7 @@
 
 \begin{bnf}
 \nontermdef{elif-groups}\br
-    elif-group\br
-    elif-groups elif-group
+    elif-group \opt{elif-groups}
 \end{bnf}
 
 \begin{bnf}\obeyspaces
@@ -124,8 +123,7 @@
 
 \begin{bnf}
 \nontermdef{pp-tokens}\br
-    preprocessing-token\br
-    pp-tokens preprocessing-token
+    preprocessing-token \opt{pp-tokens}
 \end{bnf}
 
 \begin{bnf}
@@ -137,7 +135,7 @@
 A \defn{preprocessing directive} consists of a sequence of preprocessing tokens
 that satisfies the following constraints:
 At the start of translation phase 4,
-the first token in the sequence,
+the first preprocessing token in the sequence,
 referred to as a \defnadj{directive-introducing}{token},
 begins with the first character in the source file
 (optionally after whitespace containing no new-line characters) or
@@ -172,7 +170,7 @@ immediately followed on the same logical source line by
 one of the two preceding forms.
 \end{itemize}
 
-The last token in the sequence is the first token within the sequence that
+The last preprocessing token in the sequence is the first preprocessing token within the sequence that
 is immediately followed by whitespace containing a new-line character.
 \begin{footnote}
 Thus,
@@ -216,6 +214,16 @@ import ->               // not a preprocessing directive
 \pnum
 A sequence of preprocessing tokens is only a \grammarterm{text-line}
 if it does not begin with a directive-introducing token.
+\begin{example}
+\begin{codeblock}
+using module = int;
+module i;               // not a \grammarterm{text-line} and not a \grammarterm{control-line}
+int foo() {
+  return i;
+}
+\end{codeblock}
+The example is not a valid \grammarterm{preprocessing-file}.
+\end{example}
 A sequence of preprocessing tokens is only a \grammarterm{conditionally-supported-directive}
 if it does not begin with any of the directive names
 appearing after a \tcode{\#} in the syntax.
@@ -290,8 +298,7 @@ has been replaced.
 
 \begin{bnf}
 \nontermdef{h-pp-tokens}\br
-    h-preprocessing-token\br
-    h-pp-tokens h-preprocessing-token
+    h-preprocessing-token \opt{h-pp-tokens}
 \end{bnf}
 
 \begin{bnf}
@@ -439,7 +446,7 @@ are replaced
 \tcode{defined}
 unary operator),
 just as in normal text.
-If the token
+If the preprocessing token
 \tcode{defined}
 is generated as a result of this replacement process
 or use of the
@@ -756,7 +763,7 @@ directives:
 \pnum
 A \grammarterm{pp-module} shall not
 appear in a context where \tcode{module}
-or (if it is the first token of the \grammarterm{pp-module}) \tcode{export}
+or (if it is the first preprocessing token of the \grammarterm{pp-module}) \tcode{export}
 is an identifier defined as an object-like macro.
 
 \pnum
@@ -817,7 +824,7 @@ so it is not removed at the end of phase 4.
 \pnum
 A \grammarterm{pp-import} shall not
 appear in a context where \tcode{import}
-or (if it is the first token of the \grammarterm{pp-import}) \tcode{export}
+or (if it is the first preprocessing token of the \grammarterm{pp-import}) \tcode{export}
 is an identifier defined as an object-like macro.
 
 \pnum
@@ -1202,7 +1209,7 @@ been identified, argument substitution takes place.
 For each parameter in the replacement list that is neither
 preceded by a \tcode{\#} or \tcode{\#\#} preprocessing token nor
 followed by a \tcode{\#\#} preprocessing token, the preprocessing tokens
-naming the parameter are replaced by a token sequence determined as follows:
+naming the parameter are replaced by a preprocessing token sequence determined as follows:
 \begin{itemize}
 \item
   If the parameter is of the form \grammarterm{va-opt-replacement},
@@ -1408,7 +1415,7 @@ a \grammarterm{universal-character-name}\iref{lex.charset}.
 \end{note}
 If the result is not a valid preprocessing token,
 the behavior is undefined.
-The resulting token is available for further macro replacement.
+The resulting preprocessing token is available for further macro replacement.
 The order of evaluation of
 \tcode{\#\#}
 operators is unspecified.
@@ -1451,7 +1458,7 @@ fputs("strncmp(@\textbackslash@"abc@\textbackslash\textbackslash@0d@\textbacksla
 "hello, world"
 \end{codeblock}
 
-Space around the \tcode{\#} and \tcode{\#\#} tokens in the macro definition
+Space around the \tcode{\#} and \tcode{\#\#} preprocessing tokens in the macro definition
 is optional.
 \end{example}
 
@@ -1477,8 +1484,8 @@ mkstr(x ## y)
 "x ## y"
 \end{codeblock}
 
-In other words, expanding \tcode{hash_hash} produces a new token,
-consisting of two adjacent sharp signs, but this new token is not the
+In other words, expanding \tcode{hash_hash} produces a new preprocessing token,
+consisting of two adjacent sharp signs, but this new preprocessing token is not the
 \tcode{\#\#} operator.
 \end{example}
 
@@ -1600,10 +1607,12 @@ shall be a character string literal.
 \pnum
 The
 \defn{line number}
-of the current source line is one greater than
+of the current source line is
+the line number of the current physical source line,
+i.e., it is one greater than
 the number of new-line characters read or introduced
 in translation phase 1\iref{lex.phases}
-while processing the source file to the current token.
+while processing the source file to the current preprocessing token.
 
 \pnum
 A preprocessing directive of the form
@@ -1850,6 +1859,7 @@ an \impldef{text of \mname{TIME} when time of translation is not available} vali
 \defnxname{cpp_conditional_explicit}              & \tcode{201806L} \\ \rowsep
 \defnxname{cpp_constexpr}                         & \tcode{202406L} \\ \rowsep
 \defnxname{cpp_constexpr_dynamic_alloc}           & \tcode{201907L} \\ \rowsep
+\defnxname{cpp_constexpr_exceptions}              & \tcode{202411L} \\ \rowsep
 \defnxname{cpp_constexpr_in_decltype}             & \tcode{201711L} \\ \rowsep
 \defnxname{cpp_consteval}                         & \tcode{202211L} \\ \rowsep
 \defnxname{cpp_constinit}                         & \tcode{201907L} \\ \rowsep
@@ -1895,7 +1905,7 @@ an \impldef{text of \mname{TIME} when time of translation is not available} vali
 \defnxname{cpp_sized_deallocation}                & \tcode{201309L} \\ \rowsep
 \defnxname{cpp_static_assert}                     & \tcode{202306L} \\ \rowsep
 \defnxname{cpp_static_call_operator}              & \tcode{202207L} \\ \rowsep
-\defnxname{cpp_structured_bindings}               & \tcode{202403L} \\ \rowsep
+\defnxname{cpp_structured_bindings}               & \tcode{202411L} \\ \rowsep
 \defnxname{cpp_template_template_args}            & \tcode{201611L} \\ \rowsep
 \defnxname{cpp_threadsafe_static_init}            & \tcode{200806L} \\ \rowsep
 \defnxname{cpp_unicode_characters}                & \tcode{200704L} \\ \rowsep

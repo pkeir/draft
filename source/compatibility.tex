@@ -33,6 +33,25 @@ auto x = true ? e : f;  // ill-formed; previously well-formed
 \end{codeblock}
 \end{example}
 
+\diffref{expr.rel,expr.eq}
+\change
+Comparing two objects of array type is no longer valid.
+\rationale
+The old behavior was confusing since it compared not the contents of the two
+arrays, but their addresses.
+\effect
+A valid \CppXXIII{} program directly comparing two array objects is rejected as
+ill-formed in this document.
+\begin{example}
+\begin{codeblock}
+int arr1[5];
+int arr2[5];
+bool same = arr1 == arr2;       // ill-formed; previously well-formed
+bool idem = arr1 == +arr2;      // compare addresses
+bool less = arr1 < +arr2;       // compare addresses, unspecified result
+\end{codeblock}
+\end{example}
+
 \diffref{expr.delete}
 \change
 Calling \tcode{delete} on a pointer to an incomplete class is ill-formed.
@@ -53,7 +72,7 @@ struct S {};
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp23.dcl.dcl]{\ref{dcl.dcl}: declarations}
+\rSec2[diff.cpp23.dcl.dcl]{\ref{dcl}: declarations}
 
 \diffref{dcl.init.list}
 \change
@@ -122,6 +141,38 @@ void g(A<S, S> *ap) {
 \end{codeblock}
 \end{example}
 
+\diffref{temp.deduct.call}
+\change
+Template argument deduction from overload sets succeeds in more cases.
+\rationale
+Allow consideration of constraints to disambiguate overload sets
+used as parameters in function calls.
+\effect
+Valid \CppXXIII{} code may become ill-formed.
+\begin{example}
+\begin{codeblock}
+template <typename T>
+void f(T &&, void (*)(T &&));
+
+void g(int &);              // \#1
+inline namespace A {
+  void g(short &&);         // \#2
+}
+inline namespace B {
+  void g(short &&);         // \#3
+}
+
+void q() {
+  int x;
+  f(x, g);          // ill-formed; previously well-formed, deducing \tcode{T = int\&}
+}
+\end{codeblock}
+There is no change to the applicable deduction rules for
+the individual \tcode{g} candidates:
+Type deduction from \#1 does not succeed;
+type deductions from \#2 and \#3 both succeed.
+\end{example}
+
 \rSec2[diff.cpp23.library]{\ref{library}: library introduction}
 
 \diffref{headers}
@@ -135,7 +186,10 @@ The following \Cpp{} headers are new:
 \libheaderrefx{hazard_pointer}{hazard.pointer.syn},
 \libheaderrefx{inplace_vector}{inplace.vector.syn},
 \libheaderref{linalg},
-\libheaderref{rcu}, and
+\libheaderref{rcu},
+\libheaderref{simd},
+\libheaderref{stdbit.h},
+\libheaderref{stdckdint.h}, and
 \libheaderrefx{text_encoding}{text.encoding.syn}.
 Valid \CppXXIII{} code that \tcode{\#include}{s} headers with these names may be
 invalid in this revision of \Cpp{}.
@@ -359,7 +413,7 @@ arr[1, 2]               // was equivalent to \tcode{arr[(1, 2)]},
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.stmt]{\ref{stmt.stmt}: statements}
+\rSec2[diff.cpp20.stmt]{\ref{stmt}: statements}
 
 \diffref{stmt.ranged}
 \change
@@ -383,7 +437,7 @@ void f() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.dcl]{\ref{dcl.dcl}: declarations}
+\rSec2[diff.cpp20.dcl]{\ref{dcl}: declarations}
 
 \diffref{dcl.init.string}
 \change
@@ -850,7 +904,7 @@ that were not captured in \CppXVII{}
 if those entities are only referenced in contexts
 that do not result in an odr-use.
 
-\rSec2[diff.cpp17.dcl.dcl]{\ref{dcl.dcl}: declarations}
+\rSec2[diff.cpp17.dcl.dcl]{\ref{dcl}: declarations}
 
 \diffref{dcl.typedef}
 \change
@@ -1441,8 +1495,9 @@ Prevents accidental uses of trigraphs in non-raw string literals and comments.
 Valid \CppXIV{} code that uses trigraphs may not be valid or may have different
 semantics in this revision of \Cpp{}. Implementations may choose to
 translate trigraphs as specified in \CppXIV{} if they appear outside of a raw
-string literal, as part of the \impldef{mapping input source file characters
-to translation character set} mapping from input source file characters to
+string literal, as part of the
+\impldef{mapping input file characters to translation character set}
+mapping from input source file characters to
 the translation character set.
 
 \diffref{lex.ppnumber}
@@ -1489,7 +1544,7 @@ In this revision of \Cpp{},
 \tcode{::operator new(std::size_t, std::align_val_t)}
 is used instead.
 
-\rSec2[diff.cpp14.dcl.dcl]{\ref{dcl.dcl}: declarations}
+\rSec2[diff.cpp14.dcl.dcl]{\ref{dcl}: declarations}
 
 \diffref{dcl.stc}
 \indextext{\idxcode{register} storage class}%
@@ -1593,12 +1648,12 @@ B b(42L);           // now calls \tcode{B(int)}, used to call \tcode{B<long>(lon
 
 \diffref{temp.deduct.type}
 \change
-Allowance to deduce from the type of a non-type template argument.
+Allowance to deduce from the type of a constant template argument.
 \rationale
 In combination with the ability to declare
-non-type template arguments with placeholder types,
+constant template arguments with placeholder types,
 allows partial specializations to decompose
-from the type deduced for the non-type template argument.
+from the type deduced for the constant template argument.
 \effect
 Valid \CppXIV{} code may fail to compile
 or produce different results in this revision of \Cpp{}.
@@ -1875,7 +1930,7 @@ In \CppXI{}, the expression yields \tcode{sizeof(const char*)}. In this
 revision of \Cpp{}, it yields \tcode{sizeof(const char[1])}.
 \end{example}
 
-\rSec2[diff.cpp11.dcl.dcl]{\ref{dcl.dcl}: declarations}
+\rSec2[diff.cpp11.dcl.dcl]{\ref{dcl}: declarations}
 
 \diffref{dcl.constexpr}
 \change
@@ -2117,7 +2172,7 @@ void f() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp03.dcl.dcl]{\ref{dcl.dcl}: declarations}
+\rSec2[diff.cpp03.dcl.dcl]{\ref{dcl}: declarations}
 
 \diffref{dcl.spec}
 \change
@@ -2288,12 +2343,12 @@ Valid \CppIII{} code that \tcode{\#include}{s} headers with these names may be
 invalid in this revision of \Cpp{}.
 
 \diffref{swappable.requirements}
-\effect
-Function \tcode{swap} moved to a different header
+\change
+Function \tcode{swap} moved to a different header.
 \rationale
 Remove dependency on \libheaderref{algorithm} for \tcode{swap}.
 \effect
-Valid \CppIII{} code that has been compiled expecting swap to be in
+Valid \CppIII{} code that has been compiled expecting \tcode{swap} to be in
 \libheaderref{algorithm} may have to instead include \libheaderref{utility}.
 
 \diffref{namespace.posix}
@@ -2306,7 +2361,7 @@ The global namespace \tcode{posix} is now reserved for standardization. Valid
 \CppIII{} code that uses a top-level namespace \tcode{posix} may be invalid in
 this revision of \Cpp{}.
 
-\diffref{res.on.macro.definitions}
+\diffref{macro.names}
 \change
 Additional restrictions on macro names.
 \rationale
@@ -2577,7 +2632,7 @@ by the chapters of this document.
 
 \diffref{lex.key}
 \change
-New Keywords\\
+New Keywords.\\
 New keywords are added to \Cpp{};
 see \ref{lex.key}.
 \rationale
@@ -2893,7 +2948,31 @@ Syntactic transformation.
 \howwide
 Seldom.
 
-\diffref{expr.cond,expr.ass,expr.comma}
+\diffref{expr.rel,expr.eq}
+\change
+C allows directly comparing two objects of array type; \Cpp{} does not.
+\rationale
+The behavior is confusing because it compares not the contents of the two
+arrays, but their addresses.
+\effect
+Deletion of semantically well-defined feature that had unspecified behavior
+in common use cases.
+\difficulty
+Violations will be diagnosed by the \Cpp{} translator. The original behavior
+can be replicated by explicitly casting either array to a pointer, such as by
+using a unary \tcode{+}.
+\begin{example}
+\begin{codeblock}
+int arr1[5];
+int arr2[5];
+int same = arr1 == arr2;        // valid C, ill-formed C++
+int idem = arr1 == +arr2;       // valid in both C and C++
+\end{codeblock}
+\end{example}
+\howwide
+Rare.
+
+\diffref{expr.cond,expr.assign,expr.comma}
 \indextext{conversion!lvalue-to-rvalue}%
 \indextext{rvalue!lvalue conversion to}%
 \indextext{lvalue}%
@@ -2923,7 +3002,7 @@ Programs must add explicit casts to the appropriate rvalue.
 \howwide
 Rare.
 
-\rSec2[diff.stat]{\ref{stmt.stmt}: statements}
+\rSec2[diff.stat]{\ref{stmt}: statements}
 
 \diffref{stmt.switch,stmt.goto}
 \change
@@ -2971,7 +3050,7 @@ Seldom.
 For several years, many existing C implementations have produced warnings in
 this case.
 
-\rSec2[diff.dcl]{\ref{dcl.dcl}: declarations}
+\rSec2[diff.dcl]{\ref{dcl}: declarations}
 
 \diffref{dcl.stc}
 \change
@@ -3565,7 +3644,6 @@ and are not introduced as macros
 by \libheaderref{iso646.h}.
 
 \rSec3[diff.header.stdalign.h]{Header \tcode{<stdalign.h>}}
-\indexhdr{stdalign.h}%
 
 \pnum
 The token \keyword{alignas} is a keyword in \Cpp{}\iref{lex.key},
@@ -3573,7 +3651,6 @@ and is not introduced as a macro
 by \libheaderref{stdalign.h}.
 
 \rSec3[diff.header.stdbool.h]{Header \tcode{<stdbool.h>}}
-\indexhdr{stdbool.h}%
 
 \pnum
 The tokens \keyword{bool}, \keyword{true}, and \keyword{false}

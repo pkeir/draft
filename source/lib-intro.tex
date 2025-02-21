@@ -856,9 +856,40 @@ the following expressions have effects equivalent to \tcode{o(args...)}:
 \item \tcode{std::move(as_const(p))(args...)}
 \end{itemize}
 
+\rSec3[alg.func.obj]{Algorithm function objects}
+
 \pnum
-Each customization point object type constrains its return type to model a
-particular concept.
+An \defn{algorithm function object} is
+a customization point object\iref{customization.point.object}
+that is specified as one or more overloaded function templates.
+The name of these function templates designates
+the corresponding algorithm function object.
+
+\pnum
+For an algorithm function object \tcode{o},
+let $S$ be the corresponding set of function templates.
+Then for any sequence of arguments $\tcode{args} \dotsc$,
+$\tcode{o(args} \dotsc \tcode{)}$ is expression-equivalent to
+$\tcode{s(args} \dotsc \tcode{)}$,
+where the result of name lookup for \tcode{s} is the overload set $S$.
+\begin{note}
+Algorithm function objects are not found by
+argument-dependent name lookup\iref{basic.lookup.argdep}.
+When found by unqualified name lookup\iref{basic.lookup.unqual}
+for the \grammarterm{postfix-expression} in a function call\iref{expr.call},
+they inhibit argument-dependent name lookup.
+\begin{example}
+\begin{codeblock}
+void foo() {
+  using namespace std::ranges;
+  std::vector<int> vec{1,2,3};
+  find(begin(vec), end(vec), 2);        // \#1
+}
+\end{codeblock}
+The function call expression at \#1 invokes \tcode{std::ranges::find},
+not \tcode{std::find}.
+\end{example}
+\end{note}
 
 \rSec3[functions.within.classes]{Functions within classes}
 
@@ -1193,6 +1224,7 @@ shown in \tref{headers.cpp}.
 \tcode{<semaphore>} \\
 \tcode{<set>} \\
 \tcode{<shared_mutex>} \\
+\tcode{<simd>} \\
 \tcode{<source_location>} \\
 \tcode{<span>} \\
 \tcode{<spanstream>} \\
@@ -1455,12 +1487,19 @@ that are provided by \libheaderref{new}.
 \pnum
 The named module \tcode{std.compat} exports the same declarations as
 the named module \tcode{std}, and
-additionally exports declarations in the global namespace
+additionally exports
+\begin{itemize}
+\item
+declarations in the global namespace
 corresponding to the declarations in namespace \tcode{std}
 that are provided by
 the \Cpp{} headers for C library facilities~(\tref{headers.cpp.c}),
 except the explicitly excluded declarations
-described in \ref{support.c.headers.other}.
+described in \ref{support.c.headers.other} and
+\item
+declarations provided by
+the headers \libheaderref{stdbit.h} and \libheaderref{stdckdint.h}.
+\end{itemize}
 
 \pnum
 It is unspecified to which module a declaration in the standard library
@@ -1530,6 +1569,7 @@ include at least the headers shown in \tref{headers.cpp.fs}.
 \ref{concepts}           & Concepts library          & \tcode{<concepts>}         \\ \rowsep
 \ref{errno}              & Error numbers             & \tcode{<cerrno>}           \\ \rowsep
 \ref{syserr}             & System error support      & \tcode{<system_error>}     \\ \rowsep
+\ref{debugging}          & Debugging                 & \tcode{<debugging>}        \\ \rowsep
 \ref{memory}             & Memory                    & \tcode{<memory>}           \\ \rowsep
 \ref{type.traits}        & Type traits               & \tcode{<type_traits>}      \\ \rowsep
 \ref{ratio}              & Compile-time rational arithmetic & \tcode{<ratio>}     \\ \rowsep
@@ -1539,12 +1579,7 @@ include at least the headers shown in \tref{headers.cpp.fs}.
 \ref{variant}            & Variants                  & \tcode{<variant>}          \\ \rowsep
 \ref{expected}           & Expected objects          & \tcode{<expected>}         \\ \rowsep
 \ref{function.objects}   & Function objects          & \tcode{<functional>}       \\ \rowsep
-\ref{charconv}           & Primitive numeric conversions & \tcode{<charconv>}     \\ \rowsep
 \ref{bit}                & Bit manipulation          & \tcode{<bit>}              \\ \rowsep
-\ref{debugging}          & Debugging                 & \tcode{<debugging>}        \\ \rowsep
-\ref{string.view}        & String view classes       & \tcode{<string_view>}      \\ \rowsep
-\ref{string.classes}     & String classes            & \tcode{<string>}           \\ \rowsep
-\ref{c.strings}          & Null-terminated sequence utilities & \tcode{<cstring>}, \tcode{<cwchar>} \\ \rowsep
 \ref{array}              & Class template \tcode{array} & \tcode{<array>}         \\ \rowsep
 \ref{inplace.vector}     & Class template \tcode{inplace_vector} & \tcode{<inplace_vector>} \\ \rowsep
 \ref{views.contiguous}   & Contiguous access         & \tcode{<span>}             \\ \rowsep
@@ -1552,6 +1587,10 @@ include at least the headers shown in \tref{headers.cpp.fs}.
 \ref{iterators}          & Iterators library         & \tcode{<iterator>}         \\ \rowsep
 \ref{ranges}             & Ranges library            & \tcode{<ranges>}           \\ \rowsep
 \ref{algorithms}         & Algorithms library        & \tcode{<algorithm>}, \tcode{<numeric>} \\ \rowsep
+\ref{string.view}        & String view classes       & \tcode{<string_view>}      \\ \rowsep
+\ref{string.classes}     & String classes            & \tcode{<string>}           \\ \rowsep
+\ref{c.strings}          & Null-terminated sequence utilities & \tcode{<cstring>}, \tcode{<cwchar>} \\ \rowsep
+\ref{charconv}           & Primitive numeric conversions & \tcode{<charconv>}     \\ \rowsep
 \ref{c.math}             & Mathematical functions for floating-point types & \tcode{<cmath>} \\ \rowsep
 \ref{atomics}            & Atomics                   & \tcode{<atomic>}           \\ \rowsep
 \end{libsumtab}
@@ -2234,7 +2273,7 @@ Default:
 \end{itemdescr}
 
 \begin{itemdecl}
-typename X::template rebind<U>::other
+typename X::rebind<U>::other
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3927,7 +3966,7 @@ may provide enums for the associated values.
 Objects of types defined in the \Cpp{} standard library may be moved
 from\iref{class.copy.ctor}. Move operations may be explicitly specified or
 implicitly generated. Unless otherwise specified, such moved-from objects shall
-be placed in a valid but unspecified state.
+be placed in a valid but unspecified state\iref{defns.valid}.
 
 \pnum
 An object of a type defined in the \Cpp{} standard library may be

@@ -485,7 +485,7 @@ namespace std {
       collate  = 0x010, ctype    = 0x020,
       monetary = 0x040, numeric  = 0x080,
       time     = 0x100, messages = 0x200,
-      all = collate | ctype | monetary | numeric | time  | messages;
+      all = collate | ctype | monetary | numeric | time | messages;
 
     // \ref{locale.cons}, construct/copy/destroy
     locale() noexcept;
@@ -1615,7 +1615,7 @@ The only characters for which unique transformations are required
 are those in the basic character set\iref{lex.charset}.
 
 For any named \tcode{ctype} category with
-a \tcode{ctype<charT>} facet \tcode{ctc} and
+a \tcode{ctype<char>} facet \tcode{ctc} and
 valid \tcode{ctype_base::mask} value \tcode{M},
 \tcode{(ctc.\brk{}is(M, c) || !is(M, do_widen(c)) )} is \tcode{true}.
 \begin{footnote}
@@ -1792,7 +1792,7 @@ explicit ctype(const mask* tbl = nullptr, bool del = false, size_t refs = 0);
 \pnum
 \expects
 Either \tcode{tbl == nullptr} is \tcode{true} or
-\range{tbl}{tbl+table_size} is a valid range.
+\range{tbl}{tbl + table_size} is a valid range.
 
 \pnum
 \effects
@@ -2160,10 +2160,10 @@ stores no more than \tcode{(to_end - to)} destination elements.
 Stops if it encounters a character it cannot convert.
 It always leaves the \tcode{from_next} and \tcode{to_next} pointers
 pointing one beyond the last element successfully converted.
-If returns \tcode{noconv},
-\tcode{internT} and \tcode{externT} are the same type and
+If it returns \tcode{noconv},
+\tcode{internT} and \tcode{externT} are the same type, and
 the converted sequence is identical to
-the input sequence \range{from}{from\textunderscore\nobreak next}.
+the input sequence \range{from}{from\textunderscore\nobreak next},
 \tcode{to_next} is set equal to \tcode{to},
 the value of \tcode{state} is unchanged, and
 there are no changes to the values in \range{to}{to_end}.
@@ -2334,18 +2334,18 @@ the preceding characters in the sequence.
 \pnum
 \effects
 The effect on the \tcode{state} argument is as if
-it called \tcode{do_in(state, from, from_end, from, to, to+max, to)}
+it called \tcode{do_in(state, from, from_end, from, to, to + max, to)}
 for \tcode{to} pointing to a buffer of at least \tcode{max} elements.
 
 \pnum
 \returns
-\tcode{(from_next-from)} where
+\tcode{(from_next - from)} where
 \tcode{from_next} is the largest value in the range \crange{from}{from_end}
 such that the sequence of values in the range \range{from}{from_next}
 represents
 \tcode{max} or fewer valid complete characters of type \tcode{internT}.
 The specialization \tcode{codecvt<char, char, mbstate_t>},
-returns the lesser of \tcode{max} and \tcode{(from_end-from)}.
+returns the lesser of \tcode{max} and \tcode{(from_end - from)}.
 \end{itemdescr}
 
 \indexlibrarymember{codecvt}{do_max_length}%
@@ -2530,25 +2530,25 @@ iter_type get(iter_type in, iter_type end, ios_base& str,
 \indexlibrarymember{num_get}{do_get}%
 \begin{itemdecl}
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, long& val) const;
+                 ios_base::iostate& err, long& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, long long& val) const;
+                 ios_base::iostate& err, long long& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, unsigned short& val) const;
+                 ios_base::iostate& err, unsigned short& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, unsigned int& val) const;
+                 ios_base::iostate& err, unsigned int& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, unsigned long& val) const;
+                 ios_base::iostate& err, unsigned long& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, unsigned long long& val) const;
+                 ios_base::iostate& err, unsigned long long& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, float& val) const;
+                 ios_base::iostate& err, float& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, double& val) const;
+                 ios_base::iostate& err, double& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, long double& val) const;
+                 ios_base::iostate& err, long double& val) const;
 iter_type do_get(iter_type in, iter_type end, ios_base& str,
-                ios_base::iostate& err, void*& val) const;
+                 ios_base::iostate& err, void*& val) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -2746,7 +2746,7 @@ iter_type do_get(iter_type in, iter_type end, ios_base& str,
 \begin{itemdescr}
 \pnum
 \effects
-If \tcode{(str.flags()\&ios_base::boolalpha) == 0}
+If \tcode{(str.flags() \& ios_base::boolalpha) == 0}
 then input proceeds as it would for a \tcode{long}
 except that if a value is being stored into \tcode{val},
 the value is determined according to the following:
@@ -2778,7 +2778,7 @@ or to \tcode{str.eofbit} if,
 when seeking another character to match,
 it is found that \tcode{(in == end)}.
 If \tcode{val} is not set, then \tcode{err} is set to \tcode{str.failbit};
-or to \tcode{(str.failbit|str.eofbit)}
+or to \tcode{(str.failbit | str.eofbit)}
 if the reason for the failure was that \tcode{(in == end)}.
 \begin{example}
 For targets \tcode{true}: \tcode{"a"} and \tcode{false}: \tcode{"abb"},
@@ -2965,7 +2965,8 @@ as indicated in \tref{facet.num.put.fp}.
 {lc}
 \topline
 \lhdr{State}            & \rhdr{\tcode{stdio} equivalent}  \\ \capsep
-\tcode{floatfield == ios_base::fixed}                       &   \tcode{\%f} \\ \rowsep
+\tcode{floatfield == ios_base::fixed \&\& !uppercase}       &   \tcode{\%f} \\ \rowsep
+\tcode{floatfield == ios_base::fixed}                       &   \tcode{\%F} \\ \rowsep
 \tcode{floatfield == ios_base::scientific \&\& !uppercase}  &   \tcode{\%e} \\ \rowsep
 \tcode{floatfield == ios_base::scientific}                  &   \tcode{\%E} \\ \rowsep
 \tcode{floatfield == (ios_base::fixed | ios_base::scientific) \&\& !uppercase} & \tcode{\%a} \\ \rowsep
@@ -3225,7 +3226,7 @@ char_type thousands_sep() const;
 
 \indexlibrarymember{numpunct}{grouping}%
 \begin{itemdecl}
-string grouping()  const;
+string grouping() const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3543,28 +3544,28 @@ namespace std {
 
       explicit time_get(size_t refs = 0);
 
-      dateorder date_order()  const { return do_date_order(); }
+      dateorder date_order() const { return do_date_order(); }
       iter_type get_time(iter_type s, iter_type end, ios_base& f,
-                         ios_base::iostate& err, tm* t)  const;
+                         ios_base::iostate& err, tm* t) const;
       iter_type get_date(iter_type s, iter_type end, ios_base& f,
-                         ios_base::iostate& err, tm* t)  const;
+                         ios_base::iostate& err, tm* t) const;
       iter_type get_weekday(iter_type s, iter_type end, ios_base& f,
-                         ios_base::iostate& err, tm* t) const;
+                            ios_base::iostate& err, tm* t) const;
       iter_type get_monthname(iter_type s, iter_type end, ios_base& f,
-                         ios_base::iostate& err, tm* t) const;
+                              ios_base::iostate& err, tm* t) const;
       iter_type get_year(iter_type s, iter_type end, ios_base& f,
                          ios_base::iostate& err, tm* t) const;
       iter_type get(iter_type s, iter_type end, ios_base& f,
-                         ios_base::iostate& err, tm* t, char format, char modifier = 0) const;
+                    ios_base::iostate& err, tm* t, char format, char modifier = 0) const;
       iter_type get(iter_type s, iter_type end, ios_base& f,
-                         ios_base::iostate& err, tm* t, const char_type* fmt,
-                         const char_type* fmtend) const;
+                    ios_base::iostate& err, tm* t, const char_type* fmt,
+                    const char_type* fmtend) const;
 
       static locale::id id;
 
     protected:
       ~time_get();
-      virtual dateorder do_date_order()  const;
+      virtual dateorder do_date_order() const;
       virtual iter_type do_get_time(iter_type s, iter_type end, ios_base&,
                                     ios_base::iostate& err, tm* t) const;
       virtual iter_type do_get_date(iter_type s, iter_type end, ios_base&,
@@ -4020,9 +4021,6 @@ where \tcode{ct} is a reference to \tcode{ctype<charT>}
 obtained from \tcode{str.getloc()}.
 The first character of each sequence is equal to \tcode{'\%'},
 followed by an optional modifier character \tcode{mod}
-\begin{footnote}
-Although the C programming language defines no modifiers, most vendors do.
-\end{footnote}
 and a format specifier character \tcode{spec}
 as defined for the function \tcode{strftime}.
 If no modifier character is present, \tcode{mod} is zero.
@@ -4200,8 +4198,8 @@ a \tcode{ctype<charT>} facet reference \tcode{ct}
 obtained from the locale returned by \tcode{str.getloc()}, and
 \tcode{str.flags()}.
 If a valid sequence is recognized, does not change \tcode{err};
-otherwise, sets \tcode{err} to \tcode{(err|str.failbit)}, or
-\tcode{(err|str.failbit|str.eof\-bit)} if no more characters are available,
+otherwise, sets \tcode{err} to \tcode{(err | str.failbit)}, or
+\tcode{(err | str.failbit | str.eof\-bit)} if no more characters are available,
 and does not change \tcode{units} or \tcode{digits}.
 Uses the pattern returned by \tcode{mp.neg_format()} to parse all values.
 The result is returned as an integral value stored in \tcode{units}
@@ -4470,7 +4468,7 @@ used by \tcode{money_get<>} and \tcode{money_put<>}.
 A monetary format is a sequence of four components,
 specified by a \tcode{pattern} value \tcode{p},
 such that the \tcode{part} value \tcode{static_cast<part>(p.field[i])}
-determines the $\tcode{i}^\text{th}$ component of the format
+determines the $\tcode{i}^\text{th}$ component of the format.
 \begin{footnote}
 An array of \tcode{char},
 rather than an array of \tcode{part},
@@ -4711,7 +4709,7 @@ for example, \tcode{"USD "}.
 \begin{codeblock}
 namespace std {
   template<class charT, bool Intl = false>
-  class moneypunct_byname : public moneypunct<charT, Intl> {
+    class moneypunct_byname : public moneypunct<charT, Intl> {
     public:
       using pattern     = money_base::pattern;
       using string_type = basic_string<charT>;
@@ -4902,13 +4900,6 @@ namespace std {
 \indexlibraryglobal{lconv}%
 \indexlibraryglobal{setlocale}%
 \indexlibraryglobal{localeconv}%
-\indexlibraryglobal{NULL}%
-\indexlibraryglobal{LC_ALL}%
-\indexlibraryglobal{LC_COLLATE}%
-\indexlibraryglobal{LC_CTYPE}%
-\indexlibraryglobal{LC_MONETARY}%
-\indexlibraryglobal{LC_NUMERIC}%
-\indexlibraryglobal{LC_TIME}%
 \begin{codeblock}
 namespace std {
   struct lconv;
@@ -4917,13 +4908,13 @@ namespace std {
   lconv* localeconv();
 }
 
-#define NULL @\textit{see \ref{support.types.nullptr}}@
-#define LC_ALL @\seebelow@
-#define LC_COLLATE @\seebelow@
-#define LC_CTYPE @\seebelow@
-#define LC_MONETARY @\seebelow@
-#define LC_NUMERIC @\seebelow@
-#define LC_TIME @\seebelow@
+#define @\libmacro{NULL}@ @\textit{see \ref{support.types.nullptr}}@
+#define @\libmacro{LC_ALL}@ @\seebelow@
+#define @\libmacro{LC_COLLATE}@ @\seebelow@
+#define @\libmacro{LC_CTYPE}@ @\seebelow@
+#define @\libmacro{LC_MONETARY}@ @\seebelow@
+#define @\libmacro{LC_NUMERIC}@ @\seebelow@
+#define @\libmacro{LC_TIME}@ @\seebelow@
 \end{codeblock}
 
 \pnum
@@ -5043,6 +5034,7 @@ namespace std {
     constexpr id mib() const noexcept;
     constexpr const char* name() const noexcept;
 
+    // \ref{text.encoding.aliases}, class \tcode{text_encoding::aliases_view}
     struct aliases_view;
     constexpr aliases_view aliases() const noexcept;
 
@@ -5113,7 +5105,7 @@ An object \tcode{e} of type \tcode{text_encoding} such that
 \tcode{e.mib() == text_encoding::id::other} is \tcode{false}
 maintains the following invariants:
 \begin{itemize}
-\item \tcode{e.name() == nullptr} is \tcode{false}, and
+\item \tcode{*e.name() == '\textbackslash 0'} is \tcode{false}, and
 \item \tcode{e.mib() == text_encoding(e.name()).mib()} is \tcode{true}.
 \end{itemize}
 
@@ -5213,13 +5205,10 @@ constexpr const char* name() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\exposid{name_} if \tcode{(\exposid{name_}[0] != '\textbackslash 0')}
-is \tcode{true}, and
-\keyword{nullptr} otherwise.
+\exposid{name_}.
 
 \pnum
 \remarks
-If \tcode{name() == nullptr} is \tcode{false},
 \tcode{name()} is an \ntbs{} and
 accessing elements of \exposid{name_}
 outside of the range \countedrange{name()}{strlen(name()) + 1}
@@ -5890,7 +5879,7 @@ namespace std {
              @\libconcept{formattable}@<ranges::range_reference_t<R>, charT>
   struct formatter<R, charT> : @\exposid{range-default-formatter}@<format_kind<R>, R, charT> { };
 
-  template<ranges::input_range R>
+  template<ranges::@\libconcept{input_range}@ R>
       requires (format_kind<R> != range_format::disabled)
     constexpr bool enable_nonlocking_formatter_optimization<R> = false;
 
@@ -6036,12 +6025,12 @@ the string is not a format string for \tcode{args}.
 For arithmetic, pointer, and string types
 the \fmtgrammarterm{format-spec}
 is interpreted as a \fmtgrammarterm{std-format-spec}
-as described in \iref{format.string.std}.
+as described in~\ref{format.string.std}.
 \item
 For chrono types
 the \fmtgrammarterm{format-spec}
 is interpreted as a \fmtgrammarterm{chrono-format-spec}
-as described in \iref{time.format}.
+as described in~\ref{time.format}.
 \item
 For user-defined \tcode{formatter} specializations,
 the behavior of the \tcode{parse} member function
@@ -6352,7 +6341,7 @@ The following code points have a field width of 2:
 \begin{itemize}
 \item
 any code point with the \tcode{East_Asian_Width="W"} or
-\tcode{East_Asian_Width="F"} Derived Extracted Property as described by
+\tcode{East_Asian_Width="F"} property as described by
 \UAX{44} of the Unicode Standard
 \item
 \ucode{4dc0} -- \ucode{4dff} (Yijing Hexagram Symbols)
@@ -7210,7 +7199,7 @@ template<> struct formatter<const void*, charT>;
 The \tcode{parse} member functions of these formatters
 interpret the format specification
 as a \fmtgrammarterm{std-format-spec}
-as described in \ref{format.string.std}.
+as described in~\ref{format.string.std}.
 
 \pnum
 Unless specified otherwise, for each type \tcode{T} for which
@@ -7626,6 +7615,7 @@ template<class... Ts>
 \begin{itemdescr}
 \pnum
 \mandates
+$\tcode{sizeof...(Ts)} \ge 1$.
 The types in \tcode{Ts...} are unique.
 Each type in \tcode{Ts...} is one of
 \keyword{bool},
@@ -8492,7 +8482,7 @@ template<class T> explicit basic_format_arg(T& v) noexcept;
 \pnum
 \expects
 If \tcode{decay_t<T>} is \tcode{char_type*} or \tcode{const char_type*},
-\tcode{static_cast<const char_\linebreak{}type*>(v)} points to a NTCTS\iref{defns.ntcts}.
+\tcode{static_cast<const char_\linebreak{}type*>(v)} points to an NTCTS\iref{defns.ntcts}.
 
 \pnum
 \effects
@@ -9523,7 +9513,7 @@ namespace std {
 
   // \ref{re.alg.replace}, function template \tcode{regex_replace}
   template<class OutputIterator, class BidirectionalIterator,
-            class traits, class charT, class ST, class SA>
+           class traits, class charT, class ST, class SA>
     OutputIterator
       regex_replace(OutputIterator out,
                     BidirectionalIterator first, BidirectionalIterator last,
@@ -9564,8 +9554,8 @@ namespace std {
 
   // \ref{re.regiter}, class template \tcode{regex_iterator}
   template<class BidirectionalIterator,
-            class charT = typename iterator_traits<BidirectionalIterator>::value_type,
-            class traits = regex_traits<charT>>
+           class charT = typename iterator_traits<BidirectionalIterator>::value_type,
+           class traits = regex_traits<charT>>
     class regex_iterator;
 
   using cregex_iterator  = regex_iterator<const char*>;
@@ -9575,8 +9565,8 @@ namespace std {
 
   // \ref{re.tokiter}, class template \tcode{regex_token_iterator}
   template<class BidirectionalIterator,
-            class charT = typename iterator_traits<BidirectionalIterator>::value_type,
-            class traits = regex_traits<charT>>
+           class charT = typename iterator_traits<BidirectionalIterator>::value_type,
+           class traits = regex_traits<charT>>
     class regex_token_iterator;
 
   using cregex_token_iterator  = regex_token_iterator<const char*>;
@@ -9930,7 +9920,7 @@ The expression contains mismatched \verb|(| and \verb|)|.  \\ \rowsep
 %
 \tcode{error_brace}
 &
-The expression contains mismatched \verb|{| and \verb|}| \\ \rowsep
+The expression contains mismatched \verb|{| and \verb|}|.  \\ \rowsep
 %
 \tcode{error_badbrace}
 &
@@ -10217,7 +10207,7 @@ string u("upper");
 regex_traits<char>::char_class_type f;
 f = t.lookup_classname(d.begin(), d.end());
 f |= t.lookup_classname(u.begin(), u.end());
-ctype_base::mask m = convert<char>(f);  // \tcode{m == ctype_base::digit|ctype_base::upper}
+ctype_base::mask m = convert<char>(f);  // \tcode{m == ctype_base::digit | ctype_base::upper}
 \end{codeblock}
 \end{example}
 \begin{example}
@@ -11545,9 +11535,9 @@ sub-expressions stored in \tcode{*this}.
 \begin{itemdecl}
 template<class OutputIter>
   OutputIter format(
-      OutputIter out,
-      const char_type* fmt_first, const char_type* fmt_last,
-      regex_constants::match_flag_type flags = regex_constants::format_default) const;
+    OutputIter out,
+    const char_type* fmt_first, const char_type* fmt_last,
+    regex_constants::match_flag_type flags = regex_constants::format_default) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11574,9 +11564,9 @@ specifiers and escape sequences are recognized.
 \begin{itemdecl}
 template<class OutputIter, class ST, class SA>
   OutputIter format(
-      OutputIter out,
-      const basic_string<char_type, ST, SA>& fmt,
-      regex_constants::match_flag_type flags = regex_constants::format_default) const;
+    OutputIter out,
+    const basic_string<char_type, ST, SA>& fmt,
+    regex_constants::match_flag_type flags = regex_constants::format_default) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11592,8 +11582,8 @@ return format(out, fmt.data(), fmt.data() + fmt.size(), flags);
 \begin{itemdecl}
 template<class ST, class SA>
   basic_string<char_type, ST, SA> format(
-      const basic_string<char_type, ST, SA>& fmt,
-      regex_constants::match_flag_type flags = regex_constants::format_default) const;
+    const basic_string<char_type, ST, SA>& fmt,
+    regex_constants::match_flag_type flags = regex_constants::format_default) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11617,8 +11607,8 @@ format(back_inserter(result), fmt, flags);
 \indexlibrarymember{match_results}{format}%
 \begin{itemdecl}
 string_type format(
-    const char_type* fmt,
-    regex_constants::match_flag_type flags = regex_constants::format_default) const;
+  const char_type* fmt,
+  regex_constants::match_flag_type flags = regex_constants::format_default) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11692,8 +11682,8 @@ As if by \tcode{m1.swap(m2)}.
 \indexlibrarymember{operator==}{match_results}%
 \begin{itemdecl}
 template<class BidirectionalIterator, class Allocator>
-bool operator==(const match_results<BidirectionalIterator, Allocator>& m1,
-                const match_results<BidirectionalIterator, Allocator>& m2);
+  bool operator==(const match_results<BidirectionalIterator, Allocator>& m1,
+                  const match_results<BidirectionalIterator, Allocator>& m2);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -11904,7 +11894,7 @@ template<class charT, class traits>
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{regex_match(str, str + char_traits<charT>::length(str), e, flags)}
+\tcode{regex_match(str, str + char_traits<charT>::length(str), e, flags)}.
 \end{itemdescr}
 
 \indexlibraryglobal{regex_match}%
@@ -12099,7 +12089,7 @@ template<class ST, class SA, class charT, class traits>
 \indexlibraryglobal{regex_replace}%
 \begin{itemdecl}
 template<class OutputIterator, class BidirectionalIterator,
-          class traits, class charT, class ST, class SA>
+         class traits, class charT, class ST, class SA>
   OutputIterator
     regex_replace(OutputIterator out,
                   BidirectionalIterator first, BidirectionalIterator last,
@@ -12261,8 +12251,8 @@ the same arguments.
 \begin{codeblock}
 namespace std {
   template<class BidirectionalIterator,
-            class charT = typename iterator_traits<BidirectionalIterator>::value_type,
-            class traits = regex_traits<charT>>
+           class charT = typename iterator_traits<BidirectionalIterator>::value_type,
+           class traits = regex_traits<charT>>
     class regex_iterator {
     public:
       using regex_type        = basic_regex<charT, traits>;
@@ -12532,8 +12522,8 @@ equal when they are constructed from the same arguments.
 \begin{codeblock}
 namespace std {
   template<class BidirectionalIterator,
-            class charT = typename iterator_traits<BidirectionalIterator>::value_type,
-            class traits = regex_traits<charT>>
+           class charT = typename iterator_traits<BidirectionalIterator>::value_type,
+           class traits = regex_traits<charT>>
     class regex_token_iterator {
     public:
       using regex_type        = basic_regex<charT, traits>;
@@ -12771,7 +12761,7 @@ Otherwise, sets \tcode{*this} to an end-of-sequence iterator.
 
 \pnum
 \returns
-\tcode{*this}
+\tcode{*this}.
 \end{itemdescr}
 
 \indexlibrarymember{regex_token_iterator}{operator++}%
@@ -13065,7 +13055,6 @@ are the same as the C standard library header \libheader{ctype.h}.
 \indexlibraryglobal{towupper}%
 \indexlibraryglobal{towctrans}%
 \indexlibraryglobal{wctrans}%
-\indexlibraryglobal{WEOF}%
 \begin{codeblock}
 namespace std {
   using wint_t = @\seebelow@;
@@ -13092,7 +13081,7 @@ namespace std {
   wctrans_t wctrans(const char* property);
 }
 
-#define WEOF @\seebelow@
+#define @\libmacro{WEOF}@ @\seebelow@
 \end{codeblock}
 
 \pnum
@@ -13104,10 +13093,6 @@ are the same as the C standard library header \libheader{wctype.h}.
 \rSec2[cwchar.syn]{Header \tcode{<cwchar>} synopsis}
 
 \indexheader{cwchar}%
-\indexlibraryglobal{NULL}%
-\indexlibraryglobal{WCHAR_MAX}%
-\indexlibraryglobal{WCHAR_MIN}%
-\indexlibraryglobal{WEOF}%
 \indexlibraryglobal{btowc}%
 \indexlibraryglobal{fgetwc}%
 \indexlibraryglobal{fgetws}%
@@ -13247,10 +13232,10 @@ namespace std {
   size_t wcsrtombs(char* dst, const wchar_t** src, size_t len, mbstate_t* ps);
 }
 
-#define NULL @\textit{see \ref{support.types.nullptr}}@                                                  // freestanding
-#define WCHAR_MAX @\seebelow@                                             // freestanding
-#define WCHAR_MIN @\seebelow@                                             // freestanding
-#define WEOF @\seebelow@                                                  // freestanding
+#define @\libmacro{NULL}@ @\textit{see \ref{support.types.nullptr}}@                                                  // freestanding
+#define @\libmacro{WCHAR_MAX}@ @\seebelow@                                             // freestanding
+#define @\libmacro{WCHAR_MIN}@ @\seebelow@                                             // freestanding
+#define @\libmacro{WEOF}@ @\seebelow@                                                  // freestanding
 \end{codeblock}
 
 \pnum
@@ -13416,7 +13401,7 @@ the multibyte character
 that corresponds to the \unicode{0000}{null} Unicode character
 (which is the value stored).
 \item between \tcode{1} and \tcode{n} (inclusive),
-if the next n or fewer bytes complete a valid multibyte character
+if the next \tcode{n} or fewer bytes complete a valid multibyte character
 (whose first (or only) code unit is stored);
 the value returned is the number of bytes that complete the multibyte character.
 \item \tcode{(size_t)(-3)}, if the next code unit

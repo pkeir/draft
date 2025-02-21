@@ -2440,7 +2440,7 @@ is not a specialization of \tcode{ranges::subrange},
 
 \item
 \tcode{sizeof...(Types)}
-equals \tcode{tuple_size_v<remove_cvref_t<UTuple>>}, and,
+equals \tcode{tuple_size_v<remove_cvref_t<UTuple>>}, and
 
 \item
 \tcode{is_assignable_v<$\tcode{T}_i$\&, decltype(get<$i$>(std::forward<UTuple>(u)))>}
@@ -2477,7 +2477,7 @@ is not a specialization of \tcode{ranges::subrange},
 
 \item
 \tcode{sizeof...(Types)}
-equals \tcode{tuple_size_v<remove_cvref_t<UTuple>>}, and,
+equals \tcode{tuple_size_v<remove_cvref_t<UTuple>>}, and
 
 \item
 \tcode{is_assignable_v<const $\tcode{T}_i$\&, decltype(get<$i$>(std::forward<UTuple>(u)))>}
@@ -2751,7 +2751,7 @@ for some \tcode{N}.
 \indexlibraryglobal{tuple_size}%
 \begin{itemdecl}
 template<class... Types>
-  struct tuple_size<tuple<Types...>> : public integral_constant<size_t, sizeof...(Types)> { };
+  struct tuple_size<tuple<Types...>> : integral_constant<size_t, sizeof...(Types)> { };
 \end{itemdecl}
 
 \indexlibraryglobal{tuple_element}%
@@ -3269,7 +3269,7 @@ namespace std {
       constexpr explicit optional(in_place_t, Args&&...);
     template<class U, class... Args>
       constexpr explicit optional(in_place_t, initializer_list<U>, Args&&...);
-    template<class U = T>
+    template<class U = remove_cv_t<T>>
       constexpr explicit(@\seebelow@) optional(U&&);
     template<class U>
       constexpr explicit(@\seebelow@) optional(const optional<U>&);
@@ -3283,7 +3283,7 @@ namespace std {
     constexpr optional& operator=(nullopt_t) noexcept;
     constexpr optional& operator=(const optional&);
     constexpr optional& operator=(optional&&) noexcept(@\seebelow@);
-    template<class U = T> constexpr optional& operator=(U&&);
+    template<class U = remove_cv_t<T>> constexpr optional& operator=(U&&);
     template<class U> constexpr optional& operator=(const optional<U>&);
     template<class U> constexpr optional& operator=(optional<U>&&);
     template<class... Args> constexpr T& emplace(Args&&...);
@@ -3311,8 +3311,8 @@ namespace std {
     constexpr T& value() &;                                             // freestanding-deleted
     constexpr T&& value() &&;                                           // freestanding-deleted
     constexpr const T&& value() const &&;                               // freestanding-deleted
-    template<class U> constexpr T value_or(U&&) const &;
-    template<class U> constexpr T value_or(U&&) &&;
+    template<class U = remove_cv_t<T>> constexpr T value_or(U&&) const &;
+    template<class U = remove_cv_t<T>> constexpr T value_or(U&&) &&;
 
     // \ref{optional.monadic}, monadic operations
     template<class F> constexpr auto and_then(F&& f) &;
@@ -3342,8 +3342,7 @@ namespace std {
 Any instance of \tcode{optional<T>} at any given time either contains a value or does not contain a value.
 When an instance of \tcode{optional<T>} \defnx{contains a value}{contains a value!\idxcode{optional}},
 it means that an object of type \tcode{T}, referred to as the optional object's \defnx{contained value}{contained value!\idxcode{optional}},
-is allocated within the storage of the optional object.
-Implementations are not permitted to use additional storage, such as dynamic memory, to allocate its contained value.
+is nested within\iref{intro.object} the optional object.
 When an object of type \tcode{optional<T>} is contextually converted to \tcode{bool},
 the conversion returns \tcode{true} if the object contains a value;
 otherwise the conversion returns \tcode{false}.
@@ -3504,7 +3503,7 @@ If \tcode{T}'s constructor selected for the initialization is a constexpr constr
 
 \indexlibraryctor{optional}%
 \begin{itemdecl}
-template<class U = T> constexpr explicit(@\seebelow@) optional(U&& v);
+template<class U = remove_cv_t<T>> constexpr explicit(@\seebelow@) optional(U&& v);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3756,7 +3755,7 @@ this assignment operator is trivial.
 
 \indexlibrarymember{operator=}{optional}%
 \begin{itemdecl}
-template<class U = T> constexpr optional<T>& operator=(U&& v);
+template<class U = remove_cv_t<T>> constexpr optional& operator=(U&& v);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4193,7 +4192,7 @@ return has_value() ? std::move(*val) : throw bad_optional_access();
 
 \indexlibrarymember{value_or}{optional}%
 \begin{itemdecl}
-template<class U> constexpr T value_or(U&& v) const &;
+template<class U = remove_cv_t<T>> constexpr T value_or(U&& v) const &;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4211,7 +4210,7 @@ return has_value() ? **this : static_cast<T>(std::forward<U>(v));
 
 \indexlibrarymember{value_or}{optional}%
 \begin{itemdecl}
-template<class U> constexpr T value_or(U&& v) &&;
+template<class U = remove_cv_t<T>> constexpr T value_or(U&& v) &&;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4659,6 +4658,7 @@ template<class T, class U> constexpr bool operator==(const optional<T>& x, const
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{U} is not a specialization of \tcode{optional}.
 The expression \tcode{*x == v} is well-formed and
 its result is convertible to \tcode{bool}.
 \begin{note}
@@ -4678,6 +4678,7 @@ template<class T, class U> constexpr bool operator==(const T& v, const optional<
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{T} is not a specialization of \tcode{optional}.
 The expression \tcode{v == *x} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4694,6 +4695,7 @@ template<class T, class U> constexpr bool operator!=(const optional<T>& x, const
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{U} is not a specialization of \tcode{optional}.
 The expression \tcode{*x != v} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4710,6 +4712,7 @@ template<class T, class U> constexpr bool operator!=(const T& v, const optional<
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{T} is not a specialization of \tcode{optional}.
 The expression \tcode{v != *x} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4726,6 +4729,7 @@ template<class T, class U> constexpr bool operator<(const optional<T>& x, const 
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{U} is not a specialization of \tcode{optional}.
 The expression \tcode{*x < v} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4742,6 +4746,7 @@ template<class T, class U> constexpr bool operator<(const T& v, const optional<U
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{T} is not a specialization of \tcode{optional}.
 The expression \tcode{v < *x} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4758,6 +4763,7 @@ template<class T, class U> constexpr bool operator>(const optional<T>& x, const 
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{U} is not a specialization of \tcode{optional}.
 The expression \tcode{*x > v} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4774,6 +4780,7 @@ template<class T, class U> constexpr bool operator>(const T& v, const optional<U
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{T} is not a specialization of \tcode{optional}.
 The expression \tcode{v > *x} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4790,6 +4797,7 @@ template<class T, class U> constexpr bool operator<=(const optional<T>& x, const
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{U} is not a specialization of \tcode{optional}.
 The expression \tcode{*x <= v} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4806,6 +4814,7 @@ template<class T, class U> constexpr bool operator<=(const T& v, const optional<
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{T} is not a specialization of \tcode{optional}.
 The expression \tcode{v <= *x} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4822,6 +4831,7 @@ template<class T, class U> constexpr bool operator>=(const optional<T>& x, const
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{U} is not a specialization of \tcode{optional}.
 The expression \tcode{*x >= v} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -4838,6 +4848,7 @@ template<class T, class U> constexpr bool operator>=(const T& v, const optional<
 \begin{itemdescr}
 \pnum
 \constraints
+\tcode{T} is not a specialization of \tcode{optional}.
 The expression \tcode{v >= *x} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -5132,10 +5143,9 @@ Any instance of \tcode{variant} at any given time either holds a value
 of one of its alternative types or holds no value.
 When an instance of \tcode{variant} holds a value of alternative type \tcode{T},
 it means that a value of type \tcode{T}, referred to as the \tcode{variant}
-object's \defnx{contained value}{contained value!\idxcode{variant}}, is allocated within the storage of the
+object's \defnx{contained value}{contained value!\idxcode{variant}},
+is nested within\iref{intro.object} the
 \tcode{variant} object.
-Implementations are not permitted to use additional storage, such as dynamic
-memory, to allocate the contained value.
 
 \pnum
 All types in \tcode{Types} shall meet
@@ -7382,7 +7392,7 @@ namespace std {
     bad_expected_access() noexcept;
     bad_expected_access(const bad_expected_access&) noexcept;
     bad_expected_access(bad_expected_access&&) noexcept;
-    bad_expected_access& operator=(const bad_expected_access& noexcept);
+    bad_expected_access& operator=(const bad_expected_access&) noexcept;
     bad_expected_access& operator=(bad_expected_access&&) noexcept;
     ~bad_expected_access();
 
@@ -7428,7 +7438,7 @@ namespace std {
     template<class U, class G>
       constexpr explicit(@\seebelow@) expected(expected<U, G>&&);
 
-    template<class U = T>
+    template<class U = remove_cv_t<T>>
       constexpr explicit(@\seebelow@) expected(U&& v);
 
     template<class G>
@@ -7451,7 +7461,7 @@ namespace std {
     // \ref{expected.object.assign}, assignment
     constexpr expected& operator=(const expected&);
     constexpr expected& operator=(expected&&) noexcept(@\seebelow@);
-    template<class U = T> constexpr expected& operator=(U&&);
+    template<class U = remove_cv_t<T>> constexpr expected& operator=(U&&);
     template<class G>
       constexpr expected& operator=(const unexpected<G>&);
     template<class G>
@@ -7483,8 +7493,8 @@ namespace std {
     constexpr E& error() & noexcept;
     constexpr const E&& error() const && noexcept;
     constexpr E&& error() && noexcept;
-    template<class U> constexpr T value_or(U&&) const &;
-    template<class U> constexpr T value_or(U&&) &&;
+    template<class U = remove_cv_t<T>> constexpr T value_or(U&&) const &;
+    template<class U = remove_cv_t<T>> constexpr T value_or(U&&) &&;
     template<class G = E> constexpr E error_or(G&&) const &;
     template<class G = E> constexpr E error_or(G&&) &&;
 
@@ -7527,10 +7537,8 @@ namespace std {
 \pnum
 Any object of type \tcode{expected<T, E>} either
 contains a value of type \tcode{T} or
-a value of type \tcode{E} within its own storage.
-Implementations are not permitted to use additional storage,
-such as dynamic memory,
-to allocate the object of type \tcode{T} or the object of type \tcode{E}.
+a value of type \tcode{E}
+nested within\iref{intro.object} it.
 Member \exposid{has_val} indicates whether the \tcode{expected<T, E>} object
 contains an object of type \tcode{T}.
 
@@ -7735,7 +7743,7 @@ The expression inside \tcode{explicit} is equivalent to
 
 \indexlibraryctor{expected}%
 \begin{itemdecl}
-template<class U = T>
+template<class U = remove_cv_t<T>>
   constexpr explicit(!is_convertible_v<U, T>) expected(U&& v);
 \end{itemdecl}
 
@@ -8054,7 +8062,7 @@ is_nothrow_move_assignable_v<E> && is_nothrow_move_constructible_v<E>
 
 \indexlibrarymember{operator=}{expected}%
 \begin{itemdecl}
-template<class U = T>
+template<class U = remove_cv_t<T>>
   constexpr expected& operator=(U&& v);
 \end{itemdecl}
 
@@ -8422,7 +8430,7 @@ constexpr const E&& error() const && noexcept;
 
 \indexlibrarymember{value_or}{expected}%
 \begin{itemdecl}
-template<class U> constexpr T value_or(U&& v) const &;
+template<class U = remove_cv_t<T>> constexpr T value_or(U&& v) const &;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -8438,7 +8446,7 @@ template<class U> constexpr T value_or(U&& v) const &;
 
 \indexlibrarymember{value_or}{expected}%
 \begin{itemdecl}
-template<class U> constexpr T value_or(U&& v) &&;
+template<class U = remove_cv_t<T>> constexpr T value_or(U&& v) &&;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -8767,7 +8775,7 @@ template<class T2, class E2> requires (!is_void_v<T2>)
 
 \begin{itemdescr}
 \pnum
-\mandates
+\constraints
 The expressions \tcode{*x == *y} and \tcode{x.error() == y.error()}
 are well-formed and their results are convertible to \tcode{bool}.
 
@@ -8785,7 +8793,8 @@ template<class T2> friend constexpr bool operator==(const expected& x, const T2&
 
 \begin{itemdescr}
 \pnum
-\mandates
+\constraints
+\tcode{T2} is not a specialization of \tcode{expected}.
 The expression \tcode{*x == v} is well-formed and
 its result is convertible to \tcode{bool}.
 \begin{note}
@@ -8804,7 +8813,7 @@ template<class E2> friend constexpr bool operator==(const expected& x, const une
 
 \begin{itemdescr}
 \pnum
-\mandates
+\constraints
 The expression \tcode{x.error() == e.error()} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -8913,9 +8922,8 @@ private:
 \pnum
 Any object of type \tcode{expected<T, E>} either
 represents a value of type \tcode{T}, or
-contains a value of type \tcode{E} within its own storage.
-Implementations are not permitted to use additional storage,
-such as dynamic memory, to allocate the object of type \tcode{E}.
+contains a value of type \tcode{E}
+nested within\iref{intro.object} it.
 Member \exposid{has_val} indicates whether the \tcode{expected<T, E>} object
 represents a value of type \tcode{T}.
 
@@ -9726,7 +9734,7 @@ template<class T2, class E2> requires is_void_v<T2>
 
 \begin{itemdescr}
 \pnum
-\mandates
+\constraints
 The expression \tcode{x.error() == y.error()} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -9744,7 +9752,7 @@ template<class E2>
 
 \begin{itemdescr}
 \pnum
-\mandates
+\constraints
 The expression \tcode{x.error() == e.error()} is well-formed and
 its result is convertible to \tcode{bool}.
 
@@ -9796,8 +9804,6 @@ namespace std {
   public:
     // bit reference
     class reference {
-      constexpr reference() noexcept;
-
     public:
       constexpr reference(const reference&) = default;
       constexpr ~reference();
@@ -11219,7 +11225,7 @@ template<class... ArgTypes>
 
 \pnum
 \returns
-\tcode{\placeholdernc{INVOKE}(get(), std::forward<ArgTypes>(args)...)}.\iref{func.require}
+\tcode{\placeholdernc{INVOKE}(get(), std::forward<ArgTypes>(args)...)}\iref{func.require}.
 \end{itemdescr}
 
 \rSec3[refwrap.comparisons]{Comparisons}
@@ -13170,7 +13176,7 @@ function(const function& f);
 \pnum
 \ensures
 \tcode{!*this} if \tcode{!f}; otherwise,
-the target object of \tcode{*this} is a copy of \tcode{f.target()}.
+the target object of \tcode{*this} is a copy of the target object of \tcode{f}.
 
 \pnum
 \throws
@@ -15152,7 +15158,7 @@ otherwise has an erroneous value.
 \item
 Otherwise, if $b$ is indeterminate, the behavior is undefined.
 \item
-Otherwise, the behaviour is erroneous, and the result is as specified above.
+Otherwise, the behavior is erroneous, and the result is as specified above.
 \end{itemize}
 The result does not otherwise contain any indeterminate or erroneous values.
 
@@ -15474,3 +15480,132 @@ equal to \tcode{endian::little}.
 Otherwise, \tcode{endian::native} is not equal
 to either \tcode{endian::big} or \tcode{endian::little}.
 \end{itemdescr}
+
+\rSec1[stdbit.h.syn]{Header \tcode{<stdbit.h>} synopsis}
+
+\indexheader{stdbit.h}%
+\begin{codeblock}
+#define @\libmacro{__STDC_VERSION_STDBIT_H__}@ 202311L
+
+#define @\libmacro{__STDC_ENDIAN_BIG__}@     @\seebelow@
+#define @\libmacro{__STDC_ENDIAN_LITTLE__}@  @\seebelow@
+#define @\libmacro{__STDC_ENDIAN_NATIVE__}@  @\seebelow@
+
+unsigned int @\libglobal{stdc_leading_zeros_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_leading_zeros_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_leading_zeros_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_leading_zeros_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_leading_zeros_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ @\libglobal{stdc_leading_zeros}@(T value);
+
+unsigned int @\libglobal{stdc_leading_ones_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_leading_ones_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_leading_ones_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_leading_ones_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_leading_ones_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ @\libglobal{stdc_leading_ones}@(T value);
+
+unsigned int @\libglobal{stdc_trailing_zeros_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_trailing_zeros_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_trailing_zeros_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_trailing_zeros_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_trailing_zeros_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ @\libglobal{stdc_trailing_zeros}@(T value);
+
+unsigned int @\libglobal{stdc_trailing_ones_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_trailing_ones_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_trailing_ones_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_trailing_ones_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_trailing_ones_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ @\libglobal{stdc_trailing_ones}@(T value);
+
+unsigned int @\libglobal{stdc_first_leading_zero_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_first_leading_zero_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_first_leading_zero_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_first_leading_zero_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_first_leading_zero_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ @\libglobal{stdc_first_leading_zero}@(T value);
+
+unsigned int @\libglobal{stdc_first_leading_one_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_first_leading_one_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_first_leading_one_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_first_leading_one_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_first_leading_one_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ stdc_first_leading_one(T value);
+
+unsigned int @\libglobal{stdc_first_trailing_zero_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_first_trailing_zero_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_first_trailing_zero_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_first_trailing_zero_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_first_trailing_zero_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ stdc_first_trailing_zero(T value);
+
+unsigned int @\libglobal{stdc_first_trailing_one_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_first_trailing_one_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_first_trailing_one_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_first_trailing_one_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_first_trailing_one_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ stdc_first_trailing_one(T value);
+
+unsigned int @\libglobal{stdc_count_zeros_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_count_zeros_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_count_zeros_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_count_zeros_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_count_zeros_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ @\libglobal{stdc_count_zeros}@(T value);
+
+unsigned int @\libglobal{stdc_count_ones_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_count_ones_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_count_ones_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_count_ones_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_count_ones_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ stdc_count_ones(T value);
+
+bool @\libglobal{stdc_has_single_bit_uc}@(unsigned char value);
+bool @\libglobal{stdc_has_single_bit_us}@(unsigned short value);
+bool @\libglobal{stdc_has_single_bit_ui}@(unsigned int value);
+bool @\libglobal{stdc_has_single_bit_ul}@(unsigned long int value);
+bool @\libglobal{stdc_has_single_bit_ull}@(unsigned long long int value);
+template<class T> bool @\libglobal{stdc_has_single_bit}@(T value);
+
+unsigned int @\libglobal{stdc_bit_width_uc}@(unsigned char value);
+unsigned int @\libglobal{stdc_bit_width_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_bit_width_ui}@(unsigned int value);
+unsigned int @\libglobal{stdc_bit_width_ul}@(unsigned long int value);
+unsigned int @\libglobal{stdc_bit_width_ull}@(unsigned long long int value);
+template<class T> @\seebelow@ @\libglobal{stdc_bit_width}@(T value);
+
+unsigned char @\libglobal{stdc_bit_floor_uc}@(unsigned char value);
+unsigned short @\libglobal{stdc_bit_floor_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_bit_floor_ui}@(unsigned int value);
+unsigned long int @\libglobal{stdc_bit_floor_ul}@(unsigned long int value);
+unsigned long long int @\libglobal{stdc_bit_floor_ull}@(unsigned long long int value);
+template<class T> T @\libglobal{stdc_bit_floor}@(T value);
+
+unsigned char @\libglobal{stdc_bit_ceil_uc}@(unsigned char value);
+unsigned short @\libglobal{stdc_bit_ceil_us}@(unsigned short value);
+unsigned int @\libglobal{stdc_bit_ceil_ui}@(unsigned int value);
+unsigned long int @\libglobal{stdc_bit_ceil_ul}@(unsigned long int value);
+unsigned long long int @\libglobal{stdc_bit_ceil_ull}@(unsigned long long int value);
+template<class T> T @\libglobal{stdc_bit_ceil}@(T value);
+\end{codeblock}
+
+\pnum
+For a function template whose return type is not specified above,
+the return type is
+an \impldef{return types for \tcode{<stdbit.h>} functions} unsigned integer type
+large enough to represent all possible result values.
+Each function template has the same semantics
+as the corresponding type-generic function with the same name
+specified in \IsoCUndated{}:2024, 7.18.  %% change to \xrefc{7.18}
+
+\pnum
+\mandates
+\tcode{T} is an unsigned integer type.
+
+\pnum
+Otherwise,
+the contents and meaning of the header \libheader{stdbit.h} are the same as
+the C standard library header \tcode{<stdbit.h>}.
+
+\xref{\IsoCUndated{}:2024, 7.18}   %% TODO: change to \xrefc{7.18}

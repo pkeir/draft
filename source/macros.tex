@@ -147,7 +147,7 @@
 
 % \indeximpldef synthesizes a collation key from the argument; that is, an
 % invocation \indeximpldef{arg} emits an index entry `key@arg`, where `key`
-% is derived from `arg` by replacing the folowing list of commands with their
+% is derived from `arg` by replacing the following list of commands with their
 % bare content. This allows, say, collating plain text and code.
 \newcommand{\indeximpldef}[1]{%
 \let\otextup\textup%
@@ -213,6 +213,13 @@
 \newcommand{\libglobal}[1]{\indexlibraryglobal{#1}#1}
 \newcommand{\libmember}[2]{\indexlibrarymember{#1}{#2}#1}
 \newcommand{\libspec}[2]{\indexlibrarymemberx{#1}{#2}#1}
+
+% index for macros
+% \libmacro is suitable for use directly in header synopses to add the macro
+% to both the text and the library index. \libxmacro does the same, but
+% prepends a well-rendered double underscore.
+\newcommand{\libmacro}[1]{\indexlibraryglobal{#1}\CodeStylex{#1}}
+\newcommand{\libxmacro}[1]{\indexlibraryglobal{\idxxname{#1}}\CodeStylex{\xname{#1}}}
 
 % index for library headers
 \newcommand{\libheaderx}[2]{\indexhdr{#1}\tcode{<#2>}}

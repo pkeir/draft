@@ -3636,7 +3636,7 @@ Returns
 \begin{itemdecl}
 pos_type seekoff(off_type off, ios_base::seekdir way,
                  ios_base::openmode which
-                  = ios_base::in | ios_base::out);
+                   = ios_base::in | ios_base::out);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3658,7 +3658,7 @@ Returns
 \begin{itemdecl}
 pos_type seekpos(pos_type sp,
                  ios_base::openmode which
-                  = ios_base::in | ios_base::out);
+                   = ios_base::in | ios_base::out);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6360,7 +6360,7 @@ in
 \tcode{*this}'s
 error state.
 If
-\tcode{(exceptions()\&badbit) != 0}
+\tcode{(exceptions() \& badbit) != 0}
 then the exception is rethrown.
 Whether or not an exception is thrown, the
 \tcode{sentry}
@@ -6816,7 +6816,7 @@ template<class... Args>
 \effects
 Equivalent to:
 \begin{codeblock}
-print(os, "{}\n", format(fmt, std::forward<Args>(args)...));
+print(os, "{}\n", format(os.getloc(), fmt, std::forward<Args>(args)...));
 \end{codeblock}
 \end{itemdescr}
 
@@ -6854,25 +6854,31 @@ any exception thrown by the call to \tcode{vformat} is propagated
 without regard to the value of \tcode{os.exceptions()} and
 without turning on \tcode{ios_base::badbit} in the error state of \tcode{os}.
 \end{itemize}
+
+\par % This paragraph is part of the \effects clause.
 After constructing a \tcode{sentry} object,
-the function initializes an automatic variable via
+the function initializes a variable with automatic storage duration via
 \begin{codeblock}
 string out = vformat(os.getloc(), fmt, args);
 \end{codeblock}
+\begin{itemize}
+\item
 If the function is \tcode{vprint_unicode} and
-\tcode{os} is a stream that refers to a terminal capable of displaying Unicode
+\tcode{os} is a stream that refers to a terminal that
+is capable of displaying Unicode only via a native Unicode API,
 which is determined in an implementation-defined manner,
+flushes \tcode{os} and then
 writes \tcode{out} to the terminal using the native Unicode API;
 if \tcode{out} contains invalid code units,
 \indextext{undefined}%
-the behavior is undefined and
-implementations are encouraged to diagnose it.
-If the native Unicode API is used,
-the function flushes \tcode{os} before writing \tcode{out}.
-Otherwise (if \tcode{os} is not such a stream or
-the function is \tcode{vprint_nonunicode}),
+the behavior is undefined.
+\item
+Otherwise
 inserts the character sequence
 \range{out.begin()}{out.end()} into \tcode{os}.
+\end{itemize}
+
+\par % This paragraph is part of the \effects clause.
 If writing to the terminal or inserting into \tcode{os} fails,
 calls \tcode{os.setstate(ios_base::badbit)}
 (which may throw \tcode{ios_base::failure}).
@@ -7837,28 +7843,27 @@ Locks \tcode{stream}.
 Let \tcode{out} denote the character representation of
 formatting arguments provided by \tcode{args}
 formatted according to specifications given in \tcode{fmt}.
-If \tcode{stream} refers to a terminal capable of displaying Unicode,
+\begin{itemize}
+\item
+If \tcode{stream} refers to a terminal that
+is capable of displaying Unicode only via a native Unicode API,
+flushes \tcode{stream} and then
 writes \tcode{out} to the terminal using the native Unicode API;
 if \tcode{out} contains invalid code units,
 \indextext{undefined}%
-the behavior is undefined and
-implementations are encouraged to diagnose it.
+the behavior is undefined.
+\item
 Otherwise writes \tcode{out} to \tcode{stream} unchanged.
-If the native Unicode API is used,
-the function flushes \tcode{stream} before writing \tcode{out}.
+\end{itemize}
 Unconditionally unlocks \tcode{stream} on function exit.
 
 \xrefc{7.21.2}.
 
 \begin{note}
-On POSIX and Windows, \tcode{stream} referring to a terminal means that,
-respectively,
-\tcode{isatty(fileno(\linebreak{}stream))} and
+On Windows the native Unicode API is \tcode{WriteConsoleW} and
+\tcode{stream} referring to a terminal means that
 \tcode{GetConsoleMode(_get_osfhandle(_fileno(stream)), ...)}
-return nonzero.
-\end{note}
-\begin{note}
-On Windows, the native Unicode API is \tcode{WriteConsoleW}.
+returns nonzero.
 \end{note}
 
 \pnum
@@ -8090,10 +8095,10 @@ namespace std {
 
     pos_type seekoff(off_type off, ios_base::seekdir way,
                      ios_base::openmode which
-                      = ios_base::in | ios_base::out) override;
+                       = ios_base::in | ios_base::out) override;
     pos_type seekpos(pos_type sp,
                      ios_base::openmode which
-                      = ios_base::in | ios_base::out) override;
+                       = ios_base::in | ios_base::out) override;
 
   private:
     ios_base::openmode @\exposid{mode}@;                        // \expos
@@ -10109,7 +10114,7 @@ namespace std {
   private:
     ios_base::openmode @\exposid{mode}@;            // \expos
     std::span<charT> @\exposid{buf}@;               // \expos
-};
+  };
 }
 \end{codeblock}
 
@@ -11221,7 +11226,7 @@ basic_filebuf* open(const filesystem::path::value_type* s,
 \begin{itemdescr}
 \pnum
 \expects
-\tcode{s} points to a NTCTS\iref{defns.ntcts}.
+\tcode{s} points to an NTCTS\iref{defns.ntcts}.
 
 \pnum
 \effects
@@ -12300,7 +12305,7 @@ namespace std {
       ios_base::openmode mode = ios_base::in | ios_base::out);
     explicit basic_fstream(
       const filesystem::path::value_type* s,
-      ios_base::openmode mode = ios_base::in|ios_base::out);    // wide systems only; see \ref{fstream.syn}
+      ios_base::openmode mode = ios_base::in | ios_base::out);  // wide systems only; see \ref{fstream.syn}
     explicit basic_fstream(
       const string& s,
       ios_base::openmode mode = ios_base::in | ios_base::out);
@@ -12325,7 +12330,7 @@ namespace std {
       ios_base::openmode mode = ios_base::in | ios_base::out);
     void open(
       const filesystem::path::value_type* s,
-      ios_base::openmode mode = ios_base::in|ios_base::out);    // wide systems only; see \ref{fstream.syn}
+      ios_base::openmode mode = ios_base::in | ios_base::out);  // wide systems only; see \ref{fstream.syn}
     void open(
       const string& s,
       ios_base::openmode mode = ios_base::in | ios_base::out);
@@ -14074,14 +14079,14 @@ shall be one of:
 \item \tcode{basic_string_view<EcharT, traits>}. A function
   argument \tcode{const Source\&} \tcode{source} shall have an
   effective range \range{source.begin()}{source.end()}.
-\item A type meeting the \oldconcept{InputIterator} requirements that iterates over a NTCTS\@.
+\item A type meeting the \oldconcept{InputIterator} requirements that iterates over an NTCTS\@.
   The value type shall be an encoded character type. A function argument
   \tcode{const Source\&} \tcode{source} shall have an effective range
   \range{source}{end} where \tcode{end} is the first
   iterator value with an element value equal to
   \tcode{iterator_traits<Source>::value_type()}.
 \item A character array that after array-to-pointer decay results in a
-  pointer to the start of a NTCTS\@. The value type shall be an encoded character type. A
+  pointer to the start of an NTCTS\@. The value type shall be an encoded character type. A
   function argument \tcode{const Source\&} \tcode{source} shall
   have an effective range \range{source}{end} where
   \tcode{end} is the first iterator value with an element value equal to
@@ -17080,7 +17085,7 @@ void disable_recursion_pending();
 
 \pnum
 \begin{note}
-\tcode{disable_recursion_pending}\tcode{()} is used to prevent
+\tcode{disable_recursion_pending()} is used to prevent
   unwanted recursion into a directory.
 \end{note}
 \end{itemdescr}
@@ -17510,7 +17515,7 @@ bool filesystem::create_directories(const path& p, error_code& ec);
 \begin{itemdescr}
 \pnum
 \effects
-Calls \tcode{create_directory()} for each element of \tcode{p}
+Calls \tcode{create_directory} for each element of \tcode{p}
   that does not exist.
 
 \pnum
@@ -17603,7 +17608,7 @@ void filesystem::create_directory_symlink(const path& to, const path& new_symlin
 \begin{itemdescr}
 \pnum
 \effects
-Establishes the postcondition, as if by POSIX \tcode{symlink()}.
+Establishes the postcondition, as if by POSIX \tcode{symlink}.
 
 \pnum
 \ensures
@@ -17618,7 +17623,7 @@ As specified in~\ref{fs.err.report}.
 \begin{note}
 Some operating systems require symlink creation to
 identify that the link is to a directory.
-Thus, \tcode{create_symlink()} (instead of \tcode{create_directory_symlink()})
+Thus, \tcode{create_symlink} (instead of \tcode{create_directory_symlink})
 cannot be used reliably to create directory symlinks.
 \end{note}
 
@@ -17644,7 +17649,7 @@ void filesystem::create_hard_link(const path& to, const path& new_hard_link,
 \begin{itemdescr}
 \pnum
 \effects
-Establishes the postcondition, as if by POSIX \tcode{link()}.
+Establishes the postcondition, as if by POSIX \tcode{link}.
 
 \pnum
 \ensures
@@ -17679,7 +17684,7 @@ void filesystem::create_symlink(const path& to, const path& new_symlink,
 \begin{itemdescr}
 \pnum
 \effects
-Establishes the postcondition, as if by POSIX \tcode{symlink()}.
+Establishes the postcondition, as if by POSIX \tcode{symlink}.
 
 \pnum
 \ensures
@@ -17712,7 +17717,7 @@ path filesystem::current_path(error_code& ec);
 \returns
 The absolute path of the current working directory,
   whose pathname in the native format is
-  obtained as if by POSIX \tcode{getcwd()}.
+  obtained as if by POSIX \tcode{getcwd}.
   The signature with argument \tcode{ec} returns \tcode{path()} if an
   error occurs.
 
@@ -17725,12 +17730,6 @@ As specified in~\ref{fs.err.report}.
 The current working directory is the directory, associated
   with the process, that is used as the starting location in pathname resolution
   for relative paths.
-
-\pnum
-\begin{note}
-The \tcode{current_path()} name was chosen to emphasize that the returned value is a
-  path, not just a single directory name.
-\end{note}
 
 \pnum
 \begin{note}
@@ -17749,7 +17748,7 @@ void filesystem::current_path(const path& p, error_code& ec) noexcept;
 \begin{itemdescr}
 \pnum
 \effects
-Establishes the postcondition, as if by POSIX \tcode{chdir()}.
+Establishes the postcondition, as if by POSIX \tcode{chdir}.
 
 \pnum
 \ensures
@@ -17782,7 +17781,7 @@ Two paths are considered to resolve to the same file system entity if two
   \begin{note}
   On POSIX platforms, this is
   determined as if by the values of the POSIX \tcode{stat} class,
-  obtained as if by \tcode{stat()} for the two paths, having equal \tcode{st_dev} values
+  obtained as if by \tcode{stat} for the two paths, having equal \tcode{st_dev} values
   and equal \tcode{st_ino} values.
   \end{note}
 
@@ -17860,7 +17859,7 @@ If \tcode{exists(p)} is \tcode{false}, an error is reported\iref{fs.err.report}.
 \item
   If \tcode{is_regular_file(p)}, the size in bytes of the file
   \tcode{p} resolves to, determined as if by the value of the POSIX \tcode{stat}
-  class member \tcode{st_size} obtained as if by POSIX \tcode{stat()}.
+  class member \tcode{st_size} obtained as if by POSIX \tcode{stat}.
 \item
   Otherwise, the result is \impldef{result of \tcode{filesystem::file_size}}.
 \end{itemize}
@@ -18222,7 +18221,7 @@ file_time_type filesystem::last_write_time(const path& p, error_code& ec) noexce
 \returns
 The time of last data modification of \tcode{p},
   determined as if by the value of the POSIX \tcode{stat} class member \tcode{st_mtime}
-  obtained as if by POSIX \tcode{stat()}.
+  obtained as if by POSIX \tcode{stat}.
   The signature with argument \tcode{ec} returns \tcode{file_time_type::min()}
   if an error occurs.
 
@@ -18242,7 +18241,7 @@ void filesystem::last_write_time(const path& p, file_time_type new_time,
 \pnum
 \effects
 Sets the time of last data modification of the file
-  resolved to by \tcode{p} to \tcode{new_time}, as if by POSIX \tcode{futimens()}.
+  resolved to by \tcode{p} to \tcode{new_time}, as if by POSIX \tcode{futimens}.
 
 \pnum
 \throws
@@ -18276,7 +18275,7 @@ Applies the action specified by \tcode{opts}
 to the file \tcode{p} resolves to,
 or to file \tcode{p} itself if \tcode{p} is a symbolic link
 and \tcode{perm_options::nofollow} is set in \tcode{opts}.
-The action is applied as if by POSIX \tcode{fchmodat()}.
+The action is applied as if by POSIX \tcode{fchmodat}.
 
 \pnum
 \begin{note}
@@ -18413,7 +18412,7 @@ bool filesystem::remove(const path& p, error_code& ec) noexcept;
 \pnum
 \effects
 If \tcode{exists(symlink_status(p, ec))}, the file \tcode{p} is
-  removed as if by POSIX \tcode{remove()}.
+  removed as if by POSIX \tcode{remove}.
 \begin{note}
 A symbolic link is itself removed, rather than the file it
   resolves to.
@@ -18425,9 +18424,10 @@ A symbolic link is itself removed, rather than the file it
 
 \pnum
 \returns
-\tcode{false} if \tcode{p} did not exist,
-  otherwise \tcode{true}. The signature with argument \tcode{ec}
-  returns \tcode{false} if an error occurs.
+\tcode{true} if a file \tcode{p} has been removed and \tcode{false} otherwise.
+\begin{note}
+Absence of a file \tcode{p} is not an error.
+\end{note}
 
 \pnum
 \throws
@@ -18447,7 +18447,7 @@ uintmax_t filesystem::remove_all(const path& p, error_code& ec);
 \pnum
 \effects
 Recursively deletes the contents of \tcode{p} if it exists,
-  then deletes file \tcode{p} itself, as if by POSIX \tcode{remove()}.
+  then deletes file \tcode{p} itself, as if by POSIX \tcode{remove}.
 \begin{note}
 A symbolic link is itself removed, rather than the file it
   resolves to.
@@ -18481,7 +18481,7 @@ void filesystem::rename(const path& old_p, const path& new_p, error_code& ec) no
 \pnum
 \effects
 Renames \tcode{old_p} to \tcode{new_p}, as if by
-  POSIX \tcode{rename()}.
+  POSIX \tcode{rename}.
 
 \begin{note}
 \begin{itemize}
@@ -18517,7 +18517,7 @@ void filesystem::resize_file(const path& p, uintmax_t new_size, error_code& ec) 
 \pnum
 \effects
 Causes the size that would be returned by \tcode{file_size(p)} to be
-equal to \tcode{new_size}, as if by POSIX \tcode{truncate()}.
+equal to \tcode{new_size}, as if by POSIX \tcode{truncate}.
 
 \pnum
 \throws
@@ -18604,14 +18604,14 @@ file_status filesystem::status(const path& p, error_code& ec) noexcept;
 \pnum
 \effects
 If possible, determines the attributes
-    of the file \tcode{p} resolves to, as if by using POSIX \tcode{stat()}
+    of the file \tcode{p} resolves to, as if by using POSIX \tcode{stat}
     to obtain a POSIX \tcode{struct stat}.
       If, during attribute determination, the underlying file system API reports
     an error, sets \tcode{ec} to indicate the specific error reported.
     Otherwise, \tcode{ec.clear()}.
 \begin{note}
 This allows users to inspect the specifics of underlying
-      API errors even when the value returned by \tcode{status()} is not
+      API errors even when the value returned by \tcode{status} is not
       \tcode{file_status(file_type::none)}.
 \end{note}
 
@@ -18705,9 +18705,9 @@ file_status filesystem::symlink_status(const path& p, error_code& ec) noexcept;
 \begin{itemdescr}
 \pnum
 \effects
-Same as \tcode{status()}, above,
+Same as \tcode{status}, above,
   except that the attributes
-    of \tcode{p} are determined as if by using POSIX \tcode{lstat()}
+    of \tcode{p} are determined as if by using POSIX \tcode{lstat}
     to obtain a POSIX \tcode{struct stat}.
 
 \pnum
@@ -18717,7 +18717,7 @@ of the obtained \tcode{struct stat} to the type \tcode{perms}.
 
 \pnum
 \returns
-Same as \tcode{status()}, above, except
+Same as \tcode{status}, above, except
       that if the attributes indicate a symbolic link, as if by POSIX \tcode{S_ISLNK},
       returns \tcode{file_status(file_type::symlink, prms)}.
       The signature with argument \tcode{ec} returns
@@ -18786,14 +18786,14 @@ path filesystem::weakly_canonical(const path& p, error_code& ec);
 Using \tcode{status(p)} or \tcode{status(p, ec)}, respectively,
   to determine existence,
   return a path composed by \tcode{operator/=}
-  from the result of calling \tcode{canonical()}
+  from the result of calling \tcode{canonical}
   with a path argument composed of
   the leading elements of \tcode{p} that exist, if any, followed by
   the elements of \tcode{p} that do not exist, if any.
   For the first form,
-  \tcode{canonical()} is called without an \tcode{error_code} argument.
+  \tcode{canonical} is called without an \tcode{error_code} argument.
   For the second form,
-  \tcode{canonical()} is called
+  \tcode{canonical} is called
   with \tcode{ec} as an \tcode{error_code} argument, and
   \tcode{path()} is returned at the first error occurrence, if any.
 
@@ -18819,22 +18819,6 @@ As specified in~\ref{fs.err.report}.
 \indexlibraryglobal{size_t}%
 \indexlibraryglobal{FILE}%
 \indexlibraryglobal{fpos_t}%
-\indexlibraryglobal{NULL}%
-\indexlibraryglobal{_IOFBF}%
-\indexlibraryglobal{_IOLBF}%
-\indexlibraryglobal{_IONBF}%
-\indexlibraryglobal{BUFSIZ}%
-\indexlibraryglobal{EOF}%
-\indexlibraryglobal{FOPEN_MAX}%
-\indexlibraryglobal{FILENAME_MAX}%
-\indexlibraryglobal{L_tmpnam}%
-\indexlibraryglobal{SEEK_CUR}%
-\indexlibraryglobal{SEEK_END}%
-\indexlibraryglobal{SEEK_SET}%
-\indexlibraryglobal{TMP_MAX}%
-\indexlibraryglobal{stderr}%
-\indexlibraryglobal{stdin}%
-\indexlibraryglobal{stdout}%
 \indexlibraryglobal{remove}%
 \indexlibraryglobal{rename}%
 \indexlibraryglobal{tmpfile}%
@@ -18887,22 +18871,22 @@ namespace std {
   using fpos_t = @\seebelow@;
 }
 
-#define NULL @\textit{see \ref{support.types.nullptr}}@
-#define _IOFBF @\seebelow@
-#define _IOLBF @\seebelow@
-#define _IONBF @\seebelow@
-#define BUFSIZ @\seebelow@
-#define EOF @\seebelow@
-#define FOPEN_MAX @\seebelow@
-#define FILENAME_MAX @\seebelow@
-#define L_tmpnam @\seebelow@
-#define SEEK_CUR @\seebelow@
-#define SEEK_END @\seebelow@
-#define SEEK_SET @\seebelow@
-#define TMP_MAX @\seebelow@
-#define stderr @\seebelow@
-#define stdin @\seebelow@
-#define stdout @\seebelow@
+#define @\libmacro{NULL}@ @\textit{see \ref{support.types.nullptr}}@
+#define @\libmacro{_IOFBF}@ @\seebelow@
+#define @\libmacro{_IOLBF}@ @\seebelow@
+#define @\libmacro{_IONBF}@ @\seebelow@
+#define @\libmacro{BUFSIZ}@ @\seebelow@
+#define @\libmacro{EOF}@ @\seebelow@
+#define @\libmacro{FOPEN_MAX}@ @\seebelow@
+#define @\libmacro{FILENAME_MAX}@ @\seebelow@
+#define @\libmacro{L_tmpnam}@ @\seebelow@
+#define @\libmacro{SEEK_CUR}@ @\seebelow@
+#define @\libmacro{SEEK_END}@ @\seebelow@
+#define @\libmacro{SEEK_SET}@ @\seebelow@
+#define @\libmacro{TMP_MAX}@ @\seebelow@
+#define @\libmacro{stderr}@ @\seebelow@
+#define @\libmacro{stdin}@ @\seebelow@
+#define @\libmacro{stdout}@ @\seebelow@
 
 namespace std {
   int remove(const char* filename);
@@ -19009,28 +18993,6 @@ an argument that is a null pointer value.
 \indexlibraryglobal{SCNoFASTN}%
 \indexlibraryglobal{SCNuFASTN}%
 \indexlibraryglobal{SCNxFASTN}%
-\indexlibraryglobal{PRIdMAX}%
-\indexlibraryglobal{PRIiMAX}%
-\indexlibraryglobal{PRIoMAX}%
-\indexlibraryglobal{PRIuMAX}%
-\indexlibraryglobal{PRIxMAX}%
-\indexlibraryglobal{PRIXMAX}%
-\indexlibraryglobal{SCNdMAX}%
-\indexlibraryglobal{SCNiMAX}%
-\indexlibraryglobal{SCNoMAX}%
-\indexlibraryglobal{SCNuMAX}%
-\indexlibraryglobal{SCNxMAX}%
-\indexlibraryglobal{PRIdPTR}%
-\indexlibraryglobal{PRIiPTR}%
-\indexlibraryglobal{PRIoPTR}%
-\indexlibraryglobal{PRIuPTR}%
-\indexlibraryglobal{PRIxPTR}%
-\indexlibraryglobal{PRIXPTR}%
-\indexlibraryglobal{SCNdPTR}%
-\indexlibraryglobal{SCNiPTR}%
-\indexlibraryglobal{SCNoPTR}%
-\indexlibraryglobal{SCNuPTR}%
-\indexlibraryglobal{SCNxPTR}%
 \begin{codeblock}
 #include <cstdint>  // see \ref{cstdint.syn}
 
@@ -19081,28 +19043,28 @@ namespace std {
 #define SCNoFAST@\placeholdernc{N}@ @\seebelow@
 #define SCNuFAST@\placeholdernc{N}@ @\seebelow@
 #define SCNxFAST@\placeholdernc{N}@ @\seebelow@
-#define PRIdMAX @\seebelow@
-#define PRIiMAX @\seebelow@
-#define PRIoMAX @\seebelow@
-#define PRIuMAX @\seebelow@
-#define PRIxMAX @\seebelow@
-#define PRIXMAX @\seebelow@
-#define SCNdMAX @\seebelow@
-#define SCNiMAX @\seebelow@
-#define SCNoMAX @\seebelow@
-#define SCNuMAX @\seebelow@
-#define SCNxMAX @\seebelow@
-#define PRIdPTR @\seebelow@
-#define PRIiPTR @\seebelow@
-#define PRIoPTR @\seebelow@
-#define PRIuPTR @\seebelow@
-#define PRIxPTR @\seebelow@
-#define PRIXPTR @\seebelow@
-#define SCNdPTR @\seebelow@
-#define SCNiPTR @\seebelow@
-#define SCNoPTR @\seebelow@
-#define SCNuPTR @\seebelow@
-#define SCNxPTR @\seebelow@
+#define @\libmacro{PRIdMAX}@ @\seebelow@
+#define @\libmacro{PRIiMAX}@ @\seebelow@
+#define @\libmacro{PRIoMAX}@ @\seebelow@
+#define @\libmacro{PRIuMAX}@ @\seebelow@
+#define @\libmacro{PRIxMAX}@ @\seebelow@
+#define @\libmacro{PRIXMAX}@ @\seebelow@
+#define @\libmacro{SCNdMAX}@ @\seebelow@
+#define @\libmacro{SCNiMAX}@ @\seebelow@
+#define @\libmacro{SCNoMAX}@ @\seebelow@
+#define @\libmacro{SCNuMAX}@ @\seebelow@
+#define @\libmacro{SCNxMAX}@ @\seebelow@
+#define @\libmacro{PRIdPTR}@ @\seebelow@
+#define @\libmacro{PRIiPTR}@ @\seebelow@
+#define @\libmacro{PRIoPTR}@ @\seebelow@
+#define @\libmacro{PRIuPTR}@ @\seebelow@
+#define @\libmacro{PRIxPTR}@ @\seebelow@
+#define @\libmacro{PRIXPTR}@ @\seebelow@
+#define @\libmacro{SCNdPTR}@ @\seebelow@
+#define @\libmacro{SCNiPTR}@ @\seebelow@
+#define @\libmacro{SCNoPTR}@ @\seebelow@
+#define @\libmacro{SCNuPTR}@ @\seebelow@
+#define @\libmacro{SCNxPTR}@ @\seebelow@
 \end{codeblock}
 
 \pnum

@@ -73,7 +73,7 @@ volatile int velociraptor;
 \pnum
 Certain assignments
 where the left operand is a volatile-qualified non-class type
-are deprecated; see~\ref{expr.ass}.
+are deprecated; see~\ref{expr.assign}.
 
 \begin{example}
 \begin{codeblock}
@@ -115,23 +115,17 @@ void park(linhenykus alvarezsauroid) {
 \end{codeblock}
 \end{example}
 
+\rSec1[depr.ellipsis.comma]{Non-comma-separated ellipsis parameters}
 
-\rSec1[depr.array.comp]{Array comparisons}
-
-\pnum
-Equality and relational comparisons\iref{expr.eq,expr.rel}
-between two operands of array type
-are deprecated.
-\begin{note}
-Three-way comparisons\iref{expr.spaceship} between such operands are ill-formed.
-\end{note}
+A \grammarterm{parameter-declaration-clause}
+of the form
+\grammarterm{parameter-declaration-list} \tcode{...}
+is deprecated\iref{dcl.fct}.
 \begin{example}
 \begin{codeblock}
-int arr1[5];
-int arr2[5];
-bool same = arr1 == arr2;       // deprecated, same as \tcode{\&arr1[0] == \&arr2[0]},
-                                // does not compare array contents
-auto cmp = arr1 <=> arr2;       // error
+void f(int...);         // deprecated
+void g(auto...);        // OK, declares a function parameter pack
+void h(auto......);     // deprecated
 \end{codeblock}
 \end{example}
 
@@ -227,20 +221,15 @@ static constexpr bool has_denorm_loss = false;
 
 \pnum
 The header \libheaderref{stdalign.h} has the following macros:
-\indexheader{stdalign.h}%
-\indexlibraryglobal{__alignas_is_defined}%
 \begin{codeblock}
-#define @\xname{alignas_is_defined}@ 1
-#define @\xname{alignof_is_defined}@ 1
+#define @\libxmacro{alignas_is_defined}@ 1
+#define @\libxmacro{alignof_is_defined}@ 1
 \end{codeblock}
 
 \pnum
 The header \libheaderref{stdbool.h} has the following macro:
-\indexheader{stdbool.h}%
-\indexhdr{stdbool.h}%
-\indexlibraryglobal{__bool_true_false_are_defined}%
 \begin{codeblock}
-#define @\xname{bool_true_false_are_defined}@ 1
+#define @\libxmacro{bool_true_false_are_defined}@ 1
 \end{codeblock}
 
 \rSec1[depr.cerrno]{Deprecated error numbers}
@@ -248,15 +237,11 @@ The header \libheaderref{stdbool.h} has the following macro:
 \pnum
 The header \libheaderref{cerrno} has the following additional macros:
 
-\indexlibraryglobal{ENODATA}%
-\indexlibraryglobal{ENOSR}%
-\indexlibraryglobal{ENOSTR}%
-\indexlibraryglobal{ETIME}%
 \begin{codeblock}
-#define ENODATA @\seebelow@
-#define ENOSR @\seebelow@
-#define ENOSTR @\seebelow@
-#define ETIME @\seebelow@
+#define @\libmacro{ENODATA}@ @\seebelow@
+#define @\libmacro{ENOSR}@ @\seebelow@
+#define @\libmacro{ENOSTR}@ @\seebelow@
+#define @\libmacro{ETIME}@ @\seebelow@
 \end{codeblock}
 
 \pnum
@@ -286,6 +271,8 @@ has the following addition:
 
 \begin{codeblock}
 namespace std {
+  template<class T> struct is_trivial;
+  template<class T> constexpr bool is_trivial_v = is_trivial<T>::value;
   template<class T> struct is_pod;
   template<class T> constexpr bool is_pod_v = is_pod<T>::value;
   template<size_t Len, size_t Align = @\exposid{default-alignment}@> // \seebelow
@@ -305,11 +292,46 @@ any of the templates defined in this subclause is undefined,
 unless explicitly permitted by the specification of the corresponding template.
 
 \pnum
+\label{term.trivial.type}%
+A \defnadj{trivial}{class} is a class that is trivially copyable and
+has one or more eligible default constructors, all of which are trivial.
+\begin{note}
+In particular,
+a trivial class does not have virtual functions or virtual base classes.
+\end{note}
+A \defnadj{trivial}{type} is a scalar type, a trivial class,
+an array of such a type, or a cv-qualified version of one of these types.
+
+\pnum
 \indextext{POD}%
 A \term{POD class} is a class that is both a trivial class and a
 standard-layout class, and has no non-static data members of type non-POD class
 (or array thereof). A \term{POD type} is a scalar type, a POD class, an array
 of such a type, or a cv-qualified version of one of these types.
+
+\indexlibraryglobal{is_trivial}%
+\begin{itemdecl}
+template<class T> struct is_trivial;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{remove_all_extents_t<T>} shall be a complete type or \cv{} \keyword{void}.
+
+\pnum
+\remarks
+\tcode{is_trivial<T>} is a \oldconcept{UnaryTypeTrait}\iref{meta.rqmts}
+with a base characteristic of \tcode{true_type}
+if \tcode{T} is a trivial type,
+and \tcode{false_type} otherwise.
+
+\pnum
+\begin{note}
+It is unspecified
+whether a closure type\iref{expr.prim.lambda.closure} is a trivial type.
+\end{note}
+\end{itemdescr}
 
 \indexlibraryglobal{is_pod}%
 \begin{itemdecl}
@@ -678,7 +700,7 @@ constexpr pointer operator->() const;
 \pnum
 The \tcode{ctype} locale category includes the following facets
 as if they were specified
-in table \tref{locale.category.facets} of \ref{locale.category}.
+in \tref{locale.category.facets} of \ref{locale.category}.
 
 \begin{codeblock}
 codecvt<char16_t, char, mbstate_t>
@@ -690,7 +712,7 @@ codecvt<char32_t, char8_t, mbstate_t>
 \pnum
 The \tcode{ctype} locale category includes the following facets
 as if they were specified
-in table \tref{locale.spec} of \ref{locale.category}.
+in \tref{locale.spec} of \ref{locale.category}.
 
 \begin{codeblock}
 codecvt_byname<char16_t, char, mbstate_t>
@@ -833,7 +855,7 @@ namespace std {
   template<class T>
     void atomic_init(atomic<T>*, typename atomic<T>::value_type) noexcept;
 
-  #define ATOMIC_VAR_INIT(value) @\seebelow@
+  #define @\libmacro{ATOMIC_VAR_INIT}@(value) @\seebelow@
 }
 \end{codeblock}
 
@@ -882,7 +904,7 @@ Equivalent to: \tcode{atomic_store_explicit(object, desired, memory_order::relax
 
 \indexlibraryglobal{ATOMIC_VAR_INIT}%
 \begin{itemdecl}
-#define ATOMIC_VAR_INIT(value) @\seebelow@
+#define @\libmacro{ATOMIC_VAR_INIT}@(value) @\seebelow@
 \end{itemdecl}
 
 \begin{itemdescr}

@@ -4,6 +4,11 @@
 \gramSec[gram.basic]{Basics}
 
 \rSec1[basic.pre]{Preamble}
+\indextext{type}%
+\indextext{object}%
+\indextext{storage class}%
+\indextext{scope}%
+\indextext{linkage}%
 
 \pnum
 \begin{note}
@@ -27,22 +32,22 @@ Clauses.
 \end{note}
 
 \pnum
-\indextext{type}%
-\indextext{object}%
-\indextext{storage class}%
-\indextext{scope}%
-\indextext{linkage}%
-An \defn{entity} is a value, object, reference,
-structured binding,
-function, enumerator, type,
-class member, bit-field, template, template specialization, namespace, or
-pack.
+A \defn{name} is an \grammarterm{identifier}\iref{lex.name},
+\grammarterm{conversion-function-id}\iref{class.conv.fct},
+\grammarterm{operator-function-id}\iref{over.oper}, or
+\grammarterm{literal-operator-id}\iref{over.literal}.
 
 \pnum
-A \defn{name} is an \grammarterm{identifier}\iref{lex.name},
-\grammarterm{operator-function-id}\iref{over.oper},
-\grammarterm{literal-operator-id}\iref{over.literal}, or
-\grammarterm{conversion-function-id}\iref{class.conv.fct}.
+Two names are \defnx{the same}{name!same} if
+\begin{itemize}
+\item they are \grammarterm{identifier}{s} composed of the same character sequence, or
+\item they are \grammarterm{conversion-function-id}{s} formed with
+equivalent\iref{temp.over.link} types, or
+\item they are \grammarterm{operator-function-id}{s} formed with
+the same operator, or
+\item they are \grammarterm{literal-operator-id}{s} formed with
+the same literal suffix identifier.
+\end{itemize}
 
 \pnum
 Every name is introduced by a \defn{declaration}, which is a
@@ -85,9 +90,15 @@ implicit declaration of an injected-class-name\iref{class.pre}.
 The interpretation of a \grammarterm{for-range-declaration} produces
 one or more of the above\iref{stmt.ranged}.
 \end{note}
-An entity $E$ is denoted by the name (if any)
-that is introduced by a declaration of $E$ or
-by a \grammarterm{typedef-name} introduced by a declaration specifying $E$.
+
+\pnum
+\begin{note}
+Some names denote types or templates.
+In general, whenever a name is encountered
+it is necessary to look it up\iref{basic.lookup}
+to determine whether that name denotes one of these entities
+before continuing to parse the program that contains it.
+\end{note}
 
 \pnum
 A \defn{variable} is introduced by the
@@ -96,30 +107,20 @@ a reference other than a non-static data member or of
 an object. The variable's name, if any, denotes the reference or object.
 
 \pnum
+An \defn{entity} is a value, object, reference,
+structured binding,
+function, enumerator, type,
+class member, bit-field, template, template specialization, namespace, or
+pack. An entity $E$ is denoted by the name (if any)
+that is introduced by a declaration of $E$ or
+by a \grammarterm{typedef-name} introduced by a declaration specifying $E$.
+
+\pnum
 A \defnadj{local}{entity} is a variable with
 automatic storage duration\iref{basic.stc.auto},
 a structured binding\iref{dcl.struct.bind}
 whose corresponding variable is such an entity,
 or the \tcode{*\keyword{this}} object\iref{expr.prim.this}.
-
-\pnum
-Some names denote types or templates. In general,
-whenever a name is encountered it is necessary to determine whether that name denotes
-one of these entities before continuing to parse the program that contains it. The
-process that determines this is called
-\defnx{name lookup}{lookup!name}\iref{basic.lookup}.
-
-\pnum
-Two names are \defnx{the same}{name!same} if
-\begin{itemize}
-\item they are \grammarterm{identifier}{s} composed of the same character sequence, or
-\item they are \grammarterm{operator-function-id}{s} formed with
-the same operator, or
-\item they are \grammarterm{conversion-function-id}{s} formed
-with equivalent\iref{temp.over.link} types, or
-\item they are \grammarterm{literal-operator-id}{s}\iref{over.literal} formed with
-the same literal suffix identifier.
-\end{itemize}
 
 \pnum
 \indextext{translation unit!name and}%
@@ -135,7 +136,7 @@ translation unit.
 \indextext{declaration!definition versus}%
 \indextext{declaration}%
 \indextext{declaration!name}%
-A declaration\iref{dcl.dcl} may (re)introduce
+A declaration\iref{dcl} may (re)introduce
 one or more names and/or entities into a translation
 unit.
 If so, the
@@ -441,24 +442,59 @@ This covers
 A variable is named by an expression
 if the expression is an \grammarterm{id-expression} that denotes it.
 A variable \tcode{x} that is named by a
-potentially-evaluated expression $E$
-is \defnx{odr-used}{odr-use} by $E$ unless
+potentially-evaluated expression $N$
+that appears at a point $P$
+is \defnx{odr-used}{odr-use} by $N$ unless
 \begin{itemize}
 \item
-  \tcode{x} is a reference that is
-  usable in constant expressions\iref{expr.const}, or
+\tcode{x} is a reference
+that is usable in constant expressions at $P$\iref{expr.const} or
 \item
-  \tcode{x} is a variable of non-reference type that is
-  usable in constant expressions and has no mutable subobjects, and
-  $E$ is an element of the set of potential results of an expression
-  of non-volatile-qualified non-class type
-  to which the lvalue-to-rvalue conversion\iref{conv.lval} is applied, or
+$N$ is an element of the set of potential results of an expression $E$, where
+\begin{itemize}
 \item
-  \tcode{x} is a variable of non-reference type, and
-  $E$ is an element of the set of potential results
-  of a discarded-value expression\iref{expr.context}
-  to which the lvalue-to-rvalue conversion is not applied.
+$E$ is a discarded-value expression\iref{expr.context}
+to which the lvalue-to-rvalue conversion is not applied or
+\item
+\tcode{x} is a non-volatile object
+that is usable in constant expressions at $P$ and
+has no mutable subobjects and
+\begin{itemize}
+\item
+$E$ is a class member access expression\iref{expr.ref}
+naming a non-static data member of reference type and
+whose object expression has non-volatile-qualified type or
+\item
+the lvalue-to-rvalue conversion\iref{conv.lval} is applied to $E$ and
+$E$ has non-volatile-qualified non-class type
 \end{itemize}
+\end{itemize}
+\end{itemize}
+\begin{example}
+\begin{codeblock}
+int f(int);
+int g(int&);
+struct A {
+  int x;
+};
+struct B {
+  int& r;
+};
+int h(bool cond) {
+  constexpr A a = {1};
+  constexpr const volatile A& r = a;    // odr-uses \tcode{a}
+  int _ = f(cond ? a.x : r.x);          // does not odr-use \tcode{a} or \tcode{r}
+  int x, y;
+  constexpr B b1 = {x}, b2 = {y};       // odr-uses \tcode{x} and \tcode{y}
+  int _ = g(cond ? b1.r : b2.r);        // does not odr-use \tcode{b1} or \tcode{b2}
+  int _ = ((cond ? x : y), 0);          // does not odr-use \tcode{x} or \tcode{y}
+  return [] {
+    return b1.r;                        // error: \tcode{b1} is odr-used here because the object
+                                        // referred to by \tcode{b1.r} is not constexpr-referenceable here
+  }();
+}
+\end{codeblock}
+\end{example}
 
 \pnum
 A structured binding is odr-used if it appears as a potentially-evaluated expression.
@@ -511,7 +547,8 @@ within the innermost enclosing class or non-lambda function definition scope),
 either:
 \begin{itemize}
 \item the intervening scope is a block scope, or
-\item the intervening scope is the function parameter scope of a \grammarterm{lambda-expression}, or
+\item the intervening scope is the function parameter scope of
+a \grammarterm{lambda-expression} or \grammarterm{requires-expression}, or
 \item the intervening scope is the lambda scope of
 a \grammarterm{lambda-expression}
 that has a \grammarterm{simple-capture}
@@ -636,7 +673,7 @@ type \tcode{T}, or
 is defined\iref{basic.def} or called\iref{expr.call}, or
 \item a class with a base class of type \tcode{T} is
 defined\iref{class.derived}, or
-\item an lvalue of type \tcode{T} is assigned to\iref{expr.ass}, or
+\item an lvalue of type \tcode{T} is assigned to\iref{expr.assign}, or
 \item the type \tcode{T} is the subject of an
 \keyword{alignof} expression\iref{expr.alignof}, or
 \item an \grammarterm{exception-declaration} has type \tcode{T}, reference to
@@ -673,7 +710,7 @@ the corresponding \grammarterm{lambda-expression}.
 \item In each such definition, corresponding names, looked up
 according to~\ref{basic.lookup}, shall refer to the same entity, after
 overload resolution\iref{over.match} and after matching of partial
-template specialization\iref{temp.over}, except that a name can refer to
+template specializations\iref{temp.spec.partial.match}, except that a name can refer to
 \begin{itemize}
 \item
 a non-volatile const object with internal or no linkage if the object
@@ -895,8 +932,8 @@ other friend declarations and
 certain \grammarterm{elaborated-type-specifier}s\iref{dcl.type.elab}
 target a larger enclosing scope.
 \item
-Block-scope extern declarations target a larger enclosing scope
-but bind a name in their immediate scope.
+Block-scope extern or function declarations target a larger enclosing scope
+but bind a name in their immediate scope\iref{dcl.meaning.general}.
 \item
 The names of unscoped enumerators are bound
 in the two innermost enclosing scopes\iref{dcl.enum}.
@@ -1483,13 +1520,13 @@ a template parameter scope as a parent scope.
 \indextext{scope!name lookup and|see{lookup, name}}%
 
 \pnum
+\defnx{Name lookup}{lookup!name} associates the use of a name
+with a set of declarations\iref{basic.def} of that name.
 The name lookup rules apply uniformly to all names (including
 \grammarterm{typedef-name}{s}\iref{dcl.typedef},
 \grammarterm{namespace-name}{s}\iref{basic.namespace}, and
 \grammarterm{class-name}{s}\iref{class.name}) wherever the grammar allows
-such names in the context discussed by a particular rule. Name lookup
-associates the use of a name with a set of declarations\iref{basic.def} of
-that name.
+such names in the context discussed by a particular rule.
 Unless otherwise specified,
 the program is ill-formed if no declarations are found.
 If the declarations found by name lookup
@@ -2066,7 +2103,7 @@ the templates used as template template arguments; and
 the classes of which any member templates used as template template
 arguments are members.
 \begin{note}
-Non-type template arguments do not
+Constant template arguments do not
 contribute to the set of associated entities.
 \end{note}
 
@@ -2097,8 +2134,8 @@ members of the set, i.e., the entities associated with its
 parameter types and return type.
 Additionally, if the aforementioned overload set is named with
 a \grammarterm{template-id}, its associated entities also include
-its template \grammarterm{template-argument}{s} and
-those associated with its type \grammarterm{template-argument}s.
+its template template arguments and
+those associated with its type template arguments.
 
 \pnum
 The \term{associated namespaces} for a call are
@@ -2714,8 +2751,8 @@ can have external or module linkage, even if not declared \keyword{extern}.
 \pnum
 An unnamed namespace or a namespace declared directly or indirectly within an
 unnamed namespace has internal linkage. All other namespaces have external linkage.
-The name of an entity that belongs to a namespace scope
-that has not been given internal linkage above
+The name of an entity that belongs to a namespace scope,
+that has not been given internal linkage above,
 and that is the name of
 \begin{itemize}
 \item a variable; or
@@ -3103,11 +3140,10 @@ bits,
 The number of bits in a byte is reported by the macro
 \tcode{CHAR_BIT} in the header \libheaderref{climits}.
 \end{footnote}
-the number of which is \impldef{bits in a byte}. The least
-significant bit is called the \defn{low-order bit}; the most
-significant bit is called the \defn{high-order bit}. The memory
-available to a \Cpp{} program consists of one or more sequences of
-contiguous bytes. Every byte has a unique address.
+the number of which is \impldef{bits in a byte}.
+The memory available to a \Cpp{} program consists of one or more sequences of
+contiguous bytes.
+Every byte has a unique address.
 
 \pnum
 \begin{note}
@@ -3116,7 +3152,9 @@ in~\ref{basic.types.general}.
 \end{note}
 
 \pnum
-A \defn{memory location} is either an object of scalar type that is not a bit-field
+A \defn{memory location} is
+the storage occupied by the object representation of
+either an object of scalar type that is not a bit-field
 or a maximal sequence of adjacent bit-fields all having nonzero width.
 \begin{note}
 Various
@@ -3454,7 +3492,105 @@ Some functions in the \Cpp{} standard library implicitly create objects%
 \end{note}
 \indextext{object model|)}
 
+\rSec2[basic.align]{Alignment}
+
+\pnum
+Object types have \defnx{alignment requirements}{alignment requirement!implementation-defined}\iref{basic.fundamental,basic.compound}
+which place restrictions on the addresses at which an object of that type
+may be allocated. An \defn{alignment} is an \impldef{alignment}
+integer value representing the number of bytes between successive addresses
+at which a given object can be allocated. An object type imposes an alignment
+requirement on every object of that type; stricter alignment can be requested
+using the alignment specifier\iref{dcl.align}.
+Attempting to create an object\iref{intro.object} in storage that
+does not meet the alignment requirements of the object's type
+is undefined behavior.
+
+\pnum
+A \defnadj{fundamental}{alignment} is represented by an alignment
+less than or equal to the greatest alignment supported by the implementation in
+all contexts, which is equal to
+\tcode{\keyword{alignof}(std::max_align_t)}\iref{support.types}.
+The alignment required for a type may be different when it is used as the type
+of a complete object and when it is used as the type of a subobject.
+\begin{example}
+\begin{codeblock}
+struct B { long double d; };
+struct D : virtual B { char c; };
+\end{codeblock}
+
+When \tcode{D} is the type of a complete object, it will have a subobject of
+type \tcode{B}, so it must be aligned appropriately for a \tcode{\keyword{long} \keyword{double}}.
+If \tcode{D} appears as a subobject of another object that also has \tcode{B}
+as a virtual base class, the \tcode{B} subobject might be part of a different
+subobject, reducing the alignment requirements on the \tcode{D} subobject.
+\end{example}
+The result of the \keyword{alignof} operator reflects the alignment
+requirement of the type in the complete-object case.
+
+\pnum
+An \defnadj{extended}{alignment} is represented by an alignment
+greater than \tcode{\keyword{alignof}(std::max_align_t)}. It is \impldef{support for extended alignments}
+whether any extended alignments are supported and the contexts in which they are
+supported\iref{dcl.align}. A type having an extended alignment
+requirement is an \defnadj{over-aligned}{type}.
+\begin{note}
+Every over-aligned type is or contains a class type
+to which extended alignment applies (possibly through a non-static data member).
+\end{note}
+A \defnadj{new-extended}{alignment} is represented by
+an alignment greater than \mname{STDCPP_DEFAULT_NEW_ALIGNMENT}\iref{cpp.predefined}.
+
+\pnum
+Alignments are represented as values of the type \tcode{std::size_t}.
+Valid alignments include only those values returned by an \keyword{alignof}
+expression for the fundamental types plus an additional \impldef{alignment additional
+values}
+set of values, which may be empty.
+Every alignment value shall be a non-negative integral power of two.
+
+\pnum
+Alignments have an order from \defnx{weaker}{alignment!weaker} to
+\defnx{stronger}{alignment!stronger} or \defnx{stricter}{alignment!stricter} alignments. Stricter
+alignments have larger alignment values. An address that satisfies an alignment
+requirement also satisfies any weaker valid alignment requirement.
+
+\pnum
+The alignment requirement of a complete type can be queried using an
+\keyword{alignof} expression\iref{expr.alignof}. Furthermore,
+the narrow character types\iref{basic.fundamental} shall have the weakest
+alignment requirement.
+\begin{note}
+This enables the ordinary character types to be used as the
+underlying type for an aligned memory area\iref{dcl.align}.
+\end{note}
+
+\pnum
+Comparing alignments is meaningful and provides the obvious results:
+
+\begin{itemize}
+\item Two alignments are equal when their numeric values are equal.
+\item Two alignments are different when their numeric values are not equal.
+\item When an alignment is larger than another it represents a stricter alignment.
+\end{itemize}
+
+\pnum
+\begin{note}
+The runtime pointer alignment function\iref{ptr.align}
+can be used to obtain an aligned pointer within a buffer;
+an \grammarterm{alignment-specifier}\iref{dcl.align}
+can be used to align storage explicitly.
+\end{note}
+
+\pnum
+If a request for a specific extended alignment in a specific context is not
+supported by an implementation, the program is ill-formed.
+
 \rSec2[basic.life]{Lifetime}
+
+\pnum
+In this subclause, ``before'' and ``after'' refer to the ``happens before''
+relation\iref{intro.multithread}.
 
 \pnum
 \indextext{object lifetime|(}%
@@ -3631,6 +3767,12 @@ well-defined. The program has undefined behavior if
 \keyword{typeid}.
 \end{itemize}
 
+\begin{note}
+Therefore, undefined behavior results
+if an object that is being constructed in one thread is referenced from another
+thread without adequate synchronization.
+\end{note}
+
 \pnum
 An object $o_1$ is \defn{transparently replaceable} by an object $o_2$ if
 \begin{itemize}
@@ -3741,15 +3883,6 @@ void h() {
 }
 \end{codeblock}
 \end{example}
-
-\pnum
-In this subclause, ``before'' and ``after'' refer to the ``happens before''
-relation\iref{intro.multithread}.
-\begin{note}
-Therefore, undefined behavior results
-if an object that is being constructed in one thread is referenced from another
-thread without adequate synchronization.
-\end{note}
 \indextext{object lifetime|)}
 
 \rSec2[basic.indet]{Indeterminate and erroneous values}
@@ -3773,7 +3906,7 @@ independently of the state of the program.
 \end{itemize}
 If no initialization is performed for an object (including subobjects),
 such a byte retains its initial value
-until that value is replaced\iref{dcl.init.general,expr.ass}.
+until that value is replaced\iref{dcl.init.general,expr.assign}.
 If any bit in the value representation has an indeterminate value,
 the object has an indeterminate value;
 otherwise, if any bit in the value representation has an erroneous value,
@@ -3815,7 +3948,7 @@ the result of the evaluation is the value so produced but is not erroneous:
   If an indeterminate or erroneous value of
   unsigned ordinary character type or \tcode{std::byte} type
   is produced by the evaluation of
-  the right operand of a simple assignment operator\iref{expr.ass}
+  the right operand of a simple assignment operator\iref{expr.assign}
   whose first operand is an lvalue of
   unsigned ordinary character type or \tcode{std::byte} type,
   an indeterminate value or that erroneous value, respectively, replaces
@@ -3911,6 +4044,12 @@ with implicitly created objects\iref{intro.object}.
 
 \pnum
 The storage duration categories apply to references as well.
+
+\pnum
+\indextext{storage duration!class member}%
+The storage duration of subobjects and reference members
+is that of their complete object\iref{intro.object}.
+\indextext{storage duration|)}%
 
 \rSec3[basic.stc.static]{Static storage duration}
 
@@ -4243,108 +4382,6 @@ If the argument given to a deallocation function in the standard library
 is a pointer that is not the null pointer value\iref{basic.compound}, the
 deallocation function shall deallocate the storage referenced by the
 pointer, ending the duration of the region of storage.
-
-\rSec3[basic.stc.inherit]{Duration of subobjects}
-
-\pnum
-\indextext{storage duration!class member}%
-The storage duration of subobjects and reference members
-is that of their complete object\iref{intro.object}.
-\indextext{storage duration|)}%
-
-\rSec2[basic.align]{Alignment}
-
-\pnum
-Object types have \defnx{alignment requirements}{alignment requirement!implementation-defined}\iref{basic.fundamental,basic.compound}
-which place restrictions on the addresses at which an object of that type
-may be allocated. An \defn{alignment} is an \impldef{alignment}
-integer value representing the number of bytes between successive addresses
-at which a given object can be allocated. An object type imposes an alignment
-requirement on every object of that type; stricter alignment can be requested
-using the alignment specifier\iref{dcl.align}.
-Attempting to create an object\iref{intro.object} in storage that
-does not meet the alignment requirements of the object's type
-is undefined behavior.
-
-\pnum
-A \defnadj{fundamental}{alignment} is represented by an alignment
-less than or equal to the greatest alignment supported by the implementation in
-all contexts, which is equal to
-\tcode{\keyword{alignof}(std::max_align_t)}\iref{support.types}.
-The alignment required for a type may be different when it is used as the type
-of a complete object and when it is used as the type of a subobject.
-\begin{example}
-\begin{codeblock}
-struct B { long double d; };
-struct D : virtual B { char c; };
-\end{codeblock}
-
-When \tcode{D} is the type of a complete object, it will have a subobject of
-type \tcode{B}, so it must be aligned appropriately for a \tcode{\keyword{long} \keyword{double}}.
-If \tcode{D} appears as a subobject of another object that also has \tcode{B}
-as a virtual base class, the \tcode{B} subobject might be part of a different
-subobject, reducing the alignment requirements on the \tcode{D} subobject.
-\end{example}
-The result of the \keyword{alignof} operator reflects the alignment
-requirement of the type in the complete-object case.
-
-\pnum
-An \defnadj{extended}{alignment} is represented by an alignment
-greater than \tcode{\keyword{alignof}(std::max_align_t)}. It is \impldef{support for extended alignments}
-whether any extended alignments are supported and the contexts in which they are
-supported\iref{dcl.align}. A type having an extended alignment
-requirement is an \defnadj{over-aligned}{type}.
-\begin{note}
-Every over-aligned type is or contains a class type
-to which extended alignment applies (possibly through a non-static data member).
-\end{note}
-A \defnadj{new-extended}{alignment} is represented by
-an alignment greater than \mname{STDCPP_DEFAULT_NEW_ALIGNMENT}\iref{cpp.predefined}.
-
-\pnum
-Alignments are represented as values of the type \tcode{std::size_t}.
-Valid alignments include only those values returned by an \keyword{alignof}
-expression for the fundamental types plus an additional \impldef{alignment additional
-values}
-set of values, which may be empty.
-Every alignment value shall be a non-negative integral power of two.
-
-\pnum
-Alignments have an order from \defnx{weaker}{alignment!weaker} to
-\defnx{stronger}{alignment!stronger} or \defnx{stricter}{alignment!stricter} alignments. Stricter
-alignments have larger alignment values. An address that satisfies an alignment
-requirement also satisfies any weaker valid alignment requirement.
-
-\pnum
-The alignment requirement of a complete type can be queried using an
-\keyword{alignof} expression\iref{expr.alignof}. Furthermore,
-the narrow character types\iref{basic.fundamental} shall have the weakest
-alignment requirement.
-\begin{note}
-This enables the ordinary character types to be used as the
-underlying type for an aligned memory area\iref{dcl.align}.
-\end{note}
-
-\pnum
-Comparing alignments is meaningful and provides the obvious results:
-
-\begin{itemize}
-\item Two alignments are equal when their numeric values are equal.
-\item Two alignments are different when their numeric values are not equal.
-\item When an alignment is larger than another it represents a stricter alignment.
-\end{itemize}
-
-\pnum
-\begin{note}
-The runtime pointer alignment function\iref{ptr.align}
-can be used to obtain an aligned pointer within a buffer;
-an \grammarterm{alignment-specifier}\iref{dcl.align}
-can be used to align storage explicitly.
-\end{note}
-
-\pnum
-If a request for a specific extended alignment in a specific context is not
-supported by an implementation, the program is ill-formed.
 
 \rSec2[class.temporary]{Temporary objects}
 
@@ -4923,11 +4960,6 @@ types are collectively called
 Scalar types, trivially copyable class types\iref{class.prop},
 arrays of such types, and cv-qualified versions of these
 types are collectively called \defnadjx{trivially copyable}{types}{type}.
-\label{term.trivial.type}%
-Scalar types, trivial class types\iref{class.prop},
-arrays of such types, and cv-qualified versions of these
-types are collectively called
-\defnadjx{trivial}{types}{type}.
 \label{term.standard.layout.type}%
 Scalar types, standard-layout class
 types\iref{class.prop}, arrays of such types, and
@@ -5284,7 +5316,7 @@ for a function with the return type \cv{}~\keyword{void},
 
 \pnum
 The types denoted by \cv~\tcode{std::nullptr_t} are distinct types.
-A value of type \tcode{std::nullptr_t} is a null pointer
+A prvalue of type \tcode{std::nullptr_t} is a null pointer
 constant\iref{conv.ptr}. Such values participate in the pointer and the
 pointer-to-member conversions\iref{conv.ptr,conv.mem}.
 \tcode{\keyword{sizeof}(std::nullptr_t)} shall be equal to \tcode{\keyword{sizeof}(\keyword{void}*)}.
@@ -5305,7 +5337,7 @@ If the implementation supports an extended floating-point type\iref{basic.fundam
 whose properties are specified by
 the \IsoFloatUndated{} floating-point interchange format binary16,
 then the \grammarterm{typedef-name} \tcode{std::float16_t}
-is defined in the header \libheaderref{stdfloat} and names such a type,
+is declared in the header \libheaderref{stdfloat} and names such a type,
 the macro \mname{STDCPP_FLOAT16_T} is defined\iref{cpp.predefined}, and
 the floating-point literal suffixes \tcode{f16} and \tcode{F16}
 are supported\iref{lex.fcon}.
@@ -5315,7 +5347,7 @@ If the implementation supports an extended floating-point type
 whose properties are specified by
 the \IsoFloatUndated{} floating-point interchange format binary32,
 then the \grammarterm{typedef-name} \tcode{std::float32_t}
-is defined in the header \libheader{stdfloat} and names such a type,
+is declared in the header \libheader{stdfloat} and names such a type,
 the macro \mname{STDCPP_FLOAT32_T} is defined, and
 the floating-point literal suffixes \tcode{f32} and \tcode{F32} are supported.
 
@@ -5324,7 +5356,7 @@ If the implementation supports an extended floating-point type
 whose properties are specified by
 the \IsoFloatUndated{} floating-point interchange format binary64,
 then the \grammarterm{typedef-name} \tcode{std::float64_t}
-is defined in the header \libheader{stdfloat} and names such a type,
+is declared in the header \libheader{stdfloat} and names such a type,
 the macro \mname{STDCPP_FLOAT64_T} is defined, and
 the floating-point literal suffixes \tcode{f64} and \tcode{F64} are supported.
 
@@ -5333,7 +5365,7 @@ If the implementation supports an extended floating-point type
 whose properties are specified by
 the \IsoFloatUndated{} floating-point interchange format binary128,
 then the \grammarterm{typedef-name} \tcode{std::float128_t}
-is defined in the header \libheader{stdfloat} and names such a type,
+is declared in the header \libheader{stdfloat} and names such a type,
 the macro \mname{STDCPP_FLOAT128_T} is defined, and
 the floating-point literal suffixes \tcode{f128} and \tcode{F128} are supported.
 
@@ -5346,7 +5378,7 @@ precision in bits ($p$) of 8,
 maximum exponent ($emax$) of 127, and
 exponent field width in bits ($w$) of 8, then
 the \grammarterm{typedef-name} \tcode{std::bfloat16_t}
-is defined in the header \libheader{stdfloat} and names such a type,
+is declared in the header \libheader{stdfloat} and names such a type,
 the macro \mname{STDCPP_BFLOAT16_T} is defined, and
 the floating-point literal suffixes \tcode{bf16} and \tcode{BF16} are supported.
 
@@ -5376,7 +5408,7 @@ $w$, exponent field width in bits & 5 & 8 & 11 & 15 & 8 \\
 \recommended
 Any names that the implementation provides for
 the extended floating-point types described in this subsection
-that are in addition to the names defined in the \libheader{stdfloat} header
+that are in addition to the names declared in the \libheader{stdfloat} header
 should be chosen to increase compatibility and interoperability
 with the interchange types
 \tcode{_Float16}, \tcode{_Float32}, \tcode{_Float64}, and \tcode{_Float128}
@@ -5391,7 +5423,7 @@ Compound types can be constructed in the following ways:
 \item \defnx{arrays}{type!array} of objects of a given type, \ref{dcl.array};
 
 \item \defnx{functions}{type!function}, which have parameters of given types and return
-\keyword{void} or references or objects of a given type, \ref{dcl.fct};
+\keyword{void} or a result of a given type, \ref{dcl.fct};
 
 \item \defnx{pointers}{type!pointer} to \cv{}~\keyword{void} or objects or functions (including
 static members of classes) of a given type, \ref{dcl.ptr};
@@ -5407,9 +5439,8 @@ type, \ref{dcl.ref}. There are two types of references:
 \end{itemize}
 
 \item
-\defnx{classes}{class} containing a sequence of objects of various types\iref{class},
-a set of types, enumerations and functions for
-manipulating these objects\iref{class.mfct}, and a set of restrictions
+\defnx{classes}{class} containing a sequence of class members\iref{class,class.mem},
+and a set of restrictions
 on the access to these entities\iref{class.access};
 
 \item
@@ -5499,7 +5530,7 @@ and comparison\iref{expr.rel,expr.eq},
 a pointer past the end of the last element of
 an array \tcode{x} of $n$ elements
 is considered to be equivalent to
-a pointer to a hypothetical array element $n$ of \tcode{x} and
+a pointer to a hypothetical array element $n$ of \tcode{x}, and
 an object of type \tcode{T} that is not an array element
 is considered to belong to an array with one element of type \tcode{T}.
 The value representation of
@@ -5517,7 +5548,7 @@ alignment requirement.
 A pointer value $P$ is
 \indextext{value!valid in the context of an evaluation}%
 \defn{valid in the context of} an evaluation $E$
-if $P$ is a null pointer value, or
+if $P$ is a pointer to function or a null pointer value, or
 if it is a pointer to or past the end of an object $O$ and
 $E$ happens before the end of the duration of the region of storage for $O$.
 If a pointer value $P$ is used in an evaluation $E$ and
@@ -5781,7 +5812,7 @@ more than one cv-unqualified standard floating-point type
 has a rank equal to the rank of \keyword{double}.
 \begin{tailnote}
 The treatment of \tcode{std::float64_t} differs from
-that of the analoguous \tcode{_Float64} in C,
+that of the analogous \tcode{_Float64} in C,
 for example on platforms where all of
 \tcode{\keyword{long} \keyword{double}},
 \keyword{double}, and
@@ -6039,13 +6070,30 @@ evaluations.
 \end{note}
 The value computations of the operands of an
 operator are sequenced before the value computation of the result of the
-operator. If a
+operator.
+The behavior is undefined if
+\begin{itemize}
+\item
 \indextext{side effects}%
-side effect on a memory location\iref{intro.memory} is unsequenced
-relative to either another side effect on the same memory location or
+a side effect on a memory location\iref{intro.memory} or
+\item
+starting or ending the lifetime of an object in a memory location
+\end{itemize}
+is unsequenced relative to
+\begin{itemize}
+\item
+another side effect on the same memory location,
+\item
+starting or ending the lifetime of an object occupying storage that
+overlaps with the memory location, or
+\item
 a value computation using the value of any object in the same memory location,
-and they are not potentially concurrent\iref{intro.multithread},
-the behavior is undefined.
+\end{itemize}
+and the two evaluations are not potentially concurrent\iref{intro.multithread}.
+\begin{note}
+Starting the lifetime of an object in a memory location can end the lifetime of
+objects in other memory locations\iref{basic.life}.
+\end{note}
 \begin{note}
 The next subclause imposes similar, but more complex restrictions on
 potentially concurrent computations.
@@ -6059,6 +6107,9 @@ void g(int i) {
   i = i++ + 1;                  // the value of \tcode{i} is incremented
   i = i++ + i;                  // undefined behavior
   i = i + 1;                    // the value of \tcode{i} is incremented
+
+  union U { int x, y; } u;
+  (u.x = 1, 0) + (u.y = 2, 0);  // undefined behavior
 }
 \end{codeblock}
 \end{example}
@@ -6069,8 +6120,13 @@ every argument expression and
 the postfix expression designating the called function
 are sequenced before every expression or statement
 in the body of the called function.
-For each function invocation or
-evaluation of an \grammarterm{await-expression} \placeholder{F},
+For each
+\begin{itemize}
+\item function invocation,
+\item evaluation of an \grammarterm{await-expression}\iref{expr.await}, or
+\item evaluation of a \grammarterm{throw-expression}\iref{expr.throw}
+\end{itemize}
+\placeholder{F},
 each evaluation that does not occur within \placeholder{F} but
 is evaluated on the same thread and as part of the same signal handler (if any)
 is either sequenced before all evaluations that occur within \placeholder{F}
@@ -6169,9 +6225,25 @@ simpler view for more restricted programs.
 \end{note}
 
 \pnum
-Two expression evaluations \defn{conflict} if one of them modifies a memory
-location\iref{intro.memory} and the other one reads or modifies the same
-memory location.
+Two expression evaluations \defn{conflict} if one of them
+\begin{itemize}
+\item
+modifies\iref{defns.access} a memory location\iref{intro.memory} or
+\item
+starts or ends the lifetime of an object in a memory location
+\end{itemize}
+and the other one
+\begin{itemize}
+\item
+reads or modifies the same memory location or
+\item
+starts or ends the lifetime of an object occupying storage that
+overlaps with the memory location.
+\end{itemize}
+\begin{note}
+A modification can still conflict
+even if it does not alter the value of any bits.
+\end{note}
 
 \pnum
 The library defines a number of atomic operations\iref{atomics} and
@@ -6884,7 +6956,7 @@ Within each of these phases of initiation, initialization occurs as follows.
 \pnum
 \indextext{initialization!constant}%
 \defnx{Constant initialization}{constant initialization} is performed
-if a variable or temporary object with static or thread storage duration
+if a variable with static or thread storage duration
 is constant-initialized\iref{expr.const}.
 \indextext{initialization!zero-initialization}%
 If constant initialization is not performed, a variable with static

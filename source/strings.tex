@@ -5,7 +5,8 @@
 
 \pnum
 This Clause describes components for manipulating sequences of
-any non-array trivial standard-layout\iref{term.standard.layout.type} type.
+any non-array trivially copyable standard-layout\iref{term.standard.layout.type} type \tcode{T}
+where \tcode{is_trivially_default_constructible_v<T>} is \tcode{true}.
 Such types are called \defnx{char-like types}{char-like type},
 and objects of
 char-like types are called \defnx{char-like objects}{char-like object} or
@@ -122,15 +123,15 @@ shall exit via an exception.
                         &                       &   \chdr{pre-/post-condition}   &               \\ \capsep
 \endhead
 \tcode{X::char_type}    &   \tcode{C}       &
-   &   compile-time    \\ \rowsep
+   &    \\ \rowsep
 \tcode{X::int_type} &                       &
-(described in~\ref{char.traits.typedefs})   &   compile-time    \\ \rowsep
+(described in~\ref{char.traits.typedefs})   &    \\ \rowsep
 \tcode{X::off_type} &                       &
-(described in~\ref{iostreams.limits.pos} and \ref{iostream.forward})   &   compile-time    \\ \rowsep
+(described in~\ref{iostreams.limits.pos} and \ref{iostream.forward})   &    \\ \rowsep
 \tcode{X::pos_type} &                       &
-(described in~\ref{iostreams.limits.pos} and \ref{iostream.forward})   &   compile-time    \\ \rowsep
+(described in~\ref{iostreams.limits.pos} and \ref{iostream.forward})   &    \\ \rowsep
 \tcode{X::state_type}   &                       &
-(described in~\ref{char.traits.typedefs})   &   compile-time    \\ \rowsep
+(described in~\ref{char.traits.typedefs})   &    \\ \rowsep
 \tcode{X::eq(c,d)}      &   \tcode{bool}        &
  \returns
 whether \tcode{c} is to be treated as equal to \tcode{d}.   &   constant    \\ \rowsep
@@ -1665,7 +1666,7 @@ then calls \tcode{os.\brk{}width(0)}.
 
 \pnum
 \returns
-\tcode{os}
+\tcode{os}.
 \end{itemdescr}
 
 \rSec2[string.view.hash]{Hash support}
@@ -3736,7 +3737,7 @@ or otherwise at the end of the string.
 
 \pnum
 \returns
-\tcode{*this}
+\tcode{*this}.
 
 \pnum
 \throws
@@ -5514,9 +5515,11 @@ races\iref{res.on.data.races}.
 \indextext{signal-safe!\idxcode{memcpy}}%
 \indextext{signal-safe!\idxcode{memmove}}%
 The functions \tcode{memcpy} and \tcode{memmove} are signal-safe\iref{support.signal}.
-Both functions implicitly create objects\iref{intro.object}
+Each of these functions implicitly creates objects\iref{intro.object}
 in the destination region of storage
 immediately prior to copying the sequence of characters to the destination.
+Each of these functions returns a pointer to a suitable created object, if any,
+otherwise the value of the first parameter.
 
 \pnum
 \begin{note}

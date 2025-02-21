@@ -198,23 +198,23 @@ namespace std::chrono {
 
   // \ref{time.point.comparisons}, \tcode{time_point} comparisons
   template<class Clock, class Duration1, class Duration2>
-     constexpr bool operator==(const time_point<Clock, Duration1>& lhs,
-                               const time_point<Clock, Duration2>& rhs);
+    constexpr bool operator==(const time_point<Clock, Duration1>& lhs,
+                              const time_point<Clock, Duration2>& rhs);
   template<class Clock, class Duration1, class Duration2>
-     constexpr bool operator< (const time_point<Clock, Duration1>& lhs,
-                               const time_point<Clock, Duration2>& rhs);
+    constexpr bool operator< (const time_point<Clock, Duration1>& lhs,
+                              const time_point<Clock, Duration2>& rhs);
   template<class Clock, class Duration1, class Duration2>
-     constexpr bool operator> (const time_point<Clock, Duration1>& lhs,
-                               const time_point<Clock, Duration2>& rhs);
+    constexpr bool operator> (const time_point<Clock, Duration1>& lhs,
+                              const time_point<Clock, Duration2>& rhs);
   template<class Clock, class Duration1, class Duration2>
-     constexpr bool operator<=(const time_point<Clock, Duration1>& lhs,
-                               const time_point<Clock, Duration2>& rhs);
+    constexpr bool operator<=(const time_point<Clock, Duration1>& lhs,
+                              const time_point<Clock, Duration2>& rhs);
   template<class Clock, class Duration1, class Duration2>
-     constexpr bool operator>=(const time_point<Clock, Duration1>& lhs,
-                               const time_point<Clock, Duration2>& rhs);
+    constexpr bool operator>=(const time_point<Clock, Duration1>& lhs,
+                              const time_point<Clock, Duration2>& rhs);
   template<class Clock, class Duration1, @\libconcept{three_way_comparable_with}@<Duration1> Duration2>
-     constexpr auto operator<=>(const time_point<Clock, Duration1>& lhs,
-                                const time_point<Clock, Duration2>& rhs);
+    constexpr auto operator<=>(const time_point<Clock, Duration1>& lhs,
+                               const time_point<Clock, Duration2>& rhs);
 
   // \ref{time.point.cast}, conversions
   template<class ToDuration, class Clock, class Duration>
@@ -857,7 +857,7 @@ namespace std::chrono {
   // \ref{time.parse}, parsing
   template<class charT, class Parsable>
     @\unspec@
-     parse(const charT* fmt, Parsable& tp);
+      parse(const charT* fmt, Parsable& tp);
   template<class charT, class traits, class Alloc, class Parsable>
     @\unspec@
       parse(const basic_string<charT, traits, Alloc>& fmt, Parsable& tp);
@@ -5404,7 +5404,7 @@ namespace std::chrono {
   class weekday_last {
     chrono::weekday wd_;                // \expos
 
-    public:
+  public:
     constexpr explicit weekday_last(const chrono::weekday& wd) noexcept;
 
     constexpr chrono::weekday weekday() const noexcept;
@@ -8638,8 +8638,8 @@ constexpr explicit operator precision() const noexcept;
 
 \begin{itemdecl}
 template<class charT, class traits, class Duration>
-basic_ostream<charT, traits>&
-operator<<(basic_ostream<charT, traits>& os, const hh_mm_ss<Duration>& hms);
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const hh_mm_ss<Duration>& hms);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -10994,6 +10994,9 @@ passed to \tcode{formatter::format}.
 
 \pnum
 \remarks
+If the \fmtgrammarterm{chrono-specs} is omitted,
+the result is equivalent to using \tcode{\%F \%T \%Z} as
+the \fmtgrammarterm{chrono-specs}.
 If \tcode{\%Z} is used,
 it is replaced with \tcode{*f.abbrev}
 if \tcode{f.abbrev} is not a null pointer value.
@@ -11012,7 +11015,7 @@ then an exception of type \tcode{format_error} is thrown.
 \begin{codeblock}
 template<class Duration, class TimeZonePtr, class charT>
 struct formatter<chrono::zoned_time<Duration, TimeZonePtr>, charT>
-    : formatter<chrono::@\placeholder{local-time-format-t}@<Duration>, charT> {
+    : formatter<chrono::@\placeholder{local-time-format-t}@<common_type_t<Duration, seconds>>, charT> {
   template<class FormatContext>
     typename FormatContext::iterator
       format(const chrono::zoned_time<Duration, TimeZonePtr>& tp, FormatContext& ctx) const;
@@ -11032,7 +11035,7 @@ template<class FormatContext>
 Equivalent to:
 \begin{codeblock}
 sys_info info = tp.get_info();
-return formatter<chrono::@\placeholder{local-time-format-t}@<Duration>, charT>::
+return formatter<chrono::@\placeholder{local-time-format-t}@<common_type_t<Duration, seconds>>, charT>::
          format({tp.get_local_time(), &info.abbrev, &info.offset}, ctx);
 \end{codeblock}
 \end{itemdescr}
@@ -11603,9 +11606,6 @@ The specialization is enabled\iref{unord.hash}.
 \rSec1[ctime.syn]{Header \tcode{<ctime>} synopsis}
 
 \indexheader{ctime}%
-\indexlibraryglobal{CLOCKS_PER_SEC}%
-\indexlibraryglobal{NULL}%
-\indexlibraryglobal{TIME_UTC}%
 \indexlibraryglobal{asctime}%
 \indexlibraryglobal{clock_t}%
 \indexlibraryglobal{clock}%
@@ -11622,9 +11622,9 @@ The specialization is enabled\iref{unord.hash}.
 \indexlibraryglobal{time}%
 \indexlibraryglobal{tm}%
 \begin{codeblock}
-#define NULL @\textit{see \ref{support.types.nullptr}}@
-#define CLOCKS_PER_SEC @\seebelow@
-#define TIME_UTC @\seebelow@
+#define @\libmacro{NULL}@ @\textit{see \ref{support.types.nullptr}}@
+#define @\libmacro{CLOCKS_PER_SEC}@ @\seebelow@
+#define @\libmacro{TIME_UTC}@ @\seebelow@
 
 namespace std {
   using size_t = @\textit{see \ref{support.types.layout}}@;

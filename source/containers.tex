@@ -1129,7 +1129,7 @@ X u(t, m);
 
 \pnum
 \ensures
-\tcode{u == t}, \tcode{u.get_allocator() == m}
+\tcode{u == t}, \tcode{u.get_allocator() == m}.
 
 \pnum
 \complexity
@@ -1463,7 +1463,7 @@ a.emplace(p, args)
 \pnum
 \expects
 \tcode{T} is \oldconcept{EmplaceConstructible} into \tcode{X} from \tcode{args}.
-For \tcode{vector} and \tcode{deque},
+For \tcode{vector}, \tcode{inplace_vector}, and \tcode{deque},
 \tcode{T} is also \oldconcept{MoveInsertable} into \tcode{X} and
 \oldconcept{MoveAssignable}.
 
@@ -1478,8 +1478,7 @@ before \tcode{p}.
 
 \pnum
 \returns
-An iterator that points to
-the new element constructed from \tcode{args} into \tcode{a}.
+An iterator that points to the new element.
 \end{itemdescr}
 
 \indexcont{insert}%
@@ -2200,7 +2199,7 @@ a[n]
 \begin{itemdescr}
 \pnum
 \result
-\tcode{reference; const_reference} for constant \tcode{a}
+\tcode{reference; const_reference} for constant \tcode{a}.
 
 \pnum
 \effects
@@ -2223,7 +2222,7 @@ a.at(n)
 \begin{itemdescr}
 \pnum
 \result
-\tcode{reference; const_reference} for constant \tcode{a}
+\tcode{reference; const_reference} for constant \tcode{a}.
 
 \pnum
 \returns
@@ -3873,7 +3872,7 @@ or \tcode{b.end()} if such an element is not found.
 
 \pnum
 \complexity
-Logarithmic,
+Logarithmic.
 \end{itemdescr}
 
 \indexordmem{upper_bound}%
@@ -5904,7 +5903,7 @@ elements that are not erased.
 \indextext{unordered associative containers!requirements}%
 The \tcode{insert}, \tcode{insert_range}, and \tcode{emplace} members
 shall not affect the validity of iterators if
-\tcode{(N+n) <= z * B}, where \tcode{N} is the number of elements in
+\tcode{(N + n) <= z * B}, where \tcode{N} is the number of elements in
 the container prior to the insert operation, \tcode{n} is the
 number of elements inserted, \tcode{B} is the container's bucket count, and
 \tcode{z} is the container's maximum load factor.
@@ -6150,8 +6149,8 @@ namespace std {
     constexpr reference       back();
     constexpr const_reference back() const;
 
-    constexpr T *       data() noexcept;
-    constexpr const T * data() const noexcept;
+    constexpr T*       data() noexcept;
+    constexpr const T* data() const noexcept;
   };
 
   template<class T, class... U>
@@ -7200,10 +7199,13 @@ const_reference front() const;
 \rSec3[forward.list.modifiers]{Modifiers}
 
 \pnum
-None of the overloads of \tcode{insert_after} shall affect the validity of iterators and
-references, and \tcode{erase_after} shall invalidate only iterators and references to
-the erased elements. If an exception is thrown during \tcode{insert_after} there shall
-be no effect. Inserting \tcode{n} elements into a \tcode{forward_list} is linear in
+The member functions in this subclause
+do not affect the validity of iterators and references
+when inserting elements, and when erasing elements
+invalidate iterators and references to the erased elements only.
+If an exception is thrown by any of these member functions
+there is no effect on the container.
+Inserting \tcode{n} elements into a \tcode{forward_list} is linear in
 \tcode{n}, and the number of calls to the copy or move constructor of \tcode{T} is
 exactly equal to \tcode{n}. Erasing \tcode{n} elements from a \tcode{forward_list} is
 linear in \tcode{n} and the number of calls to the destructor of type \tcode{T} is
@@ -7780,7 +7782,7 @@ template<class T, class Allocator, class U = T>
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return erase_if(c, [\&](auto\& elem) \{ return elem == value; \});}
+Equivalent to: \tcode{return erase_if(c, [\&](const auto\& elem) -> bool \{ return elem == value; \});}
 \end{itemdescr}
 
 \indexlibrarymember{erase_if}{forward_list}%
@@ -8215,7 +8217,6 @@ If an exception is thrown, there are no effects.
 \begin{itemdecl}
 iterator erase(const_iterator position);
 iterator erase(const_iterator first, const_iterator last);
-
 void pop_front();
 void pop_back();
 void clear() noexcept;
@@ -8565,7 +8566,7 @@ template<class T, class Allocator, class U = T>
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return erase_if(c, [\&](auto\& elem) \{ return elem == value; \});}
+Equivalent to: \tcode{return erase_if(c, [\&](const auto\& elem) -> bool \{ return elem == value; \});}
 \end{itemdescr}
 
 \indexlibrarymember{erase_if}{list}%
@@ -8741,8 +8742,8 @@ namespace std {
     // element access
     constexpr reference       operator[](size_type n);
     constexpr const_reference operator[](size_type n) const;
-    constexpr const_reference at(size_type n) const;
     constexpr reference       at(size_type n);
+    constexpr const_reference at(size_type n) const;
     constexpr reference       front();
     constexpr const_reference front() const;
     constexpr reference       back();
@@ -9094,8 +9095,8 @@ If an exception is thrown, there are no effects.
 
 \indexlibrarymember{data}{vector}%
 \begin{itemdecl}
-constexpr T*         data() noexcept;
-constexpr const T*   data() const noexcept;
+constexpr T*       data() noexcept;
+constexpr const T* data() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -9256,8 +9257,6 @@ namespace std {
 
     // bit reference
     class @\libmember{reference}{vector<bool>}@ {
-      constexpr reference() noexcept;
-
     public:
       constexpr reference(const reference&) = default;
       constexpr ~reference();
@@ -9323,8 +9322,8 @@ namespace std {
     // element access
     constexpr reference       operator[](size_type n);
     constexpr const_reference operator[](size_type n) const;
-    constexpr const_reference at(size_type n) const;
     constexpr reference       at(size_type n);
+    constexpr const_reference at(size_type n) const;
     constexpr reference       front();
     constexpr const_reference front() const;
     constexpr reference       back();
@@ -9537,8 +9536,9 @@ meet the constexpr iterator requirements.
 
 \pnum
 For any $\tcode{N} > 0$,
-if \tcode{is_trivial_v<T>} is \tcode{false}, then
-no \tcode{inplace_vector<T, N>} member functions
+if \tcode{T} is not trivially copyable or
+\tcode{is_trivially_default_constructible_v<T>} is \tcode{false},
+then no \tcode{inplace_vector<T, N>} member functions
 are usable in constant expressions.
 
 \pnum
@@ -9549,7 +9549,8 @@ throws an exception of type \tcode{bad_alloc}.
 \pnum
 Let \tcode{IV} denote a specialization of \tcode{inplace_vector<T, N>}.
 If \tcode{N} is zero, then
-\tcode{IV} is both trivial and empty.
+\tcode{IV} is trivially copyable and empty, and
+\tcode{std::is_trivially_default_constructible_v<IV>} is \tcode{true}.
 Otherwise:
 \begin{itemize}
 \item
@@ -9712,7 +9713,7 @@ namespace std {
                           is_nothrow_move_constructible_v<T>))
       { x.swap(y); }
   };
-};
+}
 \end{codeblock}
 
 \rSec3[inplace.vector.cons]{Constructors}
@@ -10274,7 +10275,7 @@ on the keys. The \tcode{map} class supports bidirectional iterators.
 A \tcode{map} meets all of the requirements of
 a container\iref{container.reqmts},
 of a reversible container\iref{container.rev.reqmts},
-of an allocator-aware container\iref{container.alloc.reqmts}. and
+of an allocator-aware container\iref{container.alloc.reqmts}, and
 of an associative container\iref{associative.reqmts}.
 A
 \tcode{map}
@@ -15857,12 +15858,12 @@ namespace std {
 
     class value_compare {
     private:
-      key_compare comp;                                 // \expos
-      value_compare(key_compare c) : comp(c) { }        // \expos
+      key_compare @\exposid{comp}@;                                 // \expos
+      value_compare(key_compare c) : @\exposid{comp}@(c) { }        // \expos
 
     public:
       bool operator()(const_reference x, const_reference y) const {
-        return comp(x.first, y.first);
+        return @\exposid{comp}@(x.first, y.first);
       }
     };
 
@@ -15875,7 +15876,7 @@ namespace std {
     flat_map() : flat_map(key_compare()) { }
 
     explicit flat_map(const key_compare& comp)
-      : c(), compare(comp) { }
+      : @\exposid{c}@(), @\exposid{compare}@(comp) { }
 
     flat_map(key_container_type key_cont, mapped_container_type mapped_cont,
              const key_compare& comp = key_compare());
@@ -15885,16 +15886,16 @@ namespace std {
 
     template<class InputIterator>
       flat_map(InputIterator first, InputIterator last, const key_compare& comp = key_compare())
-        : c(), compare(comp) { insert(first, last); }
+        : @\exposid{c}@(), @\exposid{compare}@(comp) { insert(first, last); }
 
     template<class InputIterator>
       flat_map(sorted_unique_t s, InputIterator first, InputIterator last,
                const key_compare& comp = key_compare())
-        : c(), compare(comp) { insert(s, first, last); }
+        : @\exposid{c}@(), @\exposid{compare}@(comp) { insert(s, first, last); }
 
     template<@\exposconcept{container-compatible-range}@<value_type> R>
-      flat_map(from_range_t fr, R&& rg)
-        : flat_map(fr, std::forward<R>(rg), key_compare()) { }
+      flat_map(from_range_t, R&& rg)
+        : flat_map(from_range, std::forward<R>(rg), key_compare()) { }
     template<@\exposconcept{container-compatible-range}@<value_type> R>
       flat_map(from_range_t, R&& rg, const key_compare& comp)
         : flat_map(comp) { insert_range(std::forward<R>(rg)); }
@@ -16055,8 +16056,8 @@ namespace std {
     key_compare key_comp() const;
     value_compare value_comp() const;
 
-    const key_container_type& keys() const noexcept      { return c.keys; }
-    const mapped_container_type& values() const noexcept { return c.values; }
+    const key_container_type& keys() const noexcept      { return @\exposid{c}@.keys; }
+    const mapped_container_type& values() const noexcept { return @\exposid{c}@.values; }
 
     // map operations
     iterator find(const key_type& x);
@@ -16094,11 +16095,11 @@ namespace std {
       { x.swap(y); }
 
   private:
-    containers c;               // \expos
-    key_compare compare;        // \expos
+    containers @\exposid{c}@;               // \expos
+    key_compare @\exposid{compare}@;        // \expos
 
-    struct key_equiv {  // \expos
-      key_equiv(key_compare c) : comp(c) { }
+    struct @\exposid{key-equiv}@ {  // \expos
+      @\exposid{key-equiv}@(key_compare c) : comp(c) { }
       bool operator()(const_reference x, const_reference y) const {
         return !comp(x.first, y.first) && !comp(y.first, x.first);
       }
@@ -16190,17 +16191,17 @@ flat_map(key_container_type key_cont, mapped_container_type mapped_cont,
 \pnum
 \effects
 Initializes
-\tcode{c.keys} with \tcode{std::move(key_cont)},
-\tcode{c.values} with \tcode{std::move(mapped_cont)}, and
-\tcode{compare} with \tcode{comp};
+\tcode{\exposid{c}.keys} with \tcode{std::move(key_cont)},
+\tcode{\exposid{c}.values} with \tcode{std::move(mapped_cont)}, and
+\exposid{compare} with \tcode{comp};
 sorts the range \range{begin()}{end()} with respect to \tcode{value_comp()}; and
 finally erases the duplicate elements as if by:
 \begin{codeblock}
-auto zv = views::zip(c.keys, c.values);
-auto it = ranges::unique(zv, key_equiv(compare)).begin();
+auto zv = views::zip(@\exposid{c}@.keys, @\exposid{c}@.values);
+auto it = ranges::unique(zv, @\exposid{key-equiv}@(@\exposid{compare}@)).begin();
 auto dist = distance(zv.begin(), it);
-c.keys.erase(c.keys.begin() + dist, c.keys.end());
-c.values.erase(c.values.begin() + dist, c.values.end());
+@\exposid{c}@.keys.erase(@\exposid{c}@.keys.begin() + dist, @\exposid{c}@.keys.end());
+@\exposid{c}@.values.erase(@\exposid{c}@.values.begin() + dist, @\exposid{c}@.values.end());
 \end{codeblock}
 
 \pnum
@@ -16220,9 +16221,9 @@ flat_map(sorted_unique_t, key_container_type key_cont, mapped_container_type map
 \pnum
 \effects
 Initializes
-\tcode{c.keys} with \tcode{std::move(key_cont)},
-\tcode{c.values} with \tcode{std::move(mapped_cont)}, and
-\tcode{compare} with \tcode{comp}.
+\tcode{\exposid{c}.keys} with \tcode{std::move(key_cont)},
+\tcode{\exposid{c}.values} with \tcode{std::move(mapped_cont)}, and
+\exposid{compare} with \tcode{comp}.
 
 \pnum
 \complexity
@@ -16251,7 +16252,7 @@ template<class Alloc>
 \effects
 Equivalent to \tcode{flat_map(key_cont, mapped_cont)} and
 \tcode{flat_map(key_cont, mapped_cont, comp)}, respectively,
-except that \tcode{c.keys} and \tcode{c.values} are constructed with
+except that \tcode{\exposid{c}.keys} and \tcode{\exposid{c}.values} are constructed with
 uses-allocator construction\iref{allocator.uses.construction}.
 
 \pnum
@@ -16276,7 +16277,7 @@ template<class Alloc>
 \effects
 Equivalent to \tcode{flat_map(s, key_cont, mapped_cont)} and
 \tcode{flat_map(s, key_cont, \linebreak{}mapped_cont, comp)}, respectively,
-except that \tcode{c.keys} and \tcode{c.values} are constructed
+except that \tcode{\exposid{c}.keys} and \tcode{\exposid{c}.values} are constructed
 with uses-allocator construction\iref{allocator.uses.construction}.
 
 \pnum
@@ -16322,7 +16323,7 @@ template<class Alloc>
 \pnum
 \effects
 Equivalent to the corresponding non-allocator constructors
-except that \tcode{c.keys} and \tcode{c.values} are constructed
+except that \tcode{\exposid{c}.keys} and \tcode{\exposid{c}.values} are constructed
 with uses-allocator construction\iref{allocator.uses.construction}.
 \end{itemdescr}
 
@@ -16336,7 +16337,7 @@ size_type size() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{c.keys.size()}.
+\tcode{\exposid{c}.keys.size()}.
 \end{itemdescr}
 
 \indexlibrarymember{max_size}{flat_map}%
@@ -16347,7 +16348,7 @@ size_type max_size() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{min<size_type>(c.keys.max_size(), c.values.max_size())}.
+\tcode{min<size_type>(\exposid{c}.keys.max_size(), \exposid{c}.values.max_size())}.
 \end{itemdescr}
 
 \rSec3[flat.map.access]{Access}
@@ -16464,10 +16465,10 @@ whose key is equivalent to \tcode{t.first},
 \tcode{*this} is unchanged.
 Otherwise, equivalent to:
 \begin{codeblock}
-auto key_it = ranges::upper_bound(c.keys, t.first, compare);
-auto value_it = c.values.begin() + distance(c.keys.begin(), key_it);
-c.keys.insert(key_it, std::move(t.first));
-c.values.insert(value_it, std::move(t.second));
+auto key_it = ranges::upper_bound(@\exposid{c}@.keys, t.first, @\exposid{compare}@);
+auto value_it = @\exposid{c}@.values.begin() + distance(@\exposid{c}@.keys.begin(), key_it);
+@\exposid{c}@.keys.insert(key_it, std::move(t.first));
+@\exposid{c}@.values.insert(value_it, std::move(t.second));
 \end{codeblock}
 
 \pnum
@@ -16505,12 +16506,12 @@ template<class InputIterator>
 \begin{itemdescr}
 \pnum
 \effects
-Adds elements to \tcode{c} as if by:
+Adds elements to \exposid{c} as if by:
 \begin{codeblock}
 for (; first != last; ++first) {
   value_type value = *first;
-  c.keys.insert(c.keys.end(), std::move(value.first));
-  c.values.insert(c.values.end(), std::move(value.second));
+  @\exposid{c}@.keys.insert(@\exposid{c}@.keys.end(), std::move(value.first));
+  @\exposid{c}@.values.insert(@\exposid{c}@.values.end(), std::move(value.second));
 }
 \end{codeblock}
 Then, sorts the range of newly inserted elements
@@ -16519,11 +16520,11 @@ merges the resulting sorted range and
 the sorted range of pre-existing elements into a single sorted range; and
 finally erases the duplicate elements as if by:
 \begin{codeblock}
-auto zv = views::zip(c.keys, c.values);
-auto it = ranges::unique(zv, key_equiv(compare)).begin();
+auto zv = views::zip(@\exposid{c}@.keys, @\exposid{c}@.values);
+auto it = ranges::unique(zv, @\exposid{key-equiv}@(@\exposid{compare}@)).begin();
 auto dist = distance(zv.begin(), it);
-c.keys.erase(c.keys.begin() + dist, c.keys.end());
-c.values.erase(c.values.begin() + dist, c.values.end());
+@\exposid{c}@.keys.erase(@\exposid{c}@.keys.begin() + dist, @\exposid{c}@.keys.end());
+@\exposid{c}@.values.erase(@\exposid{c}@.values.begin() + dist, @\exposid{c}@.values.end());
 \end{codeblock}
 
 \pnum
@@ -16546,23 +16547,23 @@ template<class InputIterator>
 \begin{itemdescr}
 \pnum
 \effects
-Adds elements to \tcode{c} as if by:
+Adds elements to \exposid{c} as if by:
 \begin{codeblock}
 for (; first != last; ++first) {
   value_type value = *first;
-  c.keys.insert(c.keys.end(), std::move(value.first));
-  c.values.insert(c.values.end(), std::move(value.second));
+  @\exposid{c}@.keys.insert(@\exposid{c}@.keys.end(), std::move(value.first));
+  @\exposid{c}@.values.insert(@\exposid{c}@.values.end(), std::move(value.second));
 }
 \end{codeblock}
 Then, merges the sorted range of newly added elements and
 the sorted range of pre-existing elements into a single sorted range; and
 finally erases the duplicate elements as if by:
 \begin{codeblock}
-auto zv = views::zip(c.keys, c.values);
-auto it = ranges::unique(zv, key_equiv(compare)).begin();
+auto zv = views::zip(@\exposid{c}@.keys, @\exposid{c}@.values);
+auto it = ranges::unique(zv, @\exposid{key-equiv}@(@\exposid{compare}@)).begin();
 auto dist = distance(zv.begin(), it);
-c.keys.erase(c.keys.begin() + dist, c.keys.end());
-c.values.erase(c.values.begin() + dist, c.values.end());
+@\exposid{c}@.keys.erase(@\exposid{c}@.keys.begin() + dist, @\exposid{c}@.keys.end());
+@\exposid{c}@.values.erase(@\exposid{c}@.values.begin() + dist, @\exposid{c}@.values.end());
 \end{codeblock}
 
 \pnum
@@ -16583,11 +16584,11 @@ template<@\exposconcept{container-compatible-range}@<value_type> R>
 \begin{itemdescr}
 \pnum
 \effects
-Adds elements to \tcode{c} as if by:
+Adds elements to \exposid{c} as if by:
 \begin{codeblock}
 for (const auto& e : rg) {
-  c.keys.insert(c.keys.end(), e.first);
-  c.values.insert(c.values.end(), e.second);
+  @\exposid{c}@.keys.insert(@\exposid{c}@.keys.end(), e.first);
+  @\exposid{c}@.values.insert(@\exposid{c}@.values.end(), e.second);
 }
 \end{codeblock}
 Then, sorts the range of newly inserted elements
@@ -16596,11 +16597,11 @@ merges the resulting sorted range and
 the sorted range of pre-existing elements into a single sorted range; and
 finally erases the duplicate elements as if by:
 \begin{codeblock}
-auto zv = views::zip(c.keys, c.values);
-auto it = ranges::unique(zv, key_equiv(compare)).begin();
+auto zv = views::zip(@\exposid{c}@.keys, @\exposid{c}@.values);
+auto it = ranges::unique(zv, @\exposid{key-equiv}@(@\exposid{compare}@)).begin();
 auto dist = distance(zv.begin(), it);
-c.keys.erase(c.keys.begin() + dist, c.keys.end());
-c.values.erase(c.values.begin() + dist, c.values.end());
+@\exposid{c}@.keys.erase(@\exposid{c}@.keys.begin() + dist, @\exposid{c}@.keys.end());
+@\exposid{c}@.values.erase(@\exposid{c}@.values.begin() + dist, @\exposid{c}@.values.end());
 \end{codeblock}
 
 \pnum
@@ -16637,10 +16638,10 @@ If the map already contains an element whose key is equivalent to \tcode{k},
 \tcode{*this} and \tcode{args...} are unchanged.
 Otherwise equivalent to:
 \begin{codeblock}
-auto key_it = ranges::upper_bound(c.keys, k, compare);
-auto value_it = c.values.begin() + distance(c.keys.begin(), key_it);
-c.keys.insert(key_it, std::forward<decltype(k)>(k));
-c.values.emplace(value_it, std::forward<Args>(args)...);
+auto key_it = ranges::upper_bound(@\exposid{c}@.keys, k, @\exposid{compare}@);
+auto value_it = @\exposid{c}@.values.begin() + distance(@\exposid{c}@.keys.begin(), key_it);
+@\exposid{c}@.keys.insert(key_it, std::forward<decltype(k)>(k));
+@\exposid{c}@.values.emplace(value_it, std::forward<Args>(args)...);
 \end{codeblock}
 
 \pnum
@@ -16694,10 +16695,10 @@ If the map already contains an element whose key is equivalent to \tcode{k},
 \tcode{*this} and \tcode{args...} are unchanged.
 Otherwise equivalent to:
 \begin{codeblock}
-auto key_it = ranges::upper_bound(c.keys, k, compare);
-auto value_it = c.values.begin() + distance(c.keys.begin(), key_it);
-c.keys.emplace(key_it, std::forward<K>(k));
-c.values.emplace(value_it, std::forward<Args>(args)...);
+auto key_it = ranges::upper_bound(@\exposid{c}@.keys, k, @\exposid{compare}@);
+auto value_it = @\exposid{c}@.values.begin() + distance(@\exposid{c}@.keys.begin(), key_it);
+@\exposid{c}@.keys.emplace(key_it, std::forward<K>(k));
+@\exposid{c}@.values.emplace(value_it, std::forward<Args>(args)...);
 \end{codeblock}
 
 \pnum
@@ -16824,9 +16825,9 @@ void swap(flat_map& y) noexcept;
 \effects
 Equivalent to:
 \begin{codeblock}
-ranges::swap(compare, y.compare);
-ranges::swap(c.keys, y.c.keys);
-ranges::swap(c.values, y.c.values);
+ranges::swap(@\exposid{compare}@, y.@\exposid{compare}@);
+ranges::swap(@\exposid{c}@.keys, y.@\exposid{c}@.keys);
+ranges::swap(@\exposid{c}@.values, y.@\exposid{c}@.values);
 \end{codeblock}
 \end{itemdescr}
 
@@ -16842,7 +16843,7 @@ containers extract() &&;
 
 \pnum
 \returns
-\tcode{std::move(c)}.
+\tcode{std::move(\exposid{c})}.
 \end{itemdescr}
 
 \indexlibrarymember{replace}{flat_map}%
@@ -16854,15 +16855,15 @@ void replace(key_container_type&& key_cont, mapped_container_type&& mapped_cont)
 \pnum
 \expects
 \tcode{key_cont.size() == mapped_cont.size()} is \tcode{true},
-the elements of \tcode{key_cont} are sorted with respect to \tcode{compare}, and
+the elements of \tcode{key_cont} are sorted with respect to \exposid{compare}, and
 \tcode{key_cont} contains no equal elements.
 
 \pnum
 \effects
 Equivalent to:
 \begin{codeblock}
-c.keys = std::move(key_cont);
-c.values = std::move(mapped_cont);
+@\exposid{c}@.keys = std::move(key_cont);
+@\exposid{c}@.values = std::move(mapped_cont);
 \end{codeblock}
 \end{itemdescr}
 
@@ -17040,12 +17041,12 @@ namespace std {
 
     class value_compare {
     private:
-      key_compare comp;                                 // \expos
-      value_compare(key_compare c) : comp(c) { }        // \expos
+      key_compare @\exposid{comp}@;                                 // \expos
+      value_compare(key_compare c) : @\exposid{comp}@(c) { }        // \expos
 
     public:
       bool operator()(const_reference x, const_reference y) const {
-        return comp(x.first, y.first);
+        return @\exposid{comp}@(x.first, y.first);
       }
     };
 
@@ -17058,7 +17059,7 @@ namespace std {
     flat_multimap() : flat_multimap(key_compare()) { }
 
     explicit flat_multimap(const key_compare& comp)
-      : c(), compare(comp) { }
+      : @\exposid{c}@(), @\exposid{compare}@(comp) { }
 
     flat_multimap(key_container_type key_cont, mapped_container_type mapped_cont,
                   const key_compare& comp = key_compare());
@@ -17070,17 +17071,17 @@ namespace std {
     template<class InputIterator>
       flat_multimap(InputIterator first, InputIterator last,
                     const key_compare& comp = key_compare())
-        : c(), compare(comp)
+        : @\exposid{c}@(), @\exposid{compare}@(comp)
         { insert(first, last); }
 
     template<class InputIterator>
       flat_multimap(sorted_equivalent_t s, InputIterator first, InputIterator last,
                     const key_compare& comp = key_compare())
-        : c(), compare(comp) { insert(s, first, last); }
+        : @\exposid{c}@(), @\exposid{compare}@(comp) { insert(s, first, last); }
 
     template<@\exposconcept{container-compatible-range}@<value_type> R>
-      flat_multimap(from_range_t fr, R&& rg)
-        : flat_multimap(fr, std::forward<R>(rg), key_compare()) { }
+      flat_multimap(from_range_t, R&& rg)
+        : flat_multimap(from_range, std::forward<R>(rg), key_compare()) { }
     template<@\exposconcept{container-compatible-range}@<value_type> R>
       flat_multimap(from_range_t, R&& rg, const key_compare& comp)
         : flat_multimap(comp) { insert_range(std::forward<R>(rg)); }
@@ -17209,8 +17210,8 @@ namespace std {
     key_compare key_comp() const;
     value_compare value_comp() const;
 
-    const key_container_type& keys() const noexcept { return c.keys; }
-    const mapped_container_type& values() const noexcept { return c.values; }
+    const key_container_type& keys() const noexcept { return @\exposid{c}@.keys; }
+    const mapped_container_type& values() const noexcept { return @\exposid{c}@.values; }
 
     // map operations
     iterator find(const key_type& x);
@@ -17250,8 +17251,8 @@ namespace std {
       { x.swap(y); }
 
   private:
-    containers c;               // \expos
-    key_compare compare;        // \expos
+    containers @\exposid{c}@;               // \expos
+    key_compare @\exposid{compare}@;        // \expos
   };
 
   template<class KeyContainer, class MappedContainer,
@@ -17343,9 +17344,9 @@ flat_multimap(key_container_type key_cont, mapped_container_type mapped_cont,
 \pnum
 \effects
 Initializes
-\tcode{c.keys} with \tcode{std::move(key_cont)},
-\tcode{c.values} with \tcode{std::move(mapped_cont)}, and
-\tcode{compare} with \tcode{comp};
+\tcode{\exposid{c}.keys} with \tcode{std::move(key_cont)},
+\tcode{\exposid{c}.values} with \tcode{std::move(mapped_cont)}, and
+\exposid{compare} with \tcode{comp};
 sorts the range \range{begin()}{end()} with respect to \tcode{value_comp()}.
 
 \pnum
@@ -17365,9 +17366,9 @@ flat_multimap(sorted_equivalent_t, key_container_type key_cont, mapped_container
 \pnum
 \effects
 Initializes
-\tcode{c.keys} with \tcode{std::move(key_cont)},
-\tcode{c.values} with \tcode{std::move(mapped_cont)}, and
-\tcode{compare} with \tcode{comp}.
+\tcode{\exposid{c}.keys} with \tcode{std::move(key_cont)},
+\tcode{\exposid{c}.values} with \tcode{std::move(mapped_cont)}, and
+\exposid{compare} with \tcode{comp}.
 
 \pnum
 \complexity
@@ -17396,7 +17397,7 @@ template<class Alloc>
 \effects
 Equivalent to \tcode{flat_multimap(key_cont, mapped_cont)} and
 \tcode{flat_multimap(key_cont, \linebreak{}mapped_cont, comp)}, respectively,
-except that \tcode{c.keys} and \tcode{c.values} are constructed
+except that \tcode{\exposid{c}.keys} and \tcode{\exposid{c}.values} are constructed
 with uses-allocator construction\iref{allocator.uses.construction}.
 
 \pnum
@@ -17421,7 +17422,7 @@ template<class Alloc>
 \effects
 Equivalent to \tcode{flat_multimap(s, key_cont, mapped_cont)} and
 \tcode{flat_multimap(s, key_cont, mapped_cont, comp)}, respectively,
-except that \tcode{c.keys} and \tcode{c.val\-ues} are constructed
+except that \tcode{\exposid{c}.keys} and \tcode{\exposid{c}.val\-ues} are constructed
 with uses-allocator construction\iref{allocator.uses.construction}.
 
 \pnum
@@ -17469,7 +17470,7 @@ template<class Alloc>
 \pnum
 \effects
 Equivalent to the corresponding non-allocator constructors
-except that \tcode{c.keys} and \tcode{c.values} are constructed
+except that \tcode{\exposid{c}.keys} and \tcode{\exposid{c}.values} are constructed
 with uses-allocator construction\iref{allocator.uses.construction}.
 \end{itemdescr}
 
@@ -17680,8 +17681,8 @@ namespace std {
         : @\exposid{c}@(first, last), @\exposid{compare}@(comp) { }
 
     template<@\exposconcept{container-compatible-range}@<value_type> R>
-      flat_set(from_range_t fr, R&& rg)
-        : flat_set(fr, std::forward<R>(rg), key_compare()) { }
+      flat_set(from_range_t, R&& rg)
+        : flat_set(from_range, std::forward<R>(rg), key_compare()) { }
     template<@\exposconcept{container-compatible-range}@<value_type> R>
       flat_set(from_range_t, R&& rg, const key_compare& comp)
         : flat_set(comp)
@@ -18341,8 +18342,8 @@ namespace std {
         : @\exposid{c}@(first, last), @\exposid{compare}@(comp) { }
 
     template<@\exposconcept{container-compatible-range}@<value_type> R>
-      flat_multiset(from_range_t fr, R&& rg)
-        : flat_multiset(fr, std::forward<R>(rg), key_compare()) { }
+      flat_multiset(from_range_t, R&& rg)
+        : flat_multiset(from_range, std::forward<R>(rg), key_compare()) { }
     template<@\exposconcept{container-compatible-range}@<value_type> R>
       flat_multiset(from_range_t, R&& rg, const key_compare& comp)
         : flat_multiset(comp)
@@ -18695,8 +18696,8 @@ First, initializes an object \tcode{t} of type \tcode{value_type}
 with \tcode{std::forward<Args>(args)...},
 then inserts \tcode{t} as if by:
 \begin{codeblock}
-auto it = ranges::upper_bound(c, t, compare);
-c.insert(it, std::move(t));
+auto it = ranges::upper_bound(@\exposid{c}@, t, @\exposid{compare}@);
+@\exposid{c}@.insert(it, std::move(t));
 \end{codeblock}
 
 \pnum
@@ -18715,7 +18716,7 @@ template<class InputIterator>
 \effects
 Adds elements to \exposid{c} as if by:
 \begin{codeblock}
-c.insert(c.end(), first, last);
+@\exposid{c}@.insert(@\exposid{c}@.end(), first, last);
 \end{codeblock}
 Then, sorts the range of newly inserted elements with respect to \exposid{compare},
 and merges the resulting sorted range and
@@ -18757,8 +18758,8 @@ void swap(flat_multiset& y) noexcept;
 \effects
 Equivalent to:
 \begin{codeblock}
-ranges::swap(compare, y.compare);
-ranges::swap(c, y.c);
+ranges::swap(@\exposid{compare}@, y.@\exposid{compare}@);
+ranges::swap(@\exposid{c}@, y.@\exposid{c}@);
 \end{codeblock}
 \end{itemdescr}
 
@@ -18774,7 +18775,7 @@ container_type extract() &&;
 
 \pnum
 \returns
-\tcode{std::move(c)}.
+\tcode{std::move(\exposid{c})}.
 \end{itemdescr}
 
 \indexlibrarymember{replace}{flat_multiset}%
@@ -18789,7 +18790,7 @@ The elements of \tcode{cont} are sorted with respect to \exposid{compare}.
 
 \pnum
 \effects
-Equivalent to: \tcode{c = std::move(cont);}
+Equivalent to: \tcode{\exposid{c} = std::move(cont);}
 \end{itemdescr}
 
 \rSec3[flat.multiset.erasure]{Erasure}
@@ -19778,6 +19779,10 @@ namespace std {
   template<class ElementType>
     class default_accessor;
 
+  // \ref{mdspan.accessor.aligned}, class template \tcode{aligned_accessor}
+  template<class ElementType, size_t ByteAlignment>
+    class aligned_accessor;
+
   // \ref{mdspan.mdspan}, class template \tcode{mdspan}
   template<class ElementType, class Extents, class LayoutPolicy = layout_right,
            class AccessorPolicy = default_accessor<ElementType>>
@@ -20618,13 +20623,13 @@ namespace std {
 \end{codeblock}
 
 \pnum
-Each of \tcode{layout_left}, \tcode{layout_right}, and \tcode{layout_stride}
-meets the layout mapping policy requirements and is a trivial type.
-
-\pnum
-Each specialization of
-\tcode{layout_left_padded} and \tcode{layout_right_padded}
-meets the layout mapping policy requirements and is a trivial type.
+Each of \tcode{layout_left}, \tcode{layout_right}, and \tcode{layout_stride},
+as well as each specialization of
+\tcode{layout_left_padded} and \tcode{layout_right_padded},
+meets the layout mapping policy requirements and is a trivially copyable type.
+Furthermore,
+\tcode{is_trivially_default_constructible_v<T>} is \tcode{true}
+for any such type \tcode{T}.
 
 \rSec4[mdspan.layout.left]{Class template \tcode{layout_left::mapping}}
 
@@ -20760,7 +20765,7 @@ Direct-non-list-initializes \exposid{extents_} with \tcode{other.extents()}.
 
 \indexlibraryctor{layout_left::mapping}%
 \begin{itemdecl}
-template<class OtherExents>
+template<class OtherExtents>
   constexpr explicit(!is_convertible_v<OtherExtents, extents_type>)
     mapping(const layout_right::mapping<OtherExtents>& other) noexcept;
 \end{itemdecl}
@@ -20831,8 +20836,7 @@ a value of type \tcode{index_type}.
 
 \pnum
 \effects
-Effects: Direct-non-list-initializes
-\tcode{extents_} with \tcode{other.extents()}.
+Direct-non-list-initializes \tcode{extents_} with \tcode{other.extents()}.
 \end{itemdescr}
 
 \indexlibraryctor{layout_left::mapping}%
@@ -23151,6 +23155,195 @@ constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept;
 Equivalent to: \tcode{return p + i;}
 \end{itemdescr}
 
+\rSec4[mdspan.accessor.aligned]{Class template \tcode{aligned_accessor}}
+
+\rSec5[mdspan.accessor.aligned.overview]{Overview}
+
+\begin{codeblock}
+namespace std {
+  template<class ElementType, size_t ByteAlignment>
+  struct @\libglobal{aligned_accessor}@ {
+    using offset_policy = default_accessor<ElementType>;
+    using element_type = ElementType;
+    using reference = ElementType&;
+    using data_handle_type = ElementType*;
+
+    static constexpr size_t byte_alignment = ByteAlignment;
+
+    constexpr aligned_accessor() noexcept = default;
+    template<class OtherElementType, size_t OtherByteAlignment>
+      constexpr aligned_accessor(
+        aligned_accessor<OtherElementType, OtherByteAlignment>) noexcept;
+    template<class OtherElementType>
+      constexpr explicit aligned_accessor(default_accessor<OtherElementType>) noexcept;
+
+    template<class OtherElementType>
+      constexpr operator default_accessor<OtherElementType>() const noexcept;
+
+    constexpr reference access(data_handle_type p, size_t i) const noexcept;
+
+    constexpr typename offset_policy::data_handle_type offset(
+      data_handle_type p, size_t i) const noexcept;
+  };
+}
+\end{codeblock}
+
+\pnum
+\mandates
+\begin{itemize}
+\item \tcode{byte_alignment} is a power of two, and
+\item \tcode{byte_alignment >= alignof(ElementType)} is \tcode{true}.
+\end{itemize}
+
+\pnum
+\tcode{aligned_accessor} meets the accessor policy requirements.
+
+\pnum
+\tcode{ElementType} is required to be a complete object type
+that is neither an abstract class type nor an array type.
+
+\pnum
+Each specialization of \tcode{aligned_accessor} is
+a trivially copyable type that models \libconcept{semiregular}.
+
+\pnum
+\range{0}{$n$} is an accessible range
+for an object \tcode{p} of type \tcode{data_handle_type} and
+an object of type \tcode{aligned_accessor} if and only if
+\begin{itemize}
+\item
+\range{p}{p + $n$} is a valid range, and,
+\item
+if $n$ is greater than zero,
+then \tcode{is_sufficiently_aligned<byte_alignment>(p)} is \tcode{true}.
+\end{itemize}
+
+\pnum
+\begin{example}
+The following function \tcode{compute}
+uses \tcode{is_sufficiently_aligned} to check
+whether a given \tcode{mdspan} with \tcode{default_accessor} has
+a data handle with sufficient alignment
+to be used with \tcode{aligned_accessor<float, 4 * sizeof(float)>}.
+If so, the function dispatches to
+a function \tcode{compute_using_fourfold_overalignment}
+that requires fourfold over-alignment of arrays,
+but can therefore use hardware-specific instructions,
+such as four-wide SIMD (Single Instruction Multiple Data) instructions.
+Otherwise, \tcode{compute} dispatches to a
+possibly less optimized function \tcode{compute_without_requiring_overalignment}
+that has no over-alignment requirement.
+\begin{codeblock}
+void compute_using_fourfold_overalignment(
+  std::mdspan<float, std::dims<1>, std::layout_right,
+    std::aligned_accessor<float, 4 * alignof(float)>> x);
+
+void compute_without_requiring_overalignment(
+  std::mdspan<float, std::dims<1>, std::layout_right> x);
+
+void compute(std::mdspan<float, std::dims<1>> x) {
+  constexpr auto byte_alignment = 4 * sizeof(float);
+  auto accessor = std::aligned_accessor<float, byte_alignment>{};
+  auto x_handle = x.data_handle();
+
+  if (std::is_sufficiently_aligned<byte_alignment>(x_handle)) {
+    compute_using_fourfold_overalignment(std::mdspan{x_handle, x.mapping(), accessor});
+  } else {
+    compute_without_requiring_overalignment(x);
+  }
+}
+\end{codeblock}
+\end{example}
+
+\rSec5[mdspan.accessor.aligned.members]{Members}
+
+\indexlibraryctor{aligned_accessor}%
+\begin{itemdecl}
+template<class OtherElementType, size_t OtherByteAlignment>
+  constexpr aligned_accessor(aligned_accessor<OtherElementType, OtherByteAlignment>) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\constraints
+\begin{itemize}
+\item
+\tcode{is_convertible_v<OtherElementType(*)[], element_type(*)[]>}
+is \tcode{true}.
+\item
+\tcode{OtherByteAlignment >= byte_alignment} is \tcode{true}.
+\end{itemize}
+
+\pnum
+\effects
+None.
+\end{itemdescr}
+
+\indexlibraryctor{aligned_accessor}%
+\begin{itemdecl}
+template<class OtherElementType>
+  constexpr explicit aligned_accessor(default_accessor<OtherElementType>) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\constraints
+\tcode{is_convertible_v<OtherElementType(*)[], element_type(*)[]>}
+is \tcode{true}.
+
+\pnum
+\effects
+None.
+\end{itemdescr}
+
+\indexlibrarymember{access}{aligned_accessor}%
+\begin{itemdecl}
+constexpr reference access(data_handle_type p, size_t i) const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\range{0}{i + 1} is an accessible range for \tcode{p} and \tcode{*this}.
+
+\pnum
+\effects
+Equivalent to: \tcode{return assume_aligned<byte_alignment>(p)[i];}
+\end{itemdescr}
+
+\indexlibrarymember{operator default_accessor}{aligned_accessor}%
+\begin{itemdecl}
+template<class OtherElementType>
+  constexpr operator default_accessor<OtherElementType>() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\constraints
+\tcode{is_convertible_v<element_type(*)[], OtherElementType(*)[]>}
+is \tcode{true}.
+
+\pnum
+\effects
+Equivalent to: \tcode{return \{\};}
+\end{itemdescr}
+
+\indexlibrarymember{offset}{aligned_accessor}%
+\begin{itemdecl}
+constexpr typename offset_policy::data_handle_type
+  offset(data_handle_type p, size_t i) const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\range{0}{i + 1} is an accessible range for \tcode{p} and \tcode{*this}.
+
+\pnum
+\effects
+Equivalent to: \tcode{return assume_aligned<byte_alignment>(p) + i;}
+\end{itemdescr}
+
 \rSec3[mdspan.mdspan]{Class template \tcode{mdspan}}
 
 \rSec4[mdspan.mdspan.overview]{Overview}
@@ -24126,6 +24319,17 @@ Otherwise,
 let \tcode{offset} be a value of type \tcode{size_t} equal to
 \tcode{(*this)(\exposid{first_}<index_type, P>(slices...)...)}.
 
+\pnum
+Given a layout mapping type \tcode{M}, a type \tcode{S} is a
+\defnadjx{unit-stride}{slice for \tcode{M}}{slice} if
+\begin{itemize}
+\item \tcode{S} is a specialization of \tcode{strided_slice}
+where \tcode{S::stride_type} models \exposconcept{integral-constant-like}
+and \tcode{S::stride_type::value} equals \tcode{1},
+\item \tcode{S} models \tcode{\exposconcept{index-pair-like}<M::index_type>}, or
+\item \tcode{is_convertible_v<S, full_extent_t>} is \tcode{true}.
+\end{itemize}
+
 \rSec5[mdspan.sub.map.left]{\tcode{layout_left} specialization of \tcode{submdspan_mapping}}
 
 \indexlibrarymemberexpos{layout_left::mapping}{submdspan-mapping-impl}%
@@ -24157,8 +24361,7 @@ if
   \tcode{is_convertible_v<$S_k$, full_ext\-ent_t>} is \tcode{true}; and
   \item
   for $k$ equal to \tcode{SubExtents::rank() - 1},
-  $S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-  \tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true};
+  $S_k$ is a unit-stride slice for \tcode{mapping};
   \end{itemize}
 \begin{note}
 If the above conditions are true,
@@ -24173,21 +24376,17 @@ submdspan_mapping_result{layout_left_padded<S_static>::mapping(sub_ext, stride(@
 \end{codeblock}
 if for a value $u$ for which $u+1$ is
 the smallest value $p$ larger than zero
-for which $S_p$ models
-\tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_p$, full_extent_t>} is \tcode{true},
+for which $S_p$ is a unit-stride slice for \tcode{mapping},
 the following conditions are met:
 \begin{itemize}
 \item
-$S_0$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_0$, full_extent_t>} is \tcode{true}; and
+$S_0$ is a unit-stride slice for \tcode{mapping}; and
 \item
 for each $k$ in the range \range{$u$ + 1}{$u$ + SubExtents::rank() - 1},
 \tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true}; and
 \item
 for $k$ equal to \tcode{$u$ + SubExtents::rank() - 1},
-$S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true};
+$S_k$ is a unit-stride slice for \tcode{mapping};
 \end{itemize}
 and where \tcode{S_static} is:
 \begin{itemize}
@@ -24238,8 +24437,7 @@ if
   \tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true}; and
   \item
   for $k$ equal to \exposid{_rank} - \tcode{SubExtents::rank()},
-  $S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-  \tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true};
+  $S_k$ is a unit-stride slice for \tcode{mapping};
   \end{itemize}
 \begin{note}
 If the above conditions are true,
@@ -24254,23 +24452,19 @@ submdspan_mapping_result{layout_right_padded<S_static>::mapping(sub_ext,
 \end{codeblock}
 if for a value $u$ for which $\exposid{rank_} - u - 2$ is
 the largest value $p$ smaller than \tcode{\exposid{rank_} - 1}
-for which $S_p$ models
-\tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_p$, full_extent_t>} is \tcode{true},
+for which $S_p$ is a unit-stride slice for \tcode{mapping},
 the following conditions are met:
 \begin{itemize}
 \item
 for $k$ equal to \tcode{\exposid{rank_} - 1},
-$S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_k$, full_extent_t> }is \tcode{true}; and
+$S_k$ is a unit-stride slice for \tcode{mapping}; and
 \item
 for each $k$ in the range
 \range{\exposid{rank_} - SubExtents::rank() - $u$ + 1}{\exposid{rank_} - $u$ - 1},
 \tcode{is_con\-vertible_v<$S_k$, full_extent_t>} is \tcode{true}; and
 \item
-for $k$ equal to \tcode{\exposid{rank_} - SubExtents::rank() - $u$},
-$S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true};
+for $k$ equal to \tcode{\exposid{rank_} - SubExtents::rank() - $u$},\newline
+$S_k$ is a unit-stride slice for \tcode{mapping};
 \end{itemize}
 and where \tcode{S_static} is:
 \begin{itemize}
@@ -24346,8 +24540,7 @@ if
 \item
 \tcode{SubExtents::rank() == 1} is \tcode{true} and
 \item
-$S_0$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_0$ , full_extent_t>} is \tcode{true};
+$S_0$ is a unit-stride slice for \tcode{mapping};
 \end{itemize}
 \item
 otherwise,
@@ -24357,20 +24550,17 @@ submdspan_mapping_result{layout_left_padded<S_static>::mapping(sub_ext, stride(@
 \end{codeblock}
 if for a value $u$
 for which \tcode{$u$ + 1} is the smallest value $p$ larger than zero
-for which $S_p$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_p$, full_extent_t>} is \tcode{true},
+for which $S_p$ is a unit-stride slice for \tcode{mapping},
 the following conditions are met:
 \begin{itemize}
 \item
-$S_0$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_0$, full_extent_t>} is \tcode{true}; and
+$S_0$ is a unit-stride slice for \tcode{mapping}; and
 \item
 for each $k$ in the range \range{$u$ + 1}{$u$ + SubExtents::rank() - 1},
 \tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true}; and
 \item
 for $k$ equal to \tcode{$u$ + SubExtents::rank() - 1},
-$S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<Sk, full_extent_t>} is \tcode{true};
+$S_k$ is a unit-stride slice for \tcode{mapping};
 \end{itemize}
 where \tcode{S_static} is:
 \begin{itemize}
@@ -24422,8 +24612,7 @@ if
 \tcode{SubExtents::rank() == 1} is \tcode{true} and
 \item
 for $k$ equal to \tcode{\exposid{rank_} - 1},
-$S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_k$ , full_extent_t>} is \tcode{true};
+$S_k$ is a unit-stride slice for \tcode{mapping};
 \end{itemize}
 \item
 otherwise,
@@ -24434,22 +24623,19 @@ submdspan_mapping_result{layout_right_padded<S_static>::mapping(sub_ext,
 if for a value $u$
 for which \tcode{\exposid{rank_} - $u$ - 2}
 is the largest value p smaller than \tcode{\exposid{rank_} - 1}
-for which $S_p$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_p$, full_extent_t>} is \tcode{true},
+for which $S_p$ is a unit-stride slice for \tcode{mapping},
 the following conditions are met:
 \begin{itemize}
 \item
 for $k$ equal to \tcode{\exposid{rank_} - 1},
-$S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true}; and
+$S_k$ is a unit-stride slice for \tcode{mapping}; and
 \item
 for each $k$ in the range
 \range{\exposid{rank_} - SubExtents::rank() - $u$ + 1}{\exposid{rank_} - $u$ - 1)},
 \tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true}; and
 \item
-for $k$ equal to \tcode{\exposid{rank_} - SubExtents::rank() - $u$},
-$S_k$ models \tcode{\exposconcept{index-pair-like}<index_type>} or
-\tcode{is_convertible_v<$S_k$, full_extent_t>} is \tcode{true};
+for $k$ equal to \tcode{\exposid{rank_} - SubExtents::rank() - $u$},\newline
+$S_k$ is a unit-stride slice for \tcode{mapping};
 \end{itemize}
 and where \tcode{S_static} is:
 \begin{itemize}

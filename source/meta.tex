@@ -59,9 +59,9 @@ $\tcode{N} \geq 0$.
 \pnum
 The alias template
 \tcode{make_integer_sequence} denotes a specialization of
-\tcode{integer_sequence} with \tcode{N} non-type template arguments.
+\tcode{integer_sequence} with \tcode{N} constant template arguments.
 The type \tcode{make_integer_sequence<T, N>} is an alias for the type
-\tcode{integer_sequence<T, 0, 1, ..., N-1>}.
+\tcode{integer_sequence<T, 0, 1, ..., N - 1>}.
 \begin{note}
 \tcode{make_integer_sequence<int, 0>} is an alias for the type
 \tcode{integer_sequence<int>}.
@@ -160,9 +160,9 @@ namespace std {
   template<class T, T v> struct integral_constant;
 
   template<bool B>
-    using bool_constant = integral_constant<bool, B>;
-  using true_type  = bool_constant<true>;
-  using false_type = bool_constant<false>;
+    using @\libglobal{bool_constant}@ = integral_constant<bool, B>;
+  using @\libglobal{true_type}@  = bool_constant<true>;
+  using @\libglobal{false_type}@ = bool_constant<false>;
 
   // \ref{meta.unary.cat}, primary type categories
   template<class T> struct is_void;
@@ -192,7 +192,6 @@ namespace std {
   // \ref{meta.unary.prop}, type properties
   template<class T> struct is_const;
   template<class T> struct is_volatile;
-  template<class T> struct is_trivial;
   template<class T> struct is_trivially_copyable;
   template<class T> struct is_standard_layout;
   template<class T> struct is_empty;
@@ -431,8 +430,6 @@ namespace std {
   template<class T>
     constexpr bool @\libglobal{is_volatile_v}@ = is_volatile<T>::value;
   template<class T>
-    constexpr bool @\libglobal{is_trivial_v}@ = is_trivial<T>::value;
-  template<class T>
     constexpr bool @\libglobal{is_trivially_copyable_v}@ = is_trivially_copyable<T>::value;
   template<class T>
     constexpr bool @\libglobal{is_standard_layout_v}@ = is_standard_layout<T>::value;
@@ -595,7 +592,7 @@ namespace std {
 \indexlibrarymember{value_type}{integral_constant}%
 \begin{codeblock}
 namespace std {
-  template<class T, T v> struct integral_constant {
+  template<class T, T v> struct @\libglobal{integral_constant}@ {
     static constexpr T value = v;
 
     using value_type = T;
@@ -607,7 +604,6 @@ namespace std {
 }
 \end{codeblock}
 
-\indexlibraryglobal{integral_constant}%
 \indexlibraryglobal{bool_constant}%
 \indexlibraryglobal{true_type}%
 \indexlibraryglobal{false_type}%
@@ -832,13 +828,6 @@ the cv-qualification is subject to adjustment\iref{expr.type}.
  \tcode{struct is_volatile;}            &
  \tcode{T} is volatile-qualified\iref{basic.type.qualifier}                   &   \\ \rowsep
 
-
-\indexlibraryglobal{is_trivial}%
-\tcode{template<class T>}\br
- \tcode{struct is_trivial;}                 &
- \tcode{T} is a trivial type\iref{term.trivial.type}     &
- \tcode{remove_all_extents_t<T>} shall be a complete
- type or \cv{}~\keyword{void}.                \\ \rowsep
 
 \indexlibraryglobal{is_trivially_copyable}%
 \tcode{template<class T>}\br
@@ -1228,8 +1217,8 @@ The compilation of the
   For an array type \tcode{T}, the same result as
   \tcode{has_unique_object_representations_v<remove_all_extents_t<T>>},
   otherwise \seebelow. &
-  \tcode{T} shall be a complete type, \cv{}~\keyword{void}, or
-  an array of unknown bound. \\ \rowsep
+  \tcode{remove_all_extents_t<T>} shall be a complete type or
+  \cv{}~\keyword{void}.  \\ \rowsep
 
 \indexlibraryglobal{reference_constructs_from_temporary}%
 \tcode{template<class T, class U>}\br
@@ -1907,21 +1896,18 @@ perform other modifications of a type.
 \lhdr{Template}   &   \rhdr{Comments} \\ \capsep
 \endhead
 
-\indexlibraryglobal{type_identity}%
 \tcode{template<class T>\br
- struct type_identity;}
+ struct \libglobal{type_identity};}
  &
  The member typedef \tcode{type} denotes \tcode{T}. \\ \rowsep
 
-\indexlibraryglobal{remove_cvref}%
-\tcode{template<class T>\br struct remove_cvref;}
+\tcode{template<class T>\br struct \libglobal{remove_cvref};}
  &
  The member typedef \tcode{type} denotes
  \tcode{remove_cv_t<remove_reference_t<T>>}.
  \\ \rowsep
 
-\indexlibraryglobal{decay}%
-\tcode{template<class T>\br struct decay;}
+\tcode{template<class T>\br struct \libglobal{decay};}
  &
  Let \tcode{U} be \tcode{remove_reference_t<T>}. If \tcode{is_array_v<U>} is
  \tcode{true}, the member typedef \tcode{type} denotes
@@ -1937,8 +1923,7 @@ argument passing.
 \end{tailnote}
  \\ \rowsep
 
-\indexlibraryglobal{enable_if}%
-\tcode{template<bool B, class T = void>} \tcode{struct enable_if;}
+\tcode{template<bool B, class T = void>} \tcode{struct \libglobal{enable_if};}
  &
  If \tcode{B} is \tcode{true}, the member typedef \tcode{type}
  denotes \tcode{T}; otherwise, there shall be no member
@@ -1946,7 +1931,7 @@ argument passing.
 
 \tcode{template<bool B, class T,}
  \tcode{class F>}\br
- \tcode{struct conditional;}
+ \tcode{struct \libglobal{conditional};}
  &
  If \tcode{B} is \tcode{true},  the member typedef \tcode{type} denotes \tcode{T}.
  If \tcode{B} is \tcode{false}, the member typedef \tcode{type} denotes \tcode{F}. \\ \rowsep
@@ -1959,36 +1944,32 @@ argument passing.
  Each type in the template parameter pack \tcode{T} shall be
  complete, \cv{}~\keyword{void}, or an array of unknown bound. \\ \rowsep
 
-\indexlibraryglobal{basic_common_reference}%
 \tcode{template<class, class,}
  \hspace*{2ex}\tcode{template<class> class,}
  \hspace*{2ex}\tcode{template<class> class>}
  \keyword{struct}
- \hspace*{2ex}\tcode{basic_common_reference;}
+ \hspace*{2ex}\tcode{\libglobal{basic_common_reference};}
  &
  Unless this trait is specialized,
  there shall be no member \tcode{type}. \\ \rowsep
 
-\indexlibraryglobal{common_reference}%
-\tcode{template<class... T>} \tcode{struct common_reference;}
+\tcode{template<class... T>} \tcode{struct \libglobal{common_reference};}
  &
  The member \grammarterm{typedef-name} \tcode{type} is defined or omitted
  as specified below. Each type in the parameter pack \tcode{T} shall
  be complete or \cv{} \keyword{void}. \\ \rowsep
 
-\indexlibraryglobal{underlying_type}%
 \tcode{template<class T>}\br
- \tcode{struct underlying_type;}
+ \tcode{struct \libglobal{underlying_type};}
  &
  If \tcode{T} is an enumeration type, the member typedef \tcode{type} denotes
  the underlying type of \tcode{T}\iref{dcl.enum};
  otherwise, there is no member \tcode{type}.\br
  \mandates \tcode{T} is not an incomplete enumeration type. \\ \rowsep
 
-\indexlibraryglobal{invoke_result}%
 \tcode{template<class Fn,}\br
  \tcode{class... ArgTypes>}\br
- \tcode{struct invoke_result;}
+ \tcode{struct \libglobal{invoke_result};}
  &
  If the expression \tcode{\placeholdernc{INVOKE}(declval<Fn>(), declval<ArgTypes>()...)}\iref{func.require}
  is well-formed when treated as an unevaluated operand\iref{term.unevaluated.operand},
@@ -2009,8 +1990,7 @@ argument passing.
  are complete types, \cv{}~\keyword{void}, or arrays of
  unknown bound.\\ \rowsep
 
-\indexlibraryglobal{unwrap_reference}%
-\tcode{template<class T>} \tcode{struct unwrap_reference;}
+\tcode{template<class T>} \tcode{struct \libglobal{unwrap_reference};}
  &
  If \tcode{T} is
  a specialization \tcode{reference_wrapper<X>} for some type \tcode{X},
@@ -2018,8 +1998,7 @@ argument passing.
  denotes \tcode{X\&},
  otherwise \tcode{type} denotes \tcode{T}. \\ \rowsep
 
-\indexlibraryglobal{unwrap_ref_decay}%
-\tcode{template<class T>} \tcode{unwrap_ref_decay;}
+\tcode{template<class T>} \tcode{\libglobal{unwrap_ref_decay};}
  &
  The member typedef \tcode{type} of \tcode{unwrap_ref_decay<T>}
  denotes the type \tcode{unwrap_reference_t<decay_t<T>>}.\\
