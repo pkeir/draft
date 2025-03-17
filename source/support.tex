@@ -17,6 +17,7 @@ characteristics of the predefined types,
 functions supporting start and termination of a \Cpp{} program,
 support for dynamic memory management,
 support for dynamic type identification,
+support for contract-violation handling,
 support for exception processing, support for initializer lists,
 and other runtime support,
 as summarized in \tref{support.summary}.
@@ -32,6 +33,7 @@ as summarized in \tref{support.summary}.
 \ref{support.rtti}        & Type identification       &   \tcode{<typeinfo>}, \tcode{<typeindex>}  \\ \rowsep
 \ref{support.srcloc}      & Source location           &   \tcode{<source_location>} \\ \rowsep
 \ref{support.exception}   & Exception handling        &   \tcode{<exception>} \\ \rowsep
+\ref{support.contract}    & Contract-violation handling & \tcode{<contracts>} \\ \rowsep
 \ref{support.initlist}    & Initializer lists         & \tcode{<initializer_list>} \\ \rowsep
 \ref{cmp}                 & Comparisons               &   \tcode{<compare>}   \\ \rowsep
 \ref{support.coroutine}   & Coroutines                &   \tcode{<coroutine>} \\ \rowsep
@@ -609,17 +611,30 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_constexpr_charconv}@                202207L // freestanding, also in \libheader{charconv}
 #define @\defnlibxname{cpp_lib_constexpr_cmath}@                   202306L // also in \libheader{cmath}, \libheader{cstdlib}
 #define @\defnlibxname{cpp_lib_constexpr_complex}@                 202306L // also in \libheader{complex}
+#define @\defnlibxname{cpp_lib_constexpr_deque}@                   202502L // also in \libheader{deque}
 #define @\defnlibxname{cpp_lib_constexpr_dynamic_alloc}@           201907L // also in \libheader{memory}
-#define @\defnlibxname{cpp_lib_constexpr_exceptions}@              202411L // also in \libheader{exception}
+#define @\defnlibxname{cpp_lib_constexpr_exceptions}@              202502L
+  // also in \libheader{exception}, \libheader{stdexcept}, \libheader{expected}, \libheader{optional}, \libheader{variant}, and \libheader{format}
+#define @\defnlibxname{cpp_lib_constexpr_flat_map}@                202502L // also in \libheader{flat_map}
+#define @\defnlibxname{cpp_lib_constexpr_flat_set}@                202502L // also in \libheader{flat_set}
+#define @\defnlibxname{cpp_lib_constexpr_forward_list}@            202502L // also in \libheader{forward_list}
 #define @\defnlibxname{cpp_lib_constexpr_functional}@              201907L // freestanding, also in \libheader{functional}
+#define @\defnlibxname{cpp_lib_constexpr_inplace_vector}@          202502L // also in \libheader{inplace_vector}
 #define @\defnlibxname{cpp_lib_constexpr_iterator}@                201811L // freestanding, also in \libheader{iterator}
+#define @\defnlibxname{cpp_lib_constexpr_list}@                    202502L // also in \libheader{list}
+#define @\defnlibxname{cpp_lib_constexpr_map}@                     202502L // also in \libheader{map}
 #define @\defnlibxname{cpp_lib_constexpr_memory}@                  YYYYMML // freestanding, also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_constexpr_new}@                     202406L // freestanding, also in \libheader{new}
 #define @\defnlibxname{cpp_lib_constexpr_numeric}@                 201911L // also in \libheader{numeric}
+#define @\defnlibxname{cpp_lib_constexpr_queue}@                   202502L // also in \libheader{queue}
+#define @\defnlibxname{cpp_lib_constexpr_set}@                     202502L // also in \libheader{set}
+#define @\defnlibxname{cpp_lib_constexpr_stack}@                   202502L // also in \libheader{stack}
 #define @\defnlibxname{cpp_lib_constexpr_string}@                  201907L // also in \libheader{string}
 #define @\defnlibxname{cpp_lib_constexpr_string_view}@             201811L // also in \libheader{string_view}
 #define @\defnlibxname{cpp_lib_constexpr_tuple}@                   201811L // freestanding, also in \libheader{tuple}
 #define @\defnlibxname{cpp_lib_constexpr_typeinfo}@                202106L // freestanding, also in \libheader{typeinfo}
+#define @\defnlibxname{cpp_lib_constexpr_unordered_map}@           202502L // also in \libheader{unordered_map}
+#define @\defnlibxname{cpp_lib_constexpr_unordered_set}@           202502L // also in \libheader{unordered_set}
 #define @\defnlibxname{cpp_lib_constexpr_utility}@                 201811L // freestanding, also in \libheader{utility}
 #define @\defnlibxname{cpp_lib_constexpr_vector}@                  201907L // also in \libheader{vector}
 #define @\defnlibxname{cpp_lib_constrained_equality}@              202411L // freestanding,
@@ -627,6 +642,7 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_containers_ranges}@                 202202L
   // also in \libheader{vector}, \libheader{list}, \libheader{forward_list}, \libheader{map}, \libheader{set}, \libheader{unordered_map}, \libheader{unordered_set},
   // \libheader{deque}, \libheader{queue}, \libheader{stack}, \libheader{string}
+#define @\defnlibxname{cpp_lib_contracts}@                         202502L // freestanding, also in \libheader{contracts}
 #define @\defnlibxname{cpp_lib_copyable_function}@                 202306L // also in \libheader{functional}
 #define @\defnlibxname{cpp_lib_coroutine}@                         201902L // freestanding, also in \libheader{coroutine}
 #define @\defnlibxname{cpp_lib_debugging}@                         202403L // freestanding, also in \libheader{debugging}
@@ -648,7 +664,7 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_format_uchar}@                      202311L // also in \libheader{format}
 #define @\defnlibxname{cpp_lib_formatters}@                        202302L // also in \libheader{stacktrace}, \libheader{thread}
 #define @\defnlibxname{cpp_lib_forward_like}@                      202207L // freestanding, also in \libheader{utility}
-#define @\defnlibxname{cpp_lib_freestanding_algorithm}@            202311L // freestanding, also in \libheader{algorithm}
+#define @\defnlibxname{cpp_lib_freestanding_algorithm}@            202502L // freestanding, also in \libheader{algorithm}
 #define @\defnlibxname{cpp_lib_freestanding_array}@                202311L // freestanding, also in \libheader{array}
 #define @\defnlibxname{cpp_lib_freestanding_char_traits}@          202306L // freestanding, also in \libheader{string}
 #define @\defnlibxname{cpp_lib_freestanding_charconv}@             202306L // freestanding, also in \libheader{charconv}
@@ -657,15 +673,17 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_freestanding_cwchar}@               202306L // freestanding, also in \libheader{cwchar}
 #define @\defnlibxname{cpp_lib_freestanding_errc}@                 202306L
   // freestanding, also in \libheader{cerrno}, \libheader{system_error}
+#define @\defnlibxname{cpp_lib_freestanding_execution}@            202502L // freestanding, also in \libheader{execution}
 #define @\defnlibxname{cpp_lib_freestanding_expected}@             202311L // freestanding, also in \libheader{expected}
 #define @\defnlibxname{cpp_lib_freestanding_feature_test_macros}@  202306L // freestanding
 #define @\defnlibxname{cpp_lib_freestanding_functional}@           202306L // freestanding, also in \libheader{functional}
 #define @\defnlibxname{cpp_lib_freestanding_iterator}@             202306L // freestanding, also in \libheader{iterator}
 #define @\defnlibxname{cpp_lib_freestanding_mdspan}@               202311L // freestanding, also in \libheader{mdspan}
-#define @\defnlibxname{cpp_lib_freestanding_memory}@               202306L // freestanding, also in \libheader{memory}
-#define @\defnlibxname{cpp_lib_freestanding_numeric}@              202311L // freestanding, also in \libheader{numeric}
+#define @\defnlibxname{cpp_lib_freestanding_memory}@               202502L // freestanding, also in \libheader{memory}
+#define @\defnlibxname{cpp_lib_freestanding_numeric}@              202502L // freestanding, also in \libheader{numeric}
 #define @\defnlibxname{cpp_lib_freestanding_operator_new}@         @\seebelow@ // freestanding, also in \libheader{new}
 #define @\defnlibxname{cpp_lib_freestanding_optional}@             202311L // freestanding, also in \libheader{optional}
+#define @\defnlibxname{cpp_lib_freestanding_random}@               202502L // freestanding, also in \libheader{random}
 #define @\defnlibxname{cpp_lib_freestanding_ranges}@               202306L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_freestanding_ratio}@                202306L // freestanding, also in \libheader{ratio}
 #define @\defnlibxname{cpp_lib_freestanding_string_view}@          202311L // freestanding, also in \libheader{string_view}
@@ -682,9 +700,11 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_hardware_interference_size}@        201703L // freestanding, also in \libheader{new}
 #define @\defnlibxname{cpp_lib_has_unique_object_representations}@ 201606L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_hazard_pointer}@                    202306L // also in \libheader{hazard_pointer}
+#define @\defnlibxname{cpp_lib_hive}@                              202502L // also in \libheader{hive}
 #define @\defnlibxname{cpp_lib_hypot}@                             201603L // also in \libheader{cmath}
 #define @\defnlibxname{cpp_lib_incomplete_container_elements}@     201505L
   // also in \libheader{forward_list}, \libheader{list}, \libheader{vector}
+#define @\defnlibxname{cpp_lib_indirect}@                          202502L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_inplace_vector}@                    202406L // also in \libheader{inplace_vector}
 #define @\defnlibxname{cpp_lib_int_pow2}@                          202002L // freestanding, also in \libheader{bit}
 #define @\defnlibxname{cpp_lib_integer_comparison_functions}@      202002L // also in \libheader{utility}
@@ -737,6 +757,7 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_out_ptr}@                           202311L // freestanding, also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_parallel_algorithm}@                201603L // also in \libheader{algorithm}, \libheader{numeric}
 #define @\defnlibxname{cpp_lib_philox_engine}@                     202406L // also in \libheader{random}
+#define @\defnlibxname{cpp_lib_polymorphic}@                       202502L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_polymorphic_allocator}@             201902L // also in \libheader{memory_resource}
 #define @\defnlibxname{cpp_lib_print}@                             202406L // also in \libheader{print}, \libheader{ostream}
 #define @\defnlibxname{cpp_lib_quoted_string_io}@                  201304L // also in \libheader{iomanip}
@@ -744,7 +765,7 @@ the values of these macros with greater values.
   // also in \libheader{algorithm}, \libheader{functional}, \libheader{iterator}, \libheader{memory}, \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_as_const}@                   202311L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_as_rvalue}@                  202207L // freestanding, also in \libheader{ranges}
-#define @\defnlibxname{cpp_lib_ranges_cache_latest}@               202411L // also in \libheader{ranges}
+#define @\defnlibxname{cpp_lib_ranges_cache_latest}@               202411L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_cartesian_product}@          202207L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_chunk}@                      202202L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_chunk_by}@                   202202L // freestanding, also in \libheader{ranges}
@@ -757,10 +778,12 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_ranges_iota}@                       202202L // also in \libheader{numeric}
 #define @\defnlibxname{cpp_lib_ranges_join_with}@                  202202L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_repeat}@                     202207L // freestanding, also in \libheader{ranges}
+#define @\defnlibxname{cpp_lib_ranges_reserve_hint}@               202502L // also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_slide}@                      202202L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_starts_ends_with}@           202106L // also in \libheader{algorithm}
 #define @\defnlibxname{cpp_lib_ranges_stride}@                     202207L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_to_container}@               202202L // freestanding, also in \libheader{ranges}
+#define @\defnlibxname{cpp_lib_ranges_to_input}@                   202502L // freestanding, also in \libheader{ranges}
 #define @\defnlibxname{cpp_lib_ranges_zip}@                        202110L
   // freestanding, also in \libheader{ranges}, \libheader{tuple}, \libheader{utility}
 #define @\defnlibxname{cpp_lib_ratio}@                             202306L // freestanding, also in \libheader{ratio}
@@ -782,7 +805,8 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_shared_ptr_weak_type}@              201606L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_shared_timed_mutex}@                201402L // also in \libheader{shared_mutex}
 #define @\defnlibxname{cpp_lib_shift}@                             202202L // also in \libheader{algorithm}
-#define @\defnlibxname{cpp_lib_simd}@                              202411L // also in \libheader{simd}
+#define @\defnlibxname{cpp_lib_simd}@                              202502L // also in \libheader{simd}
+#define @\defnlibxname{cpp_lib_simd_complex}@                      202502L // also in \libheader{simd}
 #define @\defnlibxname{cpp_lib_smart_ptr_for_overwrite}@           202002L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_smart_ptr_owner_equality}@          202306L // also in \libheader{memory}
 #define @\defnlibxname{cpp_lib_source_location}@                   201907L // freestanding, also in \libheader{source_location}
@@ -811,6 +835,8 @@ the values of these macros with greater values.
 #define @\defnlibxname{cpp_lib_transformation_trait_aliases}@      201304L // freestanding, also in \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_transparent_operators}@             201510L
   // freestanding, also in \libheader{memory}, \libheader{functional}
+#define @\defnlibxname{cpp_lib_trivially_relocatable}@             202502L
+  // freestanding, also in \libheader{memory}, \libheader{type_traits}
 #define @\defnlibxname{cpp_lib_tuple_element_t}@                   201402L // freestanding, also in \libheader{tuple}
 #define @\defnlibxname{cpp_lib_tuple_like}@                        202311L
   // also in \libheader{utility}, \libheader{tuple}, \libheader{map}, \libheader{unordered_map}
@@ -826,6 +852,25 @@ the values of these macros with greater values.
 \end{codeblock}
 
 \pnum
+Additionally, each of the following macros is defined in a hardened implementation:
+\begin{codeblock}
+#define @\defnlibxname{cpp_lib_hardened_array}@                    202502L // also in \libheader{array}
+#define @\defnlibxname{cpp_lib_hardened_basic_string}@             202502L // also in \libheader{string}
+#define @\defnlibxname{cpp_lib_hardened_basic_string_view}@        202502L // also in \libheader{string_view}
+#define @\defnlibxname{cpp_lib_hardened_bitset}@                   202502L // also in \libheader{bitset}
+#define @\defnlibxname{cpp_lib_hardened_deque}@                    202502L // also in \libheader{deque}
+#define @\defnlibxname{cpp_lib_hardened_expected}@                 202502L // also in \libheader{expected}
+#define @\defnlibxname{cpp_lib_hardened_forward_list}@             202502L // also in \libheader{forward_list}
+#define @\defnlibxname{cpp_lib_hardened_inplace_vector}@           202502L // also in \libheader{inplace_vector}
+#define @\defnlibxname{cpp_lib_hardened_list}@                     202502L // also in \libheader{list}
+#define @\defnlibxname{cpp_lib_hardened_mdspan}@                   202502L // also in \libheader{mdspan}
+#define @\defnlibxname{cpp_lib_hardened_optional}@                 202502L // also in \libheader{optional}
+#define @\defnlibxname{cpp_lib_hardened_span}@                     202502L // also in \libheader{span}
+#define @\defnlibxname{cpp_lib_hardened_valarray}@                 202502L // also in \libheader{valarray}
+#define @\defnlibxname{cpp_lib_hardened_vector}@                   202502L // also in \libheader{vector}
+\end{codeblock}
+
+\pnum
 The macro \xname{cpp_lib_freestanding_operator_new} is defined to
 the integer literal \tcode{202306L}
 if all the default versions of the replaceable global allocation functions meet
@@ -836,6 +881,11 @@ to the integer literal \tcode{0} otherwise\iref{new.delete}.
 \recommended
 Freestanding implementations should only define a macro from \libheader{version}
 if the implementation provides the corresponding facility in its entirety.
+
+\pnum
+\recommended
+A non-hardened implementation should not define macros from \libheader{version}
+required for hardened implementations.
 
 \rSec2[limits.syn]{Header \tcode{<limits>} synopsis}
 
@@ -2380,12 +2430,6 @@ as those calls are omitted\iref{expr.new}.
 If any of the default versions of the replaceable global allocation functions
 meet the requirements of a hosted implementation, they all should.
 
-\newcommand{\replaceabledesc}[1]{%
-A \Cpp{} program may define functions with #1 of these function signatures,
-and thereby displace the default versions defined by the
-\Cpp{} standard library.%
-}
-
 \rSec3[new.delete.single]{Single-object forms}
 
 \indexlibrarymember{new}{operator}%
@@ -2405,10 +2449,6 @@ to allocate
 \tcode{size} bytes of storage.
 The second form is called for a type with new-extended alignment, and
 the first form is called otherwise.
-
-\pnum
-\replaceable
-\replaceabledesc{either}
 
 \pnum
 \required
@@ -2446,6 +2486,10 @@ successful or when a called
 \tcode{new_handler}
 function does not return.
 \end{itemize}
+
+\pnum
+\remarks
+This function is replaceable\iref{dcl.fct.def.replace}.
 \end{itemdescr}
 
 \indexlibrarymember{new}{operator}%
@@ -2463,10 +2507,6 @@ when a \Cpp{} program prefers a null pointer result as an error indication,
 instead of a
 \tcode{bad_alloc}
 exception.
-
-\pnum
-\replaceable
-\replaceabledesc{either}
 
 \pnum
 \required
@@ -2495,6 +2535,10 @@ T* p1 = new T;                  // throws \tcode{bad_alloc} if it fails
 T* p2 = new(nothrow) T;         // returns \keyword{nullptr} if it fails
 \end{codeblock}
 \end{example}
+
+\pnum
+\remarks
+This function is replaceable\iref{dcl.fct.def.replace}.
 \end{itemdescr}
 
 \indexlibrarymember{delete}{operator}%
@@ -2538,20 +2582,6 @@ called by a
 to render the value of \tcode{ptr} invalid.
 
 \pnum
-\replaceable
-\replaceabledesc{any}
-If a function without a \tcode{size} parameter is defined,
-the program should also define
-the corresponding function with a \tcode{size} parameter.
-If a function with a \tcode{size} parameter is defined,
-the program shall also define
-the corresponding version without the \tcode{size} parameter.
-\begin{note}
-The default behavior below might change in the future, which will require
-replacing both deallocation functions when replacing the allocation function.
-\end{note}
-
-\pnum
 \required
 A call to an \tcode{operator delete}
 with a \tcode{size} parameter
@@ -2571,7 +2601,7 @@ The functions that have a \tcode{size} parameter
 forward their other parameters
 to the corresponding function without a \tcode{size} parameter.
 \begin{note}
-See the note in the above \replaceable paragraph.
+See the note in the below \remarks paragraph.
 \end{note}
 
 \pnum
@@ -2593,6 +2623,22 @@ or any of
 or
 \tcode{realloc},
 declared in \libheaderref{cstdlib}.
+This function is replaceable\iref{dcl.fct.def.replace}.
+If a replacement function
+without a \tcode{size} parameter
+is defined by the program,
+the program should also define the corresponding
+function with a \tcode{size} parameter.
+If a replacement function
+with a \tcode{size} parameter
+is defined by the program,
+the program shall also define the corresponding
+version without the \tcode{size} parameter.
+\begin{note}
+The default behavior above might change in the future,
+which will require replacing both deallocation functions
+when replacing the allocation function.
+\end{note}
 \end{itemdescr}
 
 \indexlibrarymember{delete}{operator}%
@@ -2632,14 +2678,14 @@ when the constructor invoked from a nothrow
 placement version of the \grammarterm{new-expression} throws an exception.
 
 \pnum
-\replaceable
-\replaceabledesc{either}
-
-\pnum
 \default
 Calls \tcode{operator delete(ptr)},
 or \tcode{operator delete(ptr, alignment)},
 respectively.
+
+\pnum
+\remarks
+This function is replaceable\iref{dcl.fct.def.replace}.
 \end{itemdescr}
 
 \rSec3[new.delete.array]{Array forms}
@@ -2680,10 +2726,6 @@ to obtain space to store supplemental information.
 \end{footnote}
 
 \pnum
-\replaceable
-\replaceabledesc{either}
-
-\pnum
 \required
 Same as for
 the corresponding single-object forms.
@@ -2696,6 +2738,10 @@ Returns
 or
 \tcode{operator new(size, alignment)},
 respectively.
+
+\pnum
+\remarks
+This function is replaceable\iref{dcl.fct.def.replace}.
 \end{itemdescr}
 
 \indexlibrarymember{new}{operator}%
@@ -2713,10 +2759,6 @@ when a \Cpp{} program prefers a null pointer result as an error indication,
 instead of a
 \tcode{bad_alloc}
 exception.
-
-\pnum
-\replaceable
-\replaceabledesc{either}
 
 \pnum
 \required
@@ -2737,6 +2779,10 @@ respectively.
 If the call returns normally,
 returns the result of that call.
 Otherwise, returns a null pointer.
+
+\pnum
+\remarks
+This function is replaceable\iref{dcl.fct.def.replace}.
 \end{itemdescr}
 
 \indexlibrarymember{delete}{operator}%
@@ -2780,20 +2826,6 @@ called by the array form of a
 to render the value of \tcode{ptr} invalid.
 
 \pnum
-\replaceable
-\replaceabledesc{any}
-If a function without a \tcode{size} parameter is defined,
-the program should also define
-the corresponding function with a \tcode{size} parameter.
-If a function with a \tcode{size} parameter is defined,
-the program shall also define
-the corresponding version without the \tcode{size} parameter.
-\begin{note}
-The default behavior below might change in the future, which will require
-replacing both deallocation functions when replacing the allocation function.
-\end{note}
-
-\pnum
 \required
 A call to an \tcode{operator delete[]}
 with a \tcode{size} parameter
@@ -2815,6 +2847,25 @@ to the corresponding function without a \tcode{size} parameter.
 The functions that do not have a \tcode{size} parameter
 forward their parameters
 to the corresponding \tcode{operator delete} (single-object) function.
+
+\pnum
+\remarks
+This function is replaceable\iref{dcl.fct.def.replace}.
+If a replacement function
+without a \tcode{size} parameter
+is defined by the program,
+the program should also define the corresponding
+function with a \tcode{size} parameter.
+If a replacement function
+with a \tcode{size} parameter
+is defined by the program,
+the program shall also define the corresponding
+version without the \tcode{size} parameter.
+\begin{note}
+The default behavior above might change in the future,
+which will require replacing both deallocation functions
+when replacing the allocation function.
+\end{note}
 \end{itemdescr}
 
 \indexlibrarymember{delete}{operator}%
@@ -2854,14 +2905,14 @@ when the constructor invoked from a nothrow
 placement version of the array \grammarterm{new-expression} throws an exception.
 
 \pnum
-\replaceable
-\replaceabledesc{either}
-
-\pnum
 \default
 Calls \tcode{operator delete[](ptr)},
 or \tcode{operator delete[](ptr, alignment)},
 respectively.
+
+\pnum
+\remarks
+This function is replaceable\iref{dcl.fct.def.replace}.
 \end{itemdescr}
 
 \rSec3[new.delete.placement]{Non-allocating forms}
@@ -3700,7 +3751,7 @@ static consteval source_location current() noexcept;
 \pnum
 \remarks
 Any call to \tcode{current} that appears
-as a default member initializer\iref{class.mem}, or
+as a default member initializer\iref{class.mem.general}, or
 as a subexpression thereof,
 should correspond to the location of
 the constructor definition or aggregate initialization
@@ -4299,6 +4350,268 @@ Otherwise, performs:
 if (auto p = dynamic_cast<const nested_exception*>(addressof(e)))
   p->rethrow_nested();
 \end{codeblock}
+\end{itemdescr}
+
+\rSec1[support.contract]{Contract-violation handling}
+
+\rSec2[contracts.syn]{Header \tcode{<contracts>} synopsis}
+
+\pnum
+The header \libheader{contracts} defines types
+for reporting information about contract violations\iref{basic.contract.eval}.
+
+\indexheader{contracts}
+\indexlibraryglobal{contract_violation}%
+\begin{codeblock}
+// all freestanding
+namespace std::contracts {
+
+  enum class assertion_kind : @\unspec@ {
+    pre = 1,
+    post = 2,
+    assert = 3
+  };
+
+  enum class evaluation_semantic : @\unspec@ {
+    ignore = 1,
+    observe = 2,
+    enforce = 3,
+    quick_enforce = 4
+  };
+
+  enum class detection_mode : @\unspec@ {
+    predicate_false = 1,
+    evaluation_exception = 2
+  };
+
+  class contract_violation {
+    // no user-accessible constructor
+  public:
+    contract_violation(const contract_violation&) = delete;
+    contract_violation& operator=(const contract_violation&) = delete;
+
+    @\seebelow@ ~contract_violation();
+
+    const char* comment() const noexcept;
+    contracts::detection_mode detection_mode() const noexcept;
+    exception_ptr evaluation_exception() const noexcept;
+    bool is_terminating() const noexcept;
+    assertion_kind kind() const noexcept;
+    source_location location() const noexcept;
+    evaluation_semantic semantic() const noexcept;
+  };
+
+  void invoke_default_contract_violation_handler(const contract_violation&);
+}
+\end{codeblock}
+
+\rSec2[support.contract.enum]{Enumerations}
+
+\pnum
+\recommended
+For all enumerations in \ref{support.contract.enum},
+if implementation-defined enumerators are provided,
+they should have a minimum value of $1000$.
+
+\pnum
+The enumerators of \tcode{assertion_kind}
+correspond to
+the syntactic forms of a contract assertion\iref{basic.contract.general},
+with meanings listed in Table~\ref{tab:support.contract.enum.kind}.
+
+\begin{floattable}{Enum \tcode{assertion_kind}}{support.contract.enum.kind}
+{ll}
+\topline
+\lhdr{Name}    & \rhdr{Meaning}                        \\ \capsep
+\tcode{pre}    & A precondition assertion              \\ \rowsep
+\tcode{post}   & A postcondition assertion             \\ \rowsep
+\tcode{assert} & An \grammarterm{assertion-statement}  \\ \rowsep
+\end{floattable}
+
+\pnum
+The enumerators of \tcode{evaluation_semantic}
+correspond to
+the evaluation semantics with which
+a contract assertion may be evaluated\iref{basic.contract.eval},
+with meanings listed in Table~\ref{tab:support.contract.enum.semantic}.
+
+\begin{floattable}{Enum \tcode{evaluation_semantic}}{support.contract.enum.semantic}
+{ll}
+\topline
+\lhdr{Name}           & \rhdr{Meaning}                    \\ \capsep
+\tcode{ignore}        & Ignore evaluation semantic        \\ \rowsep
+\tcode{observe}       & Observe evaluation semantic       \\ \rowsep
+\tcode{enforce}       & Enforce evaluation semantic       \\ \rowsep
+\tcode{quick_enforce} & Quick-enforce evaluation semantic \\ \rowsep
+\end{floattable}
+
+\pnum
+The enumerators of \tcode{detection_mode} correspond to the manners in which a
+contract violation can be identified\iref{basic.contract.eval}, with
+meanings listed in \mbox{Table~\ref{tab:support.contract.enum.detection}}.
+
+\begin{floattable}{Enum \tcode{detection_mode}}{support.contract.enum.detection}
+{lp{.6\hsize}}
+\topline
+\lhdr{Name}                  & \rhdr{Meaning}                    \\ \capsep
+\tcode{predicate_false}      & The predicate of the contract assertion evaluated to \keyword{false} or would have evaluated to \keyword{false}. \\ \rowsep
+\tcode{evaluation_exception} & An uncaught exception occurred during evaluation of the contract assertion. \\ \rowsep
+\end{floattable}
+
+\rSec2[support.contract.violation]{Class \tcode{contract_violation}}
+
+\pnum
+\indexlibraryglobal{contract_violation}%
+The class \tcode{contract_violation}
+defines the type of objects used to represent
+a contract violation that has been detected
+during the evaluation of a contract assertion
+with a particular evaluation semantic\iref{basic.contract.eval}.
+Objects of this type can
+be created only by the implementation.
+It is
+\impldef{whether \tcode{contract_violation} has a virtual destructor}
+whether the destructor is virtual.
+
+\begin{itemdecl}
+const char* comment() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+An
+\impldef{the contents provided in the \tcode{comment} field of \tcode{contract_violation}}
+\ntmbs{} in
+the ordinary literal encoding\iref{lex.charset}.
+
+\pnum
+\recommended
+The string returned
+should contain a textual representation
+of the predicate of the violated contract assertion
+or an empty string if
+storing a textual representation is undesired.
+\begin{note}
+The string can represent a
+truncated, reformatted, or summarized rendering of the
+predicate, before or after preprocessing.
+\end{note}
+
+\end{itemdescr}
+
+\begin{itemdecl}
+contracts::detection_mode detection_mode() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+The enumerator value
+corresponding to
+the manner in which the contract violation was identified.
+
+\end{itemdescr}
+
+\begin{itemdecl}
+exception_ptr evaluation_exception() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+
+\pnum
+\returns
+If the contract violation occurred
+because the evaluation of the predicate exited via an exception,
+an \tcode{exception_ptr} object that refers to
+that exception or a copy of that exception;
+otherwise, a null \tcode{exception_ptr} object.
+
+\end{itemdescr}
+
+\begin{itemdecl}
+bool is_terminating() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\indextext{contract evaluation semantics!terminating}%
+\pnum
+\returns
+\keyword{true} if the evaluation semantic is
+a terminating semantic\iref{basic.contract.eval};
+otherwise, \tcode{false}.
+
+\end{itemdescr}
+
+\begin{itemdecl}
+assertion_kind kind() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+The enumerator value
+corresponding to
+the syntactic form of the violated contract assertion.
+
+\end{itemdescr}
+
+\begin{itemdecl}
+source_location location() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+A \tcode{source_location} object
+with
+\impldef{the contents provided in the \tcode{location} field of \tcode{contract_violation}}
+value.
+
+\pnum
+\recommended
+The value returned should be
+a default constructed \tcode{source_location} object
+or a value identifying the violated contract assertion:
+\begin{itemize}
+\item
+When possible,
+if the violated contract assertion was a precondition,
+the source location of the function invocation should be returned.
+\item
+Otherwise,
+the source location of the contract assertion should be returned.
+\end{itemize}
+
+\end{itemdescr}
+
+\begin{itemdecl}
+evaluation_semantic semantic() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+
+\pnum
+\returns
+The enumerator value
+corresponding to
+the evaluation semantic with which
+the violated contract assertion was evaluated.
+
+\end{itemdescr}
+
+\rSec2[support.contract.invoke]{Invoke default handler}
+
+\begin{itemdecl}
+void invoke_default_contract_violation_handler(const contract_violation& v);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Invokes the default contract-violation handler\iref{basic.contract.handler}
+with the argument \tcode{v}.
+
 \end{itemdescr}
 
 \rSec1[support.initlist]{Initializer lists}
