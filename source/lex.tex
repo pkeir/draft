@@ -159,7 +159,7 @@ The process of dividing a source file's
 characters into preprocessing tokens is context-dependent.
 \begin{example}
 See the handling of \tcode{<} within a \tcode{\#include} preprocessing
-directive\iref{cpp.include}.
+directive\iref{lex.header,cpp.include}.
 \end{example}
 
 \item The source file is analyzed as a \grammarterm{preprocessing-file}\iref{cpp.pre}.
@@ -177,6 +177,7 @@ Each such \grammarterm{string-literal} preprocessing token is then considered to
 that common \grammarterm{encoding-prefix}.
 
 \item
+\indextext{concatenation!string}%
 Adjacent \grammarterm{string-literal} preprocessing tokens are concatenated\iref{lex.string}.
 
 \item
@@ -243,7 +244,9 @@ uninstantiated templates and no template definitions.
 The
 program is ill-formed if any instantiation fails.
 
-\item All external entity references are resolved. Library
+\item
+\indextext{linking}%
+All external entity references are resolved. Library
 components are linked to satisfy external references to
 entities not defined in the current translation. All such translator
 output is collected into a program image which contains information
@@ -632,7 +635,7 @@ violates a constraint on increment operators, even though the parse
 
 \indextext{header!name|(}%
 \begin{bnf}
-\microtypesetup{protrusion=false}\obeyspaces
+\microtypesetup{protrusion=false}
 \nontermdef{header-name}\br
     \terminal{<} h-char-sequence \terminal{>}\br
     \terminal{"} q-char-sequence \terminal{"}
@@ -732,23 +735,23 @@ are converted into tokens for operators and punctuators:
 
 \begin{bnf}
 %% Ed. note: character protrusion would misalign various operators.
-\microtypesetup{protrusion=false}\obeyspaces
+\microtypesetup{protrusion=false}
 \nontermdef{preprocessing-operator} \textnormal{one of}\br
-    \terminal{\#        \#\#       \%:       \%:\%:}
+    \terminal{\# \ \ \ \ \ \ \ \#\# \ \ \ \ \ \ \%: \ \ \ \ \ \ \%:\%:}
 \end{bnf}
 
 \begin{bnf}
-\microtypesetup{protrusion=false}\obeyspaces
+\microtypesetup{protrusion=false}
 \nontermdef{operator-or-punctuator} \textnormal{one of}\br
-    \terminal{\{        \}        [        ]        (        )}\br
-    \terminal{<:       :>       <\%       \%>       ;        :        ...}\br
-    \terminal{?        ::       .        .*       ->       ->*      \~}\br
-    \terminal{!        +        -        *        /        \%        \caret{}        \&        |}\br
-    \terminal{=        +=       -=       *=       /=       \%=       \caret{}=       \&=       |=}\br
-    \terminal{==       !=       <        >        <=       >=       <=>      \&\&       ||}\br
-    \terminal{<<       >>       <<=      >>=      ++       --       ,}\br
-    \terminal{\keyword{and}      \keyword{or}       \keyword{xor}      \keyword{not}      \keyword{bitand}   \keyword{bitor}    \keyword{compl}}\br
-    \terminal{\keyword{and_eq}   \keyword{or_eq}    \keyword{xor_eq}   \keyword{not_eq}}
+    \terminal{\{ \ \ \ \ \ \ \ \} \ \ \ \ \ \ \ [ \ \ \ \ \ \ \ ] \ \ \ \ \ \ \ ( \ \ \ \ \ \ \ )}\br
+    \terminal{<\% \ \ \ \ \ \ \%> \ \ \ \ \ \ <: \ \ \ \ \ \ :> \ \ \ \ \ \ ; \ \ \ \ \ \ \ : \ \ \ \ \ \ \ ...}\br
+    \terminal{? \ \ \ \ \ \ \ :: \ \ \ \ \ \ . \ \ \ \ \ \ \ .* \ \ \ \ \ \ -> \ \ \ \ \ \ ->* \ \ \ \ \ \~}\br
+    \terminal{! \ \ \ \ \ \ \ + \ \ \ \ \ \ \ - \ \ \ \ \ \ \ * \ \ \ \ \ \ \ / \ \ \ \ \ \ \ \% \ \ \ \ \ \ \ \caret{} \ \ \ \ \ \ \ \& \ \ \ \ \ \ \ |}\br
+    \terminal{= \ \ \ \ \ \ \ += \ \ \ \ \ \ -= \ \ \ \ \ \ *= \ \ \ \ \ \ /= \ \ \ \ \ \ \%= \ \ \ \ \ \ \caret{}= \ \ \ \ \ \ \&= \ \ \ \ \ \ |=}\br
+    \terminal{== \ \ \ \ \ \ != \ \ \ \ \ \ < \ \ \ \ \ \ \ > \ \ \ \ \ \ \ <= \ \ \ \ \ \ >= \ \ \ \ \ \ <=> \ \ \ \ \ \&\& \ \ \ \ \ \ ||}\br
+    \terminal{<< \ \ \ \ \ \ >> \ \ \ \ \ \ <<= \ \ \ \ \ >>= \ \ \ \ \ ++ \ \ \ \ \ \ -- \ \ \ \ \ \ ,}\br
+    \terminal{\keyword{and} \ \ \ \ \ \keyword{or} \ \ \ \ \ \ \keyword{xor} \ \ \ \ \ \keyword{not} \ \ \ \ \ \keyword{bitand} \ \ \keyword{bitor} \ \ \ \keyword{compl}}\br
+    \terminal{\keyword{and_eq} \ \ \keyword{or_eq} \ \ \ \keyword{xor_eq} \ \ \keyword{not_eq}}
 \end{bnf}
 
 Each \grammarterm{operator-or-punctuator} is converted to a single token
@@ -907,6 +910,8 @@ in the later translation phase 7\iref{lex.token}.
 \indextext{\idxcode{final}}%
 \indextext{\idxcode{module}}%
 \indextext{\idxcode{override}}%
+\indextext{\idxcode{replaceable_if_eligible}}%
+\indextext{\idxcode{trivially_relocatable_if_eligible}}%
 The identifiers in \tref{lex.name.special} have a special meaning when
 appearing in a certain context. When referred to in the grammar, these identifiers
 are used explicitly rather than using the \grammarterm{identifier} grammar production.
@@ -916,13 +921,14 @@ token as a regular \grammarterm{identifier}.
 
 \begin{multicolfloattable}{Identifiers with special meaning}{lex.name.special}
 {llll}
-\keyword{final}           \\
-\columnbreak
-\keyword{import}          \\
-\columnbreak
-\keyword{module}          \\
-\columnbreak
-\keyword{override}        \\
+\keyword{final}                                 \\
+\keyword{override}                              \\\columnbreak
+\keyword{import}                                \\
+\keyword{module}                                \\\columnbreak
+\keyword{post}                                  \\
+\keyword{pre}                                   \\\columnbreak
+\keyword{replaceable_if_eligible}               \\
+\keyword{trivially_relocatable_if_eligible}     \\
 \end{multicolfloattable}
 
 \pnum
@@ -996,6 +1002,7 @@ is reserved for future use.
 \keyword{constinit} \\
 \keyword{const_cast} \\
 \keyword{continue} \\
+\keyword{contract_assert} \\
 \keyword{co_await} \\
 \keyword{co_return} \\
 \keyword{co_yield} \\
@@ -1009,8 +1016,8 @@ is reserved for future use.
 \keyword{enum} \\
 \keyword{explicit} \\
 \keyword{export} \\
-\keyword{extern} \\
 \columnbreak
+\keyword{extern} \\
 \keyword{false} \\
 \keyword{float} \\
 \keyword{for} \\
@@ -1027,8 +1034,8 @@ is reserved for future use.
 \keyword{nullptr} \\
 \keyword{operator} \\
 \keyword{private} \\
-\keyword{protected} \\
 \columnbreak
+\keyword{protected} \\
 \keyword{public} \\
 \keyword{register} \\
 \keyword{reinterpret_cast} \\
@@ -1045,8 +1052,8 @@ is reserved for future use.
 \keyword{template} \\
 \keyword{this} \\
 \keyword{thread_local} \\
-\keyword{throw} \\
 \columnbreak
+\keyword{throw} \\
 \keyword{true} \\
 \keyword{try} \\
 \keyword{typedef} \\
@@ -1679,7 +1686,7 @@ are conditionally-supported. See \ref{basic.extended.fp}.
 \topline
 \lhdr{\grammarterm{floating-point-suffix}} & \rhdr{type} \\ \capsep
 none & \keyword{double} \\
-\tcode{f} or \tcode{F} & \keyword {float} \\
+\tcode{f} or \tcode{F} & \keyword{float} \\
 \tcode{l} or \tcode{L} & \keyword{long} \keyword{double} \\
 \tcode{f16} or \tcode{F16} & \tcode{std::float16_t} \\
 \tcode{f32} or \tcode{F32} & \tcode{std::float32_t} \\
@@ -1802,7 +1809,9 @@ its associated character encoding\iref{lex.charset}
 are determined by its encoding prefix and sequence of
 \grammarterm{s-char}s or \grammarterm{r-char}s
 as defined by \tref{lex.string.literal}
-where $n$ is the number of encoded code units as described below.
+where $n$ is the number of encoded code units
+that would result from an evaluation of the \grammarterm{string-literal}
+(see below).
 
 \begin{floattable}{String literals}{lex.string.literal}
 {llp{2.6cm}p{2.3cm}p{4.7cm}}

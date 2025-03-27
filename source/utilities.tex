@@ -93,8 +93,9 @@ namespace std {
   template<class T>
     constexpr underlying_type_t<T> to_underlying(T value) noexcept;
 
-  // \ref{utility.unreachable}, unreachable
+  // \ref{utility.undefined}, undefined behavior
   [[noreturn]] void unreachable();
+  void observable() noexcept;
 
   // \ref{intseq}, compile-time integer sequences%
 \indexlibraryglobal{index_sequence}%
@@ -220,6 +221,21 @@ namespace std {
       explicit nontype_t() = default;
     };
   template<auto V> constexpr nontype_t<V> nontype{};
+
+  // \ref{variant.monostate}, class \tcode{monostate}%
+\indexlibraryglobal{monostate}
+  struct monostate;
+
+  // \ref{variant.monostate.relops}, \tcode{monostate} relational operators%
+\indexlibrarymember{operator==}{monostate}%
+\indexlibrarymember{operator<=>}{monostate}
+  constexpr bool operator==(monostate, monostate) noexcept;
+  constexpr strong_ordering operator<=>(monostate, monostate) noexcept;
+
+  // \ref{variant.hash}, hash support%
+\indexlibrarymember{hash}{monostate}
+  template<class T> struct hash;
+  template<> struct hash<monostate>;
 }
 \end{codeblock}
 
@@ -670,7 +686,7 @@ template<class T>
 \tcode{static_cast<underlying_type_t<T>>(value)}.
 \end{itemdescr}
 
-\rSec2[utility.unreachable]{Function \tcode{unreachable}}
+\rSec2[utility.undefined]{Undefined behavior}
 
 \indexlibraryglobal{unreachable}%
 \begin{itemdecl}
@@ -702,6 +718,17 @@ int a = f(1);           // OK, \tcode{a} has value \tcode{1}
 int b = f(3);           // undefined behavior
 \end{codeblock}
 \end{example}
+\end{itemdescr}
+
+\indexlibraryglobal{observable}%
+\begin{itemdecl}
+void observable() noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Establishes an observable checkpoint\iref{intro.abstract}.
 \end{itemdescr}
 
 \rSec1[pairs]{Pairs}
@@ -4081,8 +4108,8 @@ constexpr T* operator->() noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{*this} contains a value.
+\hardexpects
+\tcode{has_value()} is \tcode{true}.
 
 \pnum
 \returns
@@ -4101,8 +4128,8 @@ constexpr T& operator*() & noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{*this} contains a value.
+\hardexpects
+\tcode{has_value()} is \tcode{true}.
 
 \pnum
 \returns
@@ -4121,8 +4148,8 @@ constexpr const T&& operator*() const && noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{*this} contains a value.
+\hardexpects
+\tcode{has_value()} is \tcode{true}.
 
 \pnum
 \effects
@@ -4439,7 +4466,7 @@ namespace std {
   class bad_optional_access : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -4449,13 +4476,15 @@ The class \tcode{bad_optional_access} defines the type of objects thrown as exce
 
 \indexlibrarymember{what}{bad_optional_access}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-An \impldef{return value of \tcode{bad_optional_access::what}} \ntbs{}.
+An \impldef{return value of \tcode{bad_optional_access::what}} \ntbs{},
+which during constant evaluation is encoded with
+the ordinary literal encoding\iref{lex.ccon}.
 \end{itemdescr}
 
 \rSec2[optional.relops]{Relational operators}
@@ -6384,7 +6413,7 @@ namespace std {
   class bad_variant_access : public exception {
   public:
     // see \ref{exception} for the specification of the special member functions
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
@@ -6395,13 +6424,15 @@ accesses to the value of a \tcode{variant} object.
 
 \indexlibrarymember{what}{bad_variant_access}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-An \impldef{return value of \tcode{bad_variant_access::what}} \ntbs{}.
+An \impldef{return value of \tcode{bad_variant_access::what}} \ntbs{},
+which during constant evaluation is encoded with
+the ordinary literal encoding\iref{lex.ccon}.
 \end{itemdescr}
 
 \rSec2[variant.hash]{Hash support}
@@ -7317,12 +7348,12 @@ namespace std {
   template<class E>
   class bad_expected_access : public bad_expected_access<void> {
   public:
-    explicit bad_expected_access(E);
-    const char* what() const noexcept override;
-    E& error() & noexcept;
-    const E& error() const & noexcept;
-    E&& error() && noexcept;
-    const E&& error() const && noexcept;
+    constexpr explicit bad_expected_access(E);
+    constexpr const char* what() const noexcept override;
+    constexpr E& error() & noexcept;
+    constexpr const E& error() const & noexcept;
+    constexpr E&& error() && noexcept;
+    constexpr const E&& error() const && noexcept;
 
   private:
     E @\exposidnc{unex}@;             // \expos
@@ -7338,7 +7369,7 @@ for which \tcode{has_value()} is \tcode{false}.
 
 \indexlibraryctor{bad_expected_access}%
 \begin{itemdecl}
-explicit bad_expected_access(E e);
+constexpr explicit bad_expected_access(E e);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -7349,8 +7380,8 @@ Initializes \exposid{unex} with \tcode{std::move(e)}.
 
 \indexlibrarymember{error}{bad_expected_access}%
 \begin{itemdecl}
-const E& error() const & noexcept;
-E& error() & noexcept;
+constexpr const E& error() const & noexcept;
+constexpr E& error() & noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -7361,8 +7392,8 @@ E& error() & noexcept;
 
 \indexlibrarymember{error}{bad_expected_access}%
 \begin{itemdecl}
-E&& error() && noexcept;
-const E&& error() const && noexcept;
+constexpr E&& error() && noexcept;
+constexpr const E&& error() const && noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -7373,13 +7404,15 @@ const E&& error() const && noexcept;
 
 \indexlibrarymember{what}{bad_expected_access}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-An implementation-defined \ntbs.
+An \impldef{return value of \tcode{bad_expected_access<E>::what}} \ntbs,
+which during constant evaluation is encoded with
+the ordinary literal encoding\iref{lex.ccon}.
 \end{itemdescr}
 
 \rSec2[expected.bad.void]{Class template specialization \tcode{bad_expected_access<void>}}
@@ -7389,28 +7422,30 @@ namespace std {
   template<>
   class bad_expected_access<void> : public exception {
   protected:
-    bad_expected_access() noexcept;
-    bad_expected_access(const bad_expected_access&) noexcept;
-    bad_expected_access(bad_expected_access&&) noexcept;
-    bad_expected_access& operator=(const bad_expected_access&) noexcept;
-    bad_expected_access& operator=(bad_expected_access&&) noexcept;
-    ~bad_expected_access();
+    constexpr bad_expected_access() noexcept;
+    constexpr bad_expected_access(const bad_expected_access&) noexcept;
+    constexpr bad_expected_access(bad_expected_access&&) noexcept;
+    constexpr bad_expected_access& operator=(const bad_expected_access&) noexcept;
+    constexpr bad_expected_access& operator=(bad_expected_access&&) noexcept;
+    constexpr ~bad_expected_access();
 
   public:
-    const char* what() const noexcept override;
+    constexpr const char* what() const noexcept override;
   };
 }
 \end{codeblock}
 
 \indexlibrarymember{what}{bad_expected_access}%
 \begin{itemdecl}
-const char* what() const noexcept override;
+constexpr const char* what() const noexcept override;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-An implementation-defined \ntbs.
+An \impldef{return value of \tcode{bad_expected_access<void>::what}} \ntbs,
+which during constant evaluation is encoded with
+the ordinary literal encoding\iref{lex.ccon}.
 \end{itemdescr}
 
 \rSec2[expected.expected]{Class template \tcode{expected}}
@@ -8301,7 +8336,7 @@ constexpr T* operator->() noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{true}.
 
 \pnum
@@ -8317,7 +8352,7 @@ constexpr T& operator*() & noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{true}.
 
 \pnum
@@ -8333,7 +8368,7 @@ constexpr const T&& operator*() const && noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{true}.
 
 \pnum
@@ -8404,7 +8439,7 @@ constexpr E& error() & noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{false}.
 
 \pnum
@@ -8420,7 +8455,7 @@ constexpr const E&& error() const && noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{false}.
 
 \pnum
@@ -9372,7 +9407,7 @@ constexpr void operator*() const noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{true}.
 \end{itemdescr}
 
@@ -9416,7 +9451,7 @@ constexpr E& error() & noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{false}.
 
 \pnum
@@ -9432,7 +9467,7 @@ constexpr const E&& error() const && noexcept;
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{has_value()} is \tcode{false}.
 
 \pnum
@@ -10306,8 +10341,8 @@ constexpr bool operator[](size_t pos) const;
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{pos} is valid.
+\hardexpects
+\tcode{pos < size()} is \tcode{true}.
 
 \pnum
 \returns
@@ -10326,8 +10361,8 @@ constexpr bitset::reference operator[](size_t pos);
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{pos} is valid.
+\hardexpects
+\tcode{pos < size()} is \tcode{true}.
 
 \pnum
 \returns
@@ -10763,9 +10798,7 @@ namespace std {
     // \tcode{\placeholder{M}} is the \impldef{number of placeholders for bind expressions} number of placeholders
     @\seebelownc@ _1;                                                                   // freestanding
     @\seebelownc@ _2;                                                                   // freestanding
-               .
-               .
-               .
+               @\vdots@
     @\seebelownc@ _@\placeholdernc{M}@;                                                                   // freestanding
   }
 
@@ -12942,13 +12975,11 @@ its corresponding type $\tcode{V}_\tcode{fd}$ is \tcode{\cv{} FD\&}.
 % "namespace placeholders" in [functional.syn]?
 \begin{codeblock}
 namespace std::placeholders {
-  // M is the number of placeholders
+  // \tcode{\placeholder{M}} is the number of placeholders
   @\seebelow@ _1;
   @\seebelow@ _2;
-              .
-              .
-              .
-  @\seebelow@ _M;
+             @\itcorr\vdots@
+  @\seebelow@ _@\placeholdernc{M}@;
 }
 \end{codeblock}
 
@@ -13122,17 +13153,6 @@ and call arbitrary callable objects\iref{func.def}, given a call
 signature\iref{func.def}.
 
 \pnum
-\indextext{callable type}%
-A callable type\iref{func.def} \tcode{F}
-is \defn{Lvalue-Callable} for argument
-types \tcode{ArgTypes}
-and return type \tcode{R}
-if the expression
-\tcode{\placeholdernc{INVOKE}<R>(declval<F\&>(), declval<ArgTypes>()...)},
-considered as an unevaluated operand\iref{term.unevaluated.operand}, is
-well-formed\iref{func.require}.
-
-\pnum
 The \tcode{function} class template is a call
 wrapper\iref{func.def} whose call signature\iref{func.def}
 is \tcode{R(ArgTypes...)}.
@@ -13229,8 +13249,7 @@ Let \tcode{FD} be \tcode{decay_t<F>}.
 \item
 \tcode{is_same_v<remove_cvref_t<F>, function>} is \tcode{false}, and
 \item
-\tcode{FD} is Lvalue-Callable\iref{func.wrap.func} for argument types
-\tcode{ArgTypes...} and return type \tcode{R}.
+\tcode{is_invocable_r_v<R, FD\&, ArgTypes...>} is \tcode{true}.
 \end{itemize}
 
 \pnum
@@ -13373,8 +13392,7 @@ template<class F> function& operator=(F&& f);
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{decay_t<F>} is Lvalue-Callable\iref{func.wrap.func}
-for argument types \tcode{ArgTypes...} and return type \tcode{R}.
+\tcode{is_invocable_r_v<R, decay_t<F>\&, ArgTypes...>} is \tcode{true}.
 
 \pnum
 \effects

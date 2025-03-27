@@ -11,6 +11,23 @@ Subclause \ref{diff.cpp23} lists the differences between \Cpp{} and
 ISO \CppXXIII{},
 by the chapters of this document.
 
+\rSec2[diff.cpp23.lex]{\ref{lex}: Lexical conventions}
+
+\diffref{lex.key}
+\change
+New keywords.
+\rationale
+Required for new features.
+\begin{itemize}
+\item
+The \keyword{contract_assert} keyword
+is added to introduce a contract assertion
+through an \grammarterm{assertion-statement}\iref{stmt.contract.assert}.
+\end{itemize}
+\effect
+Valid \CppXXIII{} code using \keyword{contract_assert} as an identifier
+is not valid in this revision of \Cpp{}.
+
 \rSec2[diff.cpp23.expr]{\ref{expr}: expressions}
 
 \diffref{expr.arith.conv}
@@ -73,6 +90,22 @@ struct S {};
 \end{example}
 
 \rSec2[diff.cpp23.dcl.dcl]{\ref{dcl}: declarations}
+
+\diffref{dcl.decl.general}
+\change
+Introduction of \tcode{trivially_relocatable_if_eligible} and
+\tcode{replaceable_if_eligible} as identifiers with special meaning\iref{lex.name}.
+\rationale
+Support declaration of trivially relocatable and replaceable types\iref{class.prop}.
+\effect
+Valid \CppXXIII{} code can become ill-formed.
+\begin{example}
+\begin{codeblock}
+struct C {};
+struct C replaceable_if_eligible {};    // was well-formed (new variable \tcode{replaceable_if_eligible})
+                                        // now ill-formed (redefines \tcode{C})
+\end{codeblock}
+\end{example}
 
 \diffref{dcl.init.list}
 \change
@@ -182,8 +215,10 @@ New headers.
 New functionality.
 \effect
 The following \Cpp{} headers are new:
+\libheaderrefx{contracts}{support.contract},
 \libheaderref{debugging},
 \libheaderrefx{hazard_pointer}{hazard.pointer.syn},
+\libheaderref{hive},
 \libheaderrefx{inplace_vector}{inplace.vector.syn},
 \libheaderref{linalg},
 \libheaderref{rcu},
@@ -193,6 +228,17 @@ The following \Cpp{} headers are new:
 \libheaderrefx{text_encoding}{text.encoding.syn}.
 Valid \CppXXIII{} code that \tcode{\#include}{s} headers with these names may be
 invalid in this revision of \Cpp{}.
+
+\diffref{res.on.macro.definitions}
+\change
+Additional restrictions on macro names.
+\rationale
+Avoid hard to diagnose or non-portable constructs.
+\effect
+Names of special identifiers may not be used as macro names.
+Valid \CppXXIII{} code that defines \tcode{replaceable_if_eligible} or
+\tcode{trivially_relocatable_if_eligible} as macros is invalid
+in this revision of \Cpp{}.
 
 \rSec2[diff.cpp23.strings]{\ref{strings}: strings library}
 
@@ -2368,8 +2414,8 @@ Additional restrictions on macro names.
 Avoid hard to diagnose or non-portable constructs.
 \effect
 Names of attribute identifiers may not be used as macro names. Valid \CppIII{}
-code that defines \tcode{override}, \tcode{final},
-\tcode{carries_dependency}, or \tcode{noreturn} as macros is invalid in this
+code that defines \tcode{override}, \tcode{final}, or
+\tcode{noreturn} as macros is invalid in this
 revision of \Cpp{}.
 
 \rSec2[diff.cpp03.language.support]{\ref{support}:

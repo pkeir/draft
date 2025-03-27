@@ -464,11 +464,28 @@ in the call augmented by the addition of an implied object
 argument as in a qualified function call.
 If the current class is, or is derived from, \tcode{T}, and the keyword
 \keyword{this}\iref{expr.prim.this} refers to it,
-then the implied object argument is \tcode{(*this)}.
+\begin{itemize}
+\item
+if the unqualified function call
+appears in a precondition assertion of a constructor
+or a postcondition assertion of a destructor
+and overload resolution selects a non-static member function,
+the call is ill-formed;
+\item
+otherwise,
+the implied object argument is
+\tcode{(*\keyword{this})}.
+\end{itemize}
 Otherwise,
+\begin{itemize}
+\item
+if overload resolution selects a non-static member function,
+the call is ill-formed;
+\item
+otherwise,
 a contrived object of type
 \tcode{T}
-becomes the implied object argument;
+becomes the implied object argument.
 \begin{footnote}
 An implied object argument is contrived to
 correspond to the implicit object
@@ -482,12 +499,12 @@ object parameter, the contrived object will not be the cause to select or
 reject a
 function.
 \end{footnote}
-if overload resolution selects a non-static member function,
-the call is ill-formed.
+\end{itemize}
+
 \begin{example}
 \begin{codeblock}
 struct C {
-  void a();
+  bool a();
   void b() {
     a();                // OK, \tcode{(*this).a()}
   }
@@ -524,6 +541,15 @@ struct C {
   void m(this const C& c) {
     c.k();              // OK
   }
+
+  C()
+    pre(a())            // error: implied \keyword{this} in constructor precondition
+    pre(this->a())      // OK
+    post(a());          // OK
+  ~C()
+    pre(a())            // OK
+    post(a())           // error: implied \keyword{this} in destructor postcondition
+    post(this->a());    // OK
 };
 \end{codeblock}
 \end{example}
@@ -1006,7 +1032,7 @@ the candidate functions are
 all the constructors of the class of the object being
 initialized.
 Otherwise, the candidate functions are all
-the converting constructors\iref{class.conv.ctor} of that
+the non-explicit constructors\iref{class.conv.ctor} of that
 class.
 The argument list is the
 \grammarterm{expression-list} or \grammarterm{assignment-expression}
@@ -1037,7 +1063,7 @@ the candidate functions are selected as follows:
 
 \begin{itemize}
 \item
-The converting constructors\iref{class.conv.ctor} of
+The non-explicit constructors\iref{class.conv.ctor} of
 \tcode{T}
 are candidate functions.
 \item
@@ -1173,7 +1199,7 @@ In copy-list-initialization, if an explicit constructor is
 chosen, the initialization is ill-formed.
 \begin{note}
 This differs from other situations\iref{over.match.ctor,over.match.copy},
-where only converting constructors are considered for copy-initialization.
+where only non-explicit constructors are considered for copy-initialization.
 This restriction only
 applies if this initialization is part of the final result of overload
 resolution.
@@ -3281,13 +3307,13 @@ the operator named in its
 
 \begin{bnf}
 %% Ed. note: character protrusion would misalign various operators.
-\microtypesetup{protrusion=false}\obeyspaces
+\microtypesetup{protrusion=false}
 \nontermdef{operator} \textnormal{one of}\br
-    \terminal{new      delete   new[]    delete[] co_await (\rlap{\,)}        [\rlap{\,]}        ->       ->*}\br
-    \terminal{\~        !        +        -        *        /        \%        \caret{}        \&}\br
-    \terminal{|        =        +=       -=       *=       /=       \%=       \caret{}=       \&=}\br
-    \terminal{|=       ==       !=       <        >        <=       >=       <=>      \&\&}\br
-    \terminal{||       <<       >>       <<=      >>=      ++       --       ,}\br
+    \terminal{new \ \ \ \ \ delete \ \ new[] \ \ \ delete[] co_await (\rlap{\,)} \ \ \ \ \ \ \ [\rlap{\,]} \ \ \ \ \ \ \ -> \ \ \ \ \ \ ->*}\br
+    \terminal{\~ \ \ \ \ \ \ \ ! \ \ \ \ \ \ \ + \ \ \ \ \ \ \ - \ \ \ \ \ \ \ * \ \ \ \ \ \ \ / \ \ \ \ \ \ \ \% \ \ \ \ \ \ \ \caret{} \ \ \ \ \ \ \ \&}\br
+    \terminal{| \ \ \ \ \ \ \ = \ \ \ \ \ \ \ += \ \ \ \ \ \ -= \ \ \ \ \ \ *= \ \ \ \ \ \ /= \ \ \ \ \ \ \%= \ \ \ \ \ \ \caret{}= \ \ \ \ \ \ \&=}\br
+    \terminal{|= \ \ \ \ \ \ == \ \ \ \ \ \ != \ \ \ \ \ \ < \ \ \ \ \ \ \ > \ \ \ \ \ \ \ <= \ \ \ \ \ \ >= \ \ \ \ \ \ <=> \ \ \ \ \ \&\&}\br
+    \terminal{|| \ \ \ \ \ \ << \ \ \ \ \ \ >> \ \ \ \ \ \ <<= \ \ \ \ \ >>= \ \ \ \ \ ++ \ \ \ \ \ \ -- \ \ \ \ \ \ ,}\br
 \end{bnf}
 \begin{note}
 The operators
@@ -3305,8 +3331,8 @@ and subscripting\iref{expr.sub}.
 
 \pnum
 Both the unary and binary forms of
-\begin{ncsimplebnf}\obeyspaces
-\terminal{+      -      *      \&}
+\begin{ncsimplebnf}
+\terminal{+ \ \ \ \ \ - \ \ \ \ \ * \ \ \ \ \ \&}
 \end{ncsimplebnf}
 can be overloaded.
 
@@ -3314,8 +3340,8 @@ can be overloaded.
 \begin{note}
 \indextext{restriction!operator overloading}%
 The following operators cannot be overloaded:
-\begin{ncsimplebnf}\obeyspaces
-\terminal{.      .*     ::     ?:}
+\begin{ncsimplebnf}
+\terminal{. \ \ \ \ \ .* \ \ \ \ :: \ \ \ \ ?:}
 \end{ncsimplebnf}
 nor can the preprocessing symbols
 \tcode{\#}\iref{cpp.stringize}
