@@ -5407,30 +5407,30 @@ namespace std {
 
     constexpr atomic() noexcept;
     constexpr atomic(nullptr_t) noexcept : atomic() { }
-    atomic(shared_ptr<T> desired) noexcept;
+    constexpr atomic(shared_ptr<T> desired) noexcept;
     atomic(const atomic&) = delete;
     void operator=(const atomic&) = delete;
 
-    shared_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
-    operator shared_ptr<T>() const noexcept;
-    void store(shared_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
-    void operator=(shared_ptr<T> desired) noexcept;
-    void operator=(nullptr_t) noexcept;
+    constexpr shared_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
+    constexpr operator shared_ptr<T>() const noexcept;
+    constexpr void store(shared_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
+    constexpr void operator=(shared_ptr<T> desired) noexcept;
+    constexpr void operator=(nullptr_t) noexcept;
 
-    shared_ptr<T> exchange(shared_ptr<T> desired,
+    constexpr shared_ptr<T> exchange(shared_ptr<T> desired,
                            memory_order order = memory_order::seq_cst) noexcept;
-    bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
+    constexpr bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
                                memory_order success, memory_order failure) noexcept;
-    bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
+    constexpr bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
                                  memory_order success, memory_order failure) noexcept;
-    bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
+    constexpr bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
                                memory_order order = memory_order::seq_cst) noexcept;
-    bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
+    constexpr bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
                                  memory_order order = memory_order::seq_cst) noexcept;
 
-    void wait(shared_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
-    void notify_one() noexcept;
-    void notify_all() noexcept;
+    constexpr void wait(shared_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
+    constexpr void notify_one() noexcept;
+    constexpr void notify_all() noexcept;
 
   private:
     shared_ptr<T> p;            // \expos
@@ -5451,7 +5451,7 @@ Value-initializes \tcode{p}.
 
 \indexlibraryctor{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-atomic(shared_ptr<T> desired) noexcept;
+constexpr atomic(shared_ptr<T> desired) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5473,7 +5473,7 @@ This results in undefined behavior.
 
 \indexlibrarymember{store}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-void store(shared_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
+constexpr void store(shared_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5493,7 +5493,7 @@ Memory is affected according to the value of \tcode{order}.
 
 \indexlibrarymember{operator=}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-void operator=(shared_ptr<T> desired) noexcept;
+constexpr void operator=(shared_ptr<T> desired) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5504,7 +5504,7 @@ Equivalent to \tcode{store(desired)}.
 
 \indexlibrarymember{operator=}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-void operator=(nullptr_t) noexcept;
+constexpr void operator=(nullptr_t) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5515,7 +5515,7 @@ Equivalent to \tcode{store(nullptr)}.
 
 \indexlibrarymember{load}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-shared_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
+constexpr shared_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5537,7 +5537,7 @@ Atomically returns \tcode{p}.
 
 \indexlibrarymember{operator shared_ptr<T>}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-operator shared_ptr<T>() const noexcept;
+constexpr operator shared_ptr<T>() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5548,7 +5548,7 @@ Equivalent to: \tcode{return load();}
 
 \indexlibrarymember{exchange}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-shared_ptr<T> exchange(shared_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
+constexpr shared_ptr<T> exchange(shared_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5567,9 +5567,9 @@ Atomically returns the value of \tcode{p} immediately before the effects.
 \indexlibrarymember{compare_exchange_weak}{atomic<shared_ptr<T>>}%
 \indexlibrarymember{compare_exchange_strong}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
+constexpr bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
                            memory_order success, memory_order failure) noexcept;
-bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
+constexpr bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
                              memory_order success, memory_order failure) noexcept;
 \end{itemdecl}
 
@@ -5617,7 +5617,7 @@ is not required to be part of the atomic operation.
 
 \indexlibrarymember{compare_exchange_weak}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
+constexpr bool compare_exchange_weak(shared_ptr<T>& expected, shared_ptr<T> desired,
                            memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
@@ -5637,7 +5637,7 @@ shall be replaced by the value \tcode{memory_order::relaxed}.
 
 \indexlibrarymember{compare_exchange_strong}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
+constexpr bool compare_exchange_strong(shared_ptr<T>& expected, shared_ptr<T> desired,
                              memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
@@ -5657,7 +5657,7 @@ shall be replaced by the value \tcode{memory_order::relaxed}.
 
 \indexlibrarymember{wait}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-void wait(shared_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
+constexpr void wait(shared_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5690,7 +5690,7 @@ This function is an atomic waiting operation\iref{atomics.wait}.
 
 \indexlibrarymember{notify_one}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-void notify_one() noexcept;
+constexpr void notify_one() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5707,7 +5707,7 @@ This function is an atomic notifying operation\iref{atomics.wait}.
 
 \indexlibrarymember{notify_all}{atomic<shared_ptr<T>>}%
 \begin{itemdecl}
-void notify_all() noexcept;
+constexpr void notify_all() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5733,29 +5733,29 @@ namespace std {
     bool is_lock_free() const noexcept;
 
     constexpr atomic() noexcept;
-    atomic(weak_ptr<T> desired) noexcept;
+    constexpr atomic(weak_ptr<T> desired) noexcept;
     atomic(const atomic&) = delete;
-    void operator=(const atomic&) = delete;
+    constexpr void operator=(const atomic&) = delete;
 
-    weak_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
-    operator weak_ptr<T>() const noexcept;
-    void store(weak_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
-    void operator=(weak_ptr<T> desired) noexcept;
+    constexpr weak_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
+    constexpr operator weak_ptr<T>() const noexcept;
+    constexpr void store(weak_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
+    constexpr void operator=(weak_ptr<T> desired) noexcept;
 
-    weak_ptr<T> exchange(weak_ptr<T> desired,
+    constexpr weak_ptr<T> exchange(weak_ptr<T> desired,
                          memory_order order = memory_order::seq_cst) noexcept;
-    bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
+    constexpr bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
                                memory_order success, memory_order failure) noexcept;
-    bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
+    constexpr bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
                                  memory_order success, memory_order failure) noexcept;
-    bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
+    constexpr bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
                                memory_order order = memory_order::seq_cst) noexcept;
-    bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
+    constexpr bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
                                  memory_order order = memory_order::seq_cst) noexcept;
 
-    void wait(weak_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
-    void notify_one() noexcept;
-    void notify_all() noexcept;
+    constexpr void wait(weak_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
+    constexpr void notify_one() noexcept;
+    constexpr void notify_all() noexcept;
 
   private:
     weak_ptr<T> p;              // \expos
@@ -5776,7 +5776,7 @@ Value-initializes \tcode{p}.
 
 \indexlibraryctor{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-atomic(weak_ptr<T> desired) noexcept;
+constexpr atomic(weak_ptr<T> desired) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5798,7 +5798,7 @@ This results in undefined behavior.
 
 \indexlibrarymember{store}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-void store(weak_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
+constexpr void store(weak_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5818,7 +5818,7 @@ Memory is affected according to the value of \tcode{order}.
 
 \indexlibrarymember{operator=}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-void operator=(weak_ptr<T> desired) noexcept;
+constexpr void operator=(weak_ptr<T> desired) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5829,7 +5829,7 @@ Equivalent to \tcode{store(desired)}.
 
 \indexlibrarymember{load}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-weak_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
+constexpr weak_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5851,7 +5851,7 @@ Atomically returns \tcode{p}.
 
 \indexlibrarymember{operator weak_ptr<T>}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-operator weak_ptr<T>() const noexcept;
+constexpr operator weak_ptr<T>() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5862,7 +5862,7 @@ Equivalent to: \tcode{return load();}
 
 \indexlibrarymember{exchange}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-weak_ptr<T> exchange(weak_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
+constexpr weak_ptr<T> exchange(weak_ptr<T> desired, memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5880,9 +5880,9 @@ Atomically returns the value of \tcode{p} immediately before the effects.
 
 \indexlibrarymember{compare_exchange_weak}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
+constexpr bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
                            memory_order success, memory_order failure) noexcept;
-bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
+constexpr bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
                              memory_order success, memory_order failure) noexcept;
 \end{itemdecl}
 
@@ -5930,7 +5930,7 @@ is not required to be part of the atomic operation.
 
 \indexlibrarymember{compare_exchange_weak}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
+constexpr bool compare_exchange_weak(weak_ptr<T>& expected, weak_ptr<T> desired,
                            memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
@@ -5950,7 +5950,7 @@ shall be replaced by the value \tcode{memory_order::relaxed}.
 
 \indexlibrarymember{compare_exchange_strong}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
+constexpr bool compare_exchange_strong(weak_ptr<T>& expected, weak_ptr<T> desired,
                              memory_order order = memory_order::seq_cst) noexcept;
 \end{itemdecl}
 
@@ -5970,7 +5970,7 @@ shall be replaced by the value \tcode{memory_order::relaxed}.
 
 \indexlibrarymember{wait}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-void wait(weak_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
+constexpr void wait(weak_ptr<T> old, memory_order order = memory_order::seq_cst) const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6004,7 +6004,7 @@ This function is an atomic waiting operation\iref{atomics.wait}.
 
 \indexlibrarymember{notify_one}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-void notify_one() noexcept;
+constexpr void notify_one() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6021,7 +6021,7 @@ This function is an atomic notifying operation\iref{atomics.wait}.
 
 \indexlibrarymember{notify_all}{atomic<weak_ptr<T>>}%
 \begin{itemdecl}
-void notify_all() noexcept;
+constexpr void notify_all() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
