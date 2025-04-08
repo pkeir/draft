@@ -1574,8 +1574,8 @@ There are five different kinds of constraints:
 \item conjunctions\iref{temp.constr.op},
 \item disjunctions\iref{temp.constr.op},
 \item atomic constraints\iref{temp.constr.atomic},
-\item fold expanded constraints\iref{temp.constr.fold}, and
-\item concept-dependent constraints\iref{temp.constr.concept}.
+\item concept-dependent constraints\iref{temp.constr.concept}, and
+\item fold expanded constraints\iref{temp.constr.fold}.
 \end{itemize}
 
 \pnum
@@ -2126,13 +2126,13 @@ that is either \tcode{\&\&} or \tcode{||}:
   \item
   The normal form of an expression \tcode{F} of the form \tcode{( E Op ... )}
   is as follows:\\
-  If \tcode{E} names any unexpanded concept template parameter pack,
-  it shall not name any unexpanded template parameter pack of another kind.
+  If \tcode{E} contains an unexpanded concept template parameter pack,
+  it shall not contain an unexpanded template parameter pack of another kind.
   Let \tcode{E$'$} be the normal form of \tcode{E}.
     \begin{itemize}
     \item
-    If \tcode{E} names
-    any unexpanded concept template parameter pack \tcode{P$_k$} that
+    If \tcode{E} contains
+    an unexpanded concept template parameter pack \tcode{P$_k$} that
     has corresponding template arguments in
     the parameter mapping of any atomic constraint
     (including concept-dependent constraints) of \tcode{E$'$},
@@ -2248,7 +2248,8 @@ template<typename T, template<typename> concept>
 struct wrapper {};
 
 template<typename... T, template<typename> concept... CTs>
-  int f(wrapper<T, CTs>...) requires (CTs<T> && ...);   // error: the fold expression expands mixed kind template parameters
+  int f(wrapper<T, CTs>...) requires (CTs<T> && ...);   // error: fold expression contains
+                                                        // different kinds of template parameters
 \end{codeblock}
 \end{example}
 
@@ -3247,14 +3248,14 @@ follows:
 if the pack is a template parameter pack, the element is
 \begin{itemize}
 \item
-an \grammarterm{id-expression} for a constant template parameter pack,
+a \grammarterm{typedef-name} for a type template parameter pack,
 \item
-a \grammarterm{typedef-name} for a type template parameter pack, or
+an \grammarterm{id-expression} for a constant template parameter pack, or
 \item
 a \grammarterm{template-name} for a template template parameter pack
 \end{itemize}
 designating the $i^\text{th}$ corresponding
-type, template, or constant template argument;
+type, constant, or template template argument;
 
 \item
 if the pack is a function parameter pack, the element is an
@@ -4207,9 +4208,7 @@ under the following conditions:
 they have equivalent types
 ignoring the use of \grammarterm{type-constraint}{s} for placeholder types, and
 \item if they declare template template parameters,
-%FIXME: What are "their kinds"? And what does it mean for kinds to be the same?
-%FIXME: We refer to "kinds" in [temp.param]/p2 but never define it.
-their kinds are the same and their \grammarterm{template-head}{s} are equivalent.
+their \grammarterm{template-head}{s} are equivalent.
 \end{itemize}
 When determining whether types or \grammarterm{type-constraint}{s}
 are equivalent, the rules above are used to compare expressions
@@ -5816,13 +5815,13 @@ is value-dependent:
 
 \begin{ncsimplebnf}
 simple-type-specifier \terminal{(} \opt{expression-list} \terminal{)}\br
-typename-specifier \terminal{(} opt{expression-list} \terminal{)}\br
+typename-specifier \terminal{(} \opt{expression-list} \terminal{)}\br
 simple-type-specifier braced-init-list\br
 typename-specifier braced-init-list\br
 \keyword{static_cast} \terminal{<} type-id \terminal{>} \terminal{(} expression \terminal{)}\br
 \keyword{const_cast} \terminal{<} type-id \terminal{>} \terminal{(} expression \terminal{)}\br
 \keyword{reinterpret_cast} \terminal{<} type-id \terminal{>} \terminal{(} expression \terminal{)}\br
-dynamic_cast \terminal{<} type-id \terminal{>} \terminal{(} expression \terminal{)}\br
+\keyword{dynamic_cast} \terminal{<} type-id \terminal{>} \terminal{(} expression \terminal{)}\br
 \terminal{(} type-id \terminal{)} cast-expression
 \end{ncsimplebnf}
 
@@ -8861,14 +8860,12 @@ void t() {
 \end{example}
 
 \pnum
-A type template argument
-\tcode{T},
-a template template argument
-\tcode{TT} denoting a class template or an alias template,
-a template template argument
-\tcode{VV} denoting a variable template or a concept,
-or a constant template argument
-\tcode{i}
+A type template argument \tcode{T},
+a constant template argument \tcode{i},
+a template template argument \tcode{TT}
+denoting a class template or an alias template, or
+a template template argument \tcode{VV}
+denoting a variable template or a concept
 can be deduced if
 \tcode{P}
 and
@@ -8897,14 +8894,14 @@ is a non-deduced context in \tcode{P} or \tcode{A}, or
 is the same non-dependent type in \tcode{P} and \tcode{A},
 
 \item
-\tcode{\opt{TT}} represents either a class template or
-a template template parameter,
-
-\item
 \tcode{\opt{i}} represents an expression that either
 is an \tcode{i},
 is value-dependent in \tcode{P} or \tcode{A}, or
-has the same constant value in \tcode{P} and \tcode{A}, and
+has the same constant value in \tcode{P} and \tcode{A},
+
+\item
+\tcode{\opt{TT}} represents either a class template or
+a template template parameter, and
 
 \item
 \tcode{\keyword{noexcept}(\opt{i})} represents an

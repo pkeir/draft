@@ -4378,7 +4378,7 @@ template<class F> constexpr optional or_else(F&& f) const &;
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{F} models \tcode{\libconcept{invocable}<>} and
+\tcode{F} models \libconcept{invocable} and
 \tcode{T} models \libconcept{copy_constructible}.
 
 \pnum
@@ -4405,7 +4405,7 @@ template<class F> constexpr optional or_else(F&& f) &&;
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{F} models \tcode{\libconcept{invocable}<>} and
+\tcode{F} models \libconcept{invocable} and
 \tcode{T} models \libconcept{move_constructible}.
 
 \pnum
@@ -9164,7 +9164,7 @@ Any exception thrown by the initialization of \exposid{unex}.
 \indexlibraryctor{expected<void>}%
 \begin{itemdecl}
 template<class U, class... Args>
-    constexpr explicit expected(unexpect_t, initializer_list<U> il, Args&&... args);
+  constexpr explicit expected(unexpect_t, initializer_list<U> il, Args&&... args);
 \end{itemdecl}
 
 \begin{itemdescr}

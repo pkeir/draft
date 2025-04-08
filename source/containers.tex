@@ -7869,7 +7869,10 @@ template<class T, class Allocator, class U = T>
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return erase_if(c, [\&](const auto\& elem) -> bool \{ return elem == value; \});}
+Equivalent to:
+\begin{codeblock}
+return erase_if(c, [&](const auto& elem) -> bool { return elem == value; });
+\end{codeblock}
 \end{itemdescr}
 
 \indexlibrarymember{erase_if}{forward_list}%
@@ -9761,7 +9764,10 @@ template<class T, class Allocator, class U = T>
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return erase_if(c, [\&](const auto\& elem) -> bool \{ return elem == value; \});}
+Equivalent to:
+\begin{codeblock}
+return erase_if(c, [&](const auto& elem) -> bool { return elem == value; });
+\end{codeblock}
 \end{itemdescr}
 
 \indexlibrarymember{erase_if}{list}%
@@ -12651,7 +12657,7 @@ supports bidirectional iterators.
 A \tcode{set} meets all of the requirements
 of a container\iref{container.reqmts},
 of a reversible container\iref{container.rev.reqmts},
-of an allocator-aware container\iref{container.alloc.reqmts}. and
+of an allocator-aware container\iref{container.alloc.reqmts}, and
 of an associative container\iref{associative.reqmts}.
 A
 \tcode{set}
@@ -15562,8 +15568,8 @@ A deduction guide for a container adaptor shall not participate in overload reso
 \item It has both \tcode{KeyContainer} and \tcode{Compare} template parameters, and
 \begin{codeblock}
 is_invocable_v<const Compare&,
-              const typename KeyContainer::value_type&,
-              const typename KeyContainer::value_type&>
+               const typename KeyContainer::value_type&,
+               const typename KeyContainer::value_type&>
 \end{codeblock}
 is not a valid expression or is \tcode{false}.
 \item It has both \tcode{MappedContainer} and \tcode{Allocator} template parameters, and
