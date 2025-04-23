@@ -6620,7 +6620,7 @@ allocate and free storage for the owned object as needed.
 \pnum
 Constructing an owned object of type \tcode{U} with \tcode{args...}
 using the allocator \tcode{a} means calling
-\tcode{allocator_traits<Allocator>::cop, args...)} where
+\tcode{allocator_traits<Allocator>::construct(a, \exposid{p}, args...)} where
 \tcode{args} is an expression pack,
 \tcode{a} is an allocator, and
 \exposid{p} points to storage suitable for an owned object of type \tcode{U}.
@@ -7133,7 +7133,7 @@ constexpr polymorphic& operator=(polymorphic&& other)
 \begin{itemdescr}
 \pnum
 \mandates
-If \tcode{allocator_traits<Allocator>::is_always_equal::value>} is \tcode{false},
+If \tcode{allocator_traits<Allocator>::is_always_equal::value} is \tcode{false},
 \tcode{T} is a complete type.
 
 \pnum
