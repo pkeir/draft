@@ -5311,8 +5311,8 @@ namespace std {
 
     constexpr ~out_ptr_t();
 
-    constexpr operator Pointer*() const noexcept;
-    constexpr operator void**() const noexcept;
+    operator Pointer*() const noexcept;
+    operator void**() const noexcept;
 
   private:
     Smart& s;                   // \expos
@@ -5428,7 +5428,7 @@ otherwise, the program is ill-formed.
 \end{itemdescr}
 
 \begin{itemdecl}
-constexpr operator Pointer*() const noexcept;
+operator Pointer*() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5442,7 +5442,7 @@ constexpr operator Pointer*() const noexcept;
 \end{itemdescr}
 
 \begin{itemdecl}
-constexpr operator void**() const noexcept;
+operator void**() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5551,8 +5551,8 @@ namespace std {
 
     constexpr ~inout_ptr_t();
 
-    constexpr operator Pointer*() const noexcept;
-    constexpr operator void**() const noexcept;
+    operator Pointer*() const noexcept;
+    operator void**() const noexcept;
 
   private:
     Smart& s;                   // \expos
@@ -5664,7 +5664,7 @@ otherwise, the program is ill-formed.
 \end{itemdescr}
 
 \begin{itemdecl}
-constexpr operator Pointer*() const noexcept;
+operator Pointer*() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5678,7 +5678,7 @@ constexpr operator Pointer*() const noexcept;
 \end{itemdescr}
 
 \begin{itemdecl}
-constexpr operator void**() const noexcept;
+operator void**() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
