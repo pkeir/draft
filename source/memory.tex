@@ -5311,7 +5311,7 @@ namespace std {
 
     constexpr ~out_ptr_t();
 
-    operator Pointer*() const noexcept;
+    constexpr operator Pointer*() const noexcept;
     operator void**() const noexcept;
 
   private:
@@ -5428,7 +5428,7 @@ otherwise, the program is ill-formed.
 \end{itemdescr}
 
 \begin{itemdecl}
-operator Pointer*() const noexcept;
+constexpr operator Pointer*() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5551,7 +5551,7 @@ namespace std {
 
     constexpr ~inout_ptr_t();
 
-    operator Pointer*() const noexcept;
+    constexpr operator Pointer*() const noexcept;
     operator void**() const noexcept;
 
   private:
@@ -5664,7 +5664,7 @@ otherwise, the program is ill-formed.
 \end{itemdescr}
 
 \begin{itemdecl}
-operator Pointer*() const noexcept;
+constexpr operator Pointer*() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
