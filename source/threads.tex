@@ -6710,7 +6710,7 @@ namespace std {
     constexpr atomic() noexcept;
     constexpr atomic(weak_ptr<T> desired) noexcept;
     atomic(const atomic&) = delete;
-    constexpr void operator=(const atomic&) = delete;
+    void operator=(const atomic&) = delete;
 
     constexpr weak_ptr<T> load(memory_order order = memory_order::seq_cst) const noexcept;
     constexpr operator weak_ptr<T>() const noexcept;
