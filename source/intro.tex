@@ -1,23 +1,26 @@
 %!TEX root = std.tex
 
+\clearpage
+\bigskip\noindent\textlarger{\textbf{Programming languages --- \Cpp{}}}
+\bigskip\bigskip
+
+\begingroup
+\let\clearpage\relax
 \rSec0[intro.scope]{Scope}
+\endgroup
+\copypagestyle{cpppageone}{cpppage}
+\makeoddhead{cpppageone}{\textbf{WORKING DRAFT}}{}{\leaders\hrule height 2pt\hfill\kern0pt\\\textbf{\docno}}
+\makeheadrule{cpppageone}{\textwidth}{2pt}
+\thispagestyle{cpppageone}
 
 \pnum
 \indextext{scope|(}%
 This document specifies requirements for implementations
-of the \Cpp{} programming language. The first such requirement is that
+of \Cpp{}, which is a general-purpose programming language.
+The first such requirement is that
 an implementation implements the language, so this document also
 defines \Cpp{}. Other requirements and relaxations of the first
 requirement appear at various places within this document.
-
-\pnum
-\Cpp{} is a general purpose programming language based on the C
-programming language as described in \IsoC{}.
-\Cpp{} provides many facilities
-beyond those provided by C, including additional data types,
-classes, templates, exceptions, namespaces, operator
-overloading, function name overloading, references, free store
-management operators, and additional library facilities.%
 \indextext{scope|)}
 
 \rSec0[intro.refs]{Normative references}%
@@ -60,8 +63,8 @@ does not constitute an endorsement by ISO or IEC of this product.
 Language Specification},
 Standard Ecma-262, third edition, 1999.
 \item
-The Unicode Consortium. \doccite{The Unicode Standard}.
-Available from: \url{https://www.unicode.org/versions/latest/}
+The Unicode Consortium. \doccite{The Unicode Standard}, Version 15.1.
+Available from: \url{https://www.unicode.org/versions/Unicode15.1.0/}
 \end{itemize}
 \indextext{references!normative|)}
 
@@ -210,7 +213,7 @@ constructs that it does not support.
 \definition{constant evaluation}{defns.const.eval}
 \indexdefn{constant evaluation}%
 evaluation that is performed as part of evaluating an expression
-as a core constant expression\iref{expr.const}
+as a core constant expression\iref{expr.const.core}
 
 \definition{constant subexpression}{defns.const.subexpr}
 \indexdefn{constant subexpression}%
@@ -243,8 +246,9 @@ implementation's output messages
 glvalue refers
 
 \begin{example}
-If a pointer\iref{dcl.ptr} \tcode{p} whose static type is ``pointer to
-class \tcode{B}'' is pointing to an object of class \tcode{D}, derived
+If a pointer\iref{dcl.ptr} \tcode{p} whose type is ``pointer to
+class \tcode{B}'' is pointing to a base class subobject
+of class \tcode{B}, whose most derived object is of class \tcode{D}, derived
 from \tcode{B}\iref{class.derived}, the dynamic type of the
 expression \tcode{*p} is ``\tcode{D}''. References\iref{dcl.ref} are
 treated similarly.
@@ -261,7 +265,7 @@ well-defined behavior that the implementation is recommended to diagnose
 Erroneous behavior is always the consequence of incorrect program code.
 Implementations are allowed, but not required,
 to diagnose it\iref{intro.compliance.general}.
-Evaluation of a constant expression\iref{expr.const}
+Evaluation of a constant expression\iref{expr.const.core}
 never exhibits behavior specified as erroneous in \ref{intro} through \ref{\lastcorechapter}.
 \end{defnote}
 
@@ -458,6 +462,11 @@ sorts the pairs in increasing order of their \tcode{first} members:
 \end{codeblock}
 \end{example}
 
+\indexdefn{property!of the implementation}%
+\definition{property of the implementation}{defns.impl.prop}
+behavior, for a well-formed program\iref{defns.well.formed}
+construct and correct data, that depends on the implementation
+
 \definition{referenceable type}{defns.referenceable}
 \indexdefn{type!referenceable}%
 type that is either an
@@ -521,7 +530,7 @@ During constant evaluation,
 it is
 \impldef{whether runtime-undefined behavior results in the expression being deemed non-constant}
 whether runtime-undefined behavior results in the expression being deemed non-constant
-(as specified in~\ref{expr.const}) and
+(as specified in~\ref{expr.const.core}) and
 \item
 runtime-undefined behavior has no other effect.
 \end{itemize}
@@ -666,7 +675,7 @@ characteristic of the environment (with or without the issuance of a
 \termref{defns.diagnostic}{diagnostic message}{}), to terminating a translation or execution (with the
 issuance of a diagnostic message). Many incorrect program constructs do
 not engender undefined behavior; they are required to be diagnosed.
-Evaluation of a constant expression\iref{expr.const} never exhibits behavior explicitly
+Evaluation of a constant expression\iref{expr.const.core} never exhibits behavior explicitly
 specified as undefined in \ref{intro} through \ref{\lastcorechapter}.
 \end{defnote}
 
@@ -778,7 +787,7 @@ the implementation does not support that construct, or
 \item
 a contract assertion\iref{basic.contract.eval}
 evaluated with a checking semantic
-in a manifestly constant-evaluated context \iref{expr.const}
+in a manifestly constant-evaluated context\iref{expr.const.defns}
 resulting in a contract violation,
 \end{itemize}
 a conforming implementation
@@ -801,7 +810,7 @@ a translation unit with
 a \grammarterm{static_assert-declaration} that fails\iref{dcl.pre}, or
 \item
 a contract assertion evaluated with a terminating semantic\iref{basic.contract.eval}
-in a manifestly constant-evaluated context\iref{expr.const}
+in a manifestly constant-evaluated context\iref{expr.const.defns}
 resulting in a contract violation.
 \end{itemize}
 
@@ -856,11 +865,17 @@ violating a hardened precondition
 results in a contract violation\iref{structure.specifications}.
 
 \pnum
+\recommended
 An implementation is encouraged to document its limitations in
 the size or complexity of the programs it can successfully process,
 if possible and where known.
 \ref{implimits} lists some quantities that can be subject to limitations and
 a potential minimum supported value for each quantity.
+
+\pnum
+A conforming implementation may use an implementation-defined version
+of the Unicode Standard that is a later version than the one
+referenced in \ref{intro.refs}.
 
 \pnum
 A conforming implementation may have extensions (including
@@ -910,10 +925,14 @@ observable behavior of the program are produced.
 
 \pnum
 \indextext{behavior!implementation-defined}%
-Certain aspects and operations of the abstract machine are described in this
+Certain aspects and operations of the abstract machine
+constitute the parameters of the abstract machine and
+are described in this
 document as implementation-defined behavior (for example,
-\tcode{sizeof(int)}). These constitute the parameters of the abstract machine.
-Each implementation shall include documentation describing its characteristics
+\tcode{sizeof(int)})
+or as properties of the implementation (for example, padding in class types).
+For implementation-defined behavior,
+each implementation shall include documentation describing its characteristics
 and behavior in these respects.
 \begin{footnote}
 This documentation also includes
@@ -945,7 +964,7 @@ attempting to modify a const object).
 Certain events in the execution of a program
 are termed \defnadj{observable}{checkpoints}.
 \begin{note}
-A call to \tcode{std::observable}\iref{utility.undefined}
+A call to \tcode{std::observable_checkpoint}\iref{utility.undefined}
 is an observable checkpoint,
 as are certain parts of
 the evaluation of contract assertions\iref{basic.contract}.
@@ -977,10 +996,9 @@ same program and the same input.
 If the selected execution contains an undefined operation,
 the implementation executing that program with that input
 may produce arbitrary additional observable behavior afterwards.
-If the execution contains an operation specified as having erroneous behavior,
+If the execution of an operation is specified as having erroneous behavior,
 the implementation is permitted to issue a diagnostic and
-is permitted to terminate the execution
-at an unspecified time after that operation.
+is permitted to terminate the execution of the program.
 
 \pnum
 \recommended
@@ -1002,7 +1020,7 @@ of the program:
 Accesses through volatile glvalues are evaluated strictly according to the
 rules of the abstract machine.
 \item
-Data is delivered to the host environment to be written into files (\xrefc{7.21.3}).
+Data is delivered to the host environment to be written into files (\xrefc{7.23.3}).
 
 \begin{note}
 Delivering such data
@@ -1077,9 +1095,9 @@ determines its meaning (e.g., \grammarterm{class-name},
 (e.g., \grammarterm{qualified-id}).
 \item \fakegrammarterm{X-seq} is one or more \fakegrammarterm{X}'s without intervening
 delimiters (e.g., \grammarterm{declaration-seq} is a sequence of
-declarations).
+\grammarterm{declaration}s).
 \item \fakegrammarterm{X-list} is one or more \fakegrammarterm{X}'s separated by
 intervening commas (e.g., \grammarterm{identifier-list} is a sequence of
-identifiers separated by commas).
+\grammarterm{identifier}s separated by commas).
 \end{itemize}%
 \indextext{notation!syntax|)}

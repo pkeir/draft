@@ -1033,7 +1033,7 @@ if and only if \tcode{t1} equals \tcode{t2}, and
 \item
 \tcode{\exposid{CONVERT_TO_LVALUE}<C>(u1)} equals
 \tcode{\exposid{CONVERT_TO_LVALUE}<C>(u2)}
-if and only if \tcode{u1} equals \tcode{u2}
+if and only if \tcode{u1} equals \tcode{u2}.
 \end{itemize}
 
 \rSec2[concept.equalitycomparable]{Concept \cname{equality_comparable}}
@@ -1222,8 +1222,8 @@ fundamental types like \tcode{int} and that are comparable with
 \rSec2[concepts.callable.general]{General}
 
 \pnum
-The concepts in \ref{concepts.callable} describe the requirements on function
-objects\iref{function.objects} and their arguments.
+The concepts in \ref{concepts.callable} describe the requirements on
+callable types\iref{func.def} and their arguments.
 
 \rSec2[concept.invocable]{Concept \cname{invocable}}
 
@@ -1261,8 +1261,8 @@ The \tcode{invoke} function call expression shall be
 equality-preserving\iref{concepts.equality} and
 shall not modify the function object or the arguments.
 \begin{note}
-This requirement supersedes the annotation in the definition of
-\libconcept{invocable}.
+This requirement supersedes the ``not required to be equality-preserving'' comment
+in the definition of \libconcept{invocable}.
 \end{note}
 
 \pnum

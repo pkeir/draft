@@ -225,17 +225,13 @@ namespace std {
   template<class charT, class traits = char_traits<charT>>
     class basic_iostream;
 
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_stringbuf;
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_istringstream;
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_ostringstream;
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_stringstream;
 
   template<class charT, class traits = char_traits<charT>>
@@ -256,11 +252,9 @@ namespace std {
   template<class charT, class traits = char_traits<charT>>
     class basic_fstream;
 
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_syncbuf;
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_osyncstream;
 
   template<class charT, class traits = char_traits<charT>>
@@ -369,17 +363,19 @@ class template specialization
 serves as a base class for class templates
 \tcode{basic_stringbuf},
 \tcode{basic_filebuf},
+\tcode{basic_syncbuf},
 and
-\tcode{basic_syncbuf}.
+\tcode{basic_spanbuf}.
 
 \pnum
 The
 class template specialization
 \tcode{basic_istream<charT, traits>}
 serves as a base class for class templates
-\tcode{basic_istringstream}
+\tcode{basic_istringstream},
+\tcode{basic_ifstream},
 and
-\tcode{basic_ifstream}.
+\tcode{basic_ispanstream}.
 
 \pnum
 The
@@ -388,17 +384,19 @@ class template specialization
 serves as a base class for class templates
 \tcode{basic_ostringstream},
 \tcode{basic_ofstream},
+\tcode{basic_osyncstream},
 and
-\tcode{basic_osyncstream}.
+\tcode{basic_ospanstream}.
 
 \pnum
 The
 class template specialization
 \tcode{basic_iostream<charT, traits>}
 serves as a base class for class templates
-\tcode{basic_stringstream}
+\tcode{basic_stringstream},
+\tcode{basic_fstream},
 and
-\tcode{basic_fstream}.
+\tcode{basic_spanstream}.
 
 \pnum
 \begin{note}
@@ -410,9 +408,8 @@ is not the same type as
 \end{note}
 
 \pnum
-Other \grammarterm{typedef-name}{s} define instances of
-class templates
-specialized for
+Other \grammarterm{typedef-name}{s} designate
+class template specializations for
 \tcode{char}
 or
 \keyword{wchar_t}
@@ -538,7 +535,7 @@ Unsynchronized concurrent use of these objects and streams by multiple threads
 can result in interleaved characters.
 \end{note}
 
-\xrefc{7.21.2}
+\xrefc{7.23.2}
 
 \rSec2[narrow.stream.objects]{Narrow stream objects}
 
@@ -1820,9 +1817,9 @@ namespace std {
   class basic_ios : public ios_base {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{iostate.flags}, flags functions
@@ -2052,7 +2049,7 @@ char narrow(char_type c, char dfault) const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{use_facet<ctype<char_type>>(getloc()).narrow(c, dfault)}
+\tcode{use_facet<ctype<char_type>>(getloc()).narrow(c, dfault)}.
 \end{itemdescr}
 
 \indexlibrarymember{widen}{basic_ios}%
@@ -2063,7 +2060,7 @@ char_type widen(char c) const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{use_facet<ctype<char_type>>(getloc()).widen(c)}
+\tcode{use_facet<ctype<char_type>>(getloc()).widen(c)}.
 \end{itemdescr}
 
 \indexlibrarymember{fill}{basic_ios}%
@@ -2316,7 +2313,7 @@ bool good() const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{rdstate() == 0}
+\tcode{rdstate() == 0}.
 \end{itemdescr}
 
 \indexlibrarymember{eof}{basic_ios}%
@@ -3005,9 +3002,9 @@ namespace std {
   class basic_streambuf {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     virtual ~basic_streambuf();
@@ -4064,7 +4061,7 @@ specified.
 That is, for each class derived from a specialization of
 \tcode{basic_streambuf}
 in this Clause\iref{stringbuf,filebuf},
-a specification of how consuming a character effects the associated output sequence is given.
+a specification of how consuming a character affects the associated output sequence is given.
 There is no requirement on a program-defined class.
 \end{footnote}
 \item
@@ -4316,9 +4313,9 @@ namespace std {
   public:
     // types (inherited from \tcode{basic_ios}\iref{ios})
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{istream.cons}, constructor/destructor
@@ -4363,6 +4360,7 @@ namespace std {
     basic_istream& getline(char_type* s, streamsize n, char_type delim);
 
     basic_istream& ignore(streamsize n = 1, int_type delim = traits::eof());
+    basic_istream& ignore(streamsize n, char_type delim);
     int_type       peek();
     basic_istream& read    (char_type* s, streamsize n);
     streamsize     readsome(char_type* s, streamsize n);
@@ -4389,17 +4387,9 @@ namespace std {
   // \ref{istream.extractors}, character extraction templates
   template<class charT, class traits>
     basic_istream<charT, traits>& operator>>(basic_istream<charT, traits>&, charT&);
-  template<class traits>
-    basic_istream<char, traits>& operator>>(basic_istream<char, traits>&, unsigned char&);
-  template<class traits>
-    basic_istream<char, traits>& operator>>(basic_istream<char, traits>&, signed char&);
 
   template<class charT, class traits, size_t N>
     basic_istream<charT, traits>& operator>>(basic_istream<charT, traits>&, charT(&)[N]);
-  template<class traits, size_t N>
-    basic_istream<char, traits>& operator>>(basic_istream<char, traits>&, unsigned char(&)[N]);
-  template<class traits, size_t N>
-    basic_istream<char, traits>& operator>>(basic_istream<char, traits>&, signed char(&)[N]);
 }
 \end{codeblock}
 
@@ -4768,7 +4758,7 @@ if (lval < numeric_limits<short>::min()) {
 } else if (numeric_limits<short>::max() < lval) {
   state |= ios_base::failbit;
   val = numeric_limits<short>::max();
-}  else
+} else
   val = static_cast<short>(lval);
 \end{codeblock}
 \end{itemdescr}
@@ -4792,7 +4782,7 @@ if (lval < numeric_limits<int>::min()) {
 } else if (numeric_limits<int>::max() < lval) {
   state |= ios_base::failbit;
   val = numeric_limits<int>::max();
-}  else
+} else
   val = static_cast<int>(lval);
 \end{codeblock}
 \end{itemdescr}
@@ -4921,10 +4911,6 @@ This extractor does not behave as a formatted input function
 \begin{itemdecl}
 template<class charT, class traits, size_t N>
   basic_istream<charT, traits>& operator>>(basic_istream<charT, traits>& in, charT (&s)[N]);
-template<class traits, size_t N>
-  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, unsigned char (&s)[N]);
-template<class traits, size_t N>
-  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, signed char (&s)[N]);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -4978,10 +4964,6 @@ before \tcode{setstate} is called.
 \begin{itemdecl}
 template<class charT, class traits>
   basic_istream<charT, traits>& operator>>(basic_istream<charT, traits>& in, charT& c);
-template<class traits>
-  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, unsigned char& c);
-template<class traits>
-  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, signed char& c);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5384,7 +5366,7 @@ basic_istream& getline(char_type* s, streamsize n);
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{getline(s, n, widen('\textbackslash n'))}
+\tcode{getline(s, n, widen('\textbackslash n'))}.
 \end{itemdescr}
 
 \indexlibrarymember{ignore}{basic_istream}%
@@ -5424,6 +5406,21 @@ The last condition will never occur if
 \pnum
 \returns
 \tcode{*this}.
+\end{itemdescr}
+
+\indexlibrarymember{ignore}{basic_istream}%
+\begin{itemdecl}
+basic_istream& ignore(streamsize n, char_type delim);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\constraints
+\tcode{is_same_v<char_type, char>} is \tcode{true}.
+
+\pnum
+\effects
+Equivalent to: \tcode{return ignore(n, traits::to_int_type(delim));}
 \end{itemdescr}
 
 \indexlibrarymember{peek}{basic_istream}%
@@ -5641,7 +5638,7 @@ and, if that function returns \tcode{-1}
 calls
 \tcode{setstate(badbit)}
 (which may throw
-\tcode{ios_base::failure}\iref{iostate.flags},
+\tcode{ios_base::failure}\iref{iostate.flags}),
 and returns
 \tcode{-1}.
 Otherwise, returns zero.
@@ -5793,9 +5790,9 @@ namespace std {
       public basic_ostream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{iostream.cons}, constructor
@@ -5924,9 +5921,9 @@ namespace std {
   public:
     // types (inherited from \tcode{basic_ios}\iref{ios})
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{ostream.cons}, constructor/destructor
@@ -5991,11 +5988,6 @@ namespace std {
     basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, char);
 
   template<class traits>
-    basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, signed char);
-  template<class traits>
-    basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, unsigned char);
-
-  template<class traits>
     basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, wchar_t) = delete;
   template<class traits>
     basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, char8_t) = delete;
@@ -6019,11 +6011,6 @@ namespace std {
     basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>&, const char*);
   template<class traits>
     basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, const char*);
-
-  template<class traits>
-    basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, const signed char*);
-  template<class traits>
-    basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>&, const unsigned char*);
 
   template<class traits>
     basic_ostream<char, traits>&
@@ -6257,7 +6244,8 @@ If
 is
 \tcode{true},
 calls
-\tcode{os.rdbuf()->pubsync()}. If that function returns $-1$, sets \tcode{badbit} in
+\tcode{os.rdbuf()->pubsync()}. If that function returns $-1$ or
+exits via an exception, sets \tcode{badbit} in
 \tcode{os.rdstate()} without propagating an exception.
 \end{itemdescr}
 
@@ -6705,11 +6693,6 @@ template<class charT, class traits>
 // specialization
 template<class traits>
   basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out, char c);
-// signed and unsigned
-template<class traits>
-  basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out, signed char c);
-template<class traits>
-  basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out, unsigned char c);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6741,11 +6724,6 @@ template<class charT, class traits>
   basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& out, const char* s);
 template<class traits>
   basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out, const char* s);
-template<class traits>
-  basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out, const signed char* s);
-template<class traits>
-  basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out,
-                                          const unsigned char* s);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6776,10 +6754,7 @@ and the second is of type
 for the overload where the first argument is of type
 \tcode{basic_ostream<charT, traits>\&}
 and the second is of type
-\tcode{const char*},
-\item
-\tcode{traits::length(reinterpret_cast<const char*>(s))}
-for the other two overloads.
+\tcode{const char*}.
 \end{itemize}
 Determines padding for \tcode{seq} as described
 in~\ref{ostream.formatted.reqmts}. Inserts \tcode{seq} into
@@ -7787,7 +7762,7 @@ template<class... Args>
 \effects
 Equivalent to:
 \begin{codeblock}
-print(stream, runtime_format(string(fmt.get()) + '\n'), std::forward<Args>(args)...);
+print(stream, dynamic_format(string(fmt.get()) + '\n'), std::forward<Args>(args)...);
 \end{codeblock}
 \end{itemdescr}
 
@@ -7865,7 +7840,7 @@ Otherwise writes \tcode{out} to \tcode{stream} unchanged.
 \end{itemize}
 Unconditionally unlocks \tcode{stream} on function exit.
 
-\xrefc{7.21.2}.
+\xrefc{7.23.2}.
 
 \begin{note}
 On Windows the native Unicode API is \tcode{WriteConsoleW} and
@@ -7913,7 +7888,7 @@ void vprint_nonunicode_buffered(FILE* stream, string_view fmt, format_args args)
 Equivalent to:
 \begin{codeblock}
 string out = vformat(fmt, args);
-vprint_nonunicode("{}", make_format_args(out));
+vprint_nonunicode(stream, "{}", make_format_args(out));
 \end{codeblock}
 \end{itemdescr}
 
@@ -7965,8 +7940,7 @@ May throw \tcode{bad_alloc}.
 \begin{codeblock}
 namespace std {
   // \ref{stringbuf}, class template \tcode{basic_stringbuf}
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_stringbuf;
 
   template<class charT, class traits, class Allocator>
@@ -7977,8 +7951,7 @@ namespace std {
   using wstringbuf = basic_stringbuf<wchar_t>;
 
   // \ref{istringstream}, class template \tcode{basic_istringstream}
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_istringstream;
 
   template<class charT, class traits, class Allocator>
@@ -7989,8 +7962,7 @@ namespace std {
   using wistringstream = basic_istringstream<wchar_t>;
 
   // \ref{ostringstream}, class template \tcode{basic_ostringstream}
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_ostringstream;
 
   template<class charT, class traits, class Allocator>
@@ -8001,8 +7973,7 @@ namespace std {
   using wostringstream = basic_ostringstream<wchar_t>;
 
   // \ref{stringstream}, class template \tcode{basic_stringstream}
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
     class basic_stringstream;
 
   template<class charT, class traits, class Allocator>
@@ -8027,14 +7998,13 @@ as described in~\ref{string.classes}.
 \indexlibraryglobal{basic_stringbuf}%
 \begin{codeblock}
 namespace std {
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
   class basic_stringbuf : public basic_streambuf<charT, traits> {
   public:
     using char_type      = charT;
-    using int_type       = typename traits::int_type;
-    using pos_type       = typename traits::pos_type;
-    using off_type       = typename traits::off_type;
+    using int_type       = traits::int_type;
+    using pos_type       = traits::pos_type;
+    using off_type       = traits::off_type;
     using traits_type    = traits;
     using allocator_type = Allocator;
 
@@ -8410,7 +8380,7 @@ are now considered uninitialized
 (except for those characters re-initialized by the new \tcode{basic_string}).
 
 \begin{itemdecl}
-void @\exposid{init-buf-ptrs}@(); // \expos
+void @\exposid{init-buf-ptrs}@();
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -8568,7 +8538,7 @@ template<class SAlloc>
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{is_same_v<SAlloc,Allocator>} is \tcode{false}.
+\tcode{is_same_v<SAlloc, Allocator>} is \tcode{false}.
 
 \pnum
 \effects
@@ -8888,14 +8858,13 @@ has no effect.
 \indexlibraryglobal{basic_istringstream}%
 \begin{codeblock}
 namespace std {
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
   class basic_istringstream : public basic_istream<charT, traits> {
   public:
     using char_type      = charT;
-    using int_type       = typename traits::int_type;
-    using pos_type       = typename traits::pos_type;
-    using off_type       = typename traits::off_type;
+    using int_type       = traits::int_type;
+    using pos_type       = traits::pos_type;
+    using off_type       = traits::off_type;
     using traits_type    = traits;
     using allocator_type = Allocator;
 
@@ -9260,14 +9229,13 @@ Equivalent to: \tcode{rdbuf()->str(t);}
 \indexlibraryglobal{basic_ostringstream}%
 \begin{codeblock}
 namespace std {
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
   class basic_ostringstream : public basic_ostream<charT, traits> {
   public:
     using char_type      = charT;
-    using int_type       = typename traits::int_type;
-    using pos_type       = typename traits::pos_type;
-    using off_type       = typename traits::off_type;
+    using int_type       = traits::int_type;
+    using pos_type       = traits::pos_type;
+    using off_type       = traits::off_type;
     using traits_type    = traits;
     using allocator_type = Allocator;
 
@@ -9324,7 +9292,7 @@ namespace std {
     template<class T>
       void str(const T& t);
 
-   private:
+  private:
     basic_stringbuf<charT, traits, Allocator> @\exposid{sb}@;   // \expos
   };
 }
@@ -9434,7 +9402,7 @@ template<class SAlloc>
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{is_same_v<SAlloc,Allocator>} is \tcode{false}.
+\tcode{is_same_v<SAlloc, Allocator>} is \tcode{false}.
 
 \pnum
 \effects
@@ -9632,14 +9600,13 @@ Equivalent to: \tcode{rdbuf()->str(t);}
 \indexlibraryglobal{basic_stringstream}%
 \begin{codeblock}
 namespace std {
-  template<class charT, class traits = char_traits<charT>,
-           class Allocator = allocator<charT>>
+  template<class charT, class traits = char_traits<charT>, class Allocator = allocator<charT>>
   class basic_stringstream : public basic_iostream<charT, traits> {
   public:
     using char_type      = charT;
-    using int_type       = typename traits::int_type;
-    using pos_type       = typename traits::pos_type;
-    using off_type       = typename traits::off_type;
+    using int_type       = traits::int_type;
+    using pos_type       = traits::pos_type;
+    using off_type       = traits::off_type;
     using traits_type    = traits;
     using allocator_type = Allocator;
 
@@ -9812,7 +9779,7 @@ template<class SAlloc>
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{is_same_v<SAlloc,Allocator>} is \tcode{false}.
+\tcode{is_same_v<SAlloc, Allocator>} is \tcode{false}.
 
 \pnum
 \effects
@@ -9989,7 +9956,7 @@ Equivalent to: \tcode{rdbuf()->str(std::move(s));}
 \indexlibrarymember{str}{basic_stringstream}%
 \begin{itemdecl}
 template<class T>
-  void str(const T&);
+  void str(const T& t);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -10088,9 +10055,9 @@ namespace std {
     : public basic_streambuf<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{spanbuf.cons}, constructors
@@ -10415,9 +10382,9 @@ namespace std {
     : public basic_istream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{ispanstream.cons}, constructors
@@ -10603,9 +10570,9 @@ namespace std {
     : public basic_ostream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{ospanstream.cons}, constructors
@@ -10742,9 +10709,9 @@ namespace std {
     : public basic_iostream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     // \ref{spanstream.cons}, constructors
@@ -10986,9 +10953,9 @@ namespace std {
   class basic_filebuf : public basic_streambuf<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
     using native_handle_type = @\impdefx{type of \tcode{native_handle_type}}@;   // see \ref{file.native}
 
@@ -11428,10 +11395,10 @@ into an internal buffer (\tcode{extern_buf})
 and then as if by doing:
 
 \begin{codeblock}
-char   extern_buf[XSIZE];
-char*  extern_end;
-charT  intern_buf[ISIZE];
-charT* intern_end;
+char         extern_buf[XSIZE];
+const char*  extern_end;
+charT        intern_buf[ISIZE];
+charT*       intern_end;
 codecvt_base::result r =
   a_codecvt.in(state, extern_buf, extern_buf+XSIZE, extern_end,
                intern_buf, intern_buf+ISIZE, intern_end);
@@ -11559,11 +11526,11 @@ Behaves according to the description of
 except that the behavior of ``consuming characters'' is performed by first
 converting as if by:
 \begin{codeblock}
-charT* b = pbase();
-charT* p = pptr();
-charT* end;
-char   xbuf[XSIZE];
-char*  xbuf_end;
+charT*       b = pbase();
+charT*       p = pptr();
+const charT* end;
+char         xbuf[XSIZE];
+char*        xbuf_end;
 codecvt_base::result r =
   a_codecvt.out(state, b, p, end, xbuf, xbuf+XSIZE, xbuf_end);
 \end{codeblock}
@@ -11785,11 +11752,11 @@ namespace std {
   class basic_ifstream : public basic_istream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
-    using native_handle_type = typename basic_filebuf<charT, traits>::native_handle_type;
+    using native_handle_type = basic_filebuf<charT, traits>::native_handle_type;
 
     // \ref{ifstream.cons}, constructors
     basic_ifstream();
@@ -12044,11 +12011,11 @@ namespace std {
   class basic_ofstream : public basic_ostream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
-    using native_handle_type = typename basic_filebuf<charT, traits>::native_handle_type;
+    using native_handle_type = basic_filebuf<charT, traits>::native_handle_type;
 
     // \ref{ofstream.cons}, constructors
     basic_ofstream();
@@ -12301,11 +12268,11 @@ namespace std {
   class basic_fstream : public basic_iostream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
-    using native_handle_type = typename basic_filebuf<charT, traits>::native_handle_type;
+    using native_handle_type = basic_filebuf<charT, traits>::native_handle_type;
 
     // \ref{fstream.cons}, constructors
     basic_fstream();
@@ -12618,9 +12585,9 @@ namespace std {
   class basic_syncbuf : public basic_streambuf<charT, traits> {
   public:
     using char_type      = charT;
-    using int_type       = typename traits::int_type;
-    using pos_type       = typename traits::pos_type;
-    using off_type       = typename traits::off_type;
+    using int_type       = traits::int_type;
+    using pos_type       = traits::pos_type;
+    using off_type       = traits::off_type;
     using traits_type    = traits;
     using allocator_type = Allocator;
 
@@ -12931,9 +12898,9 @@ namespace std {
   class basic_osyncstream : public basic_ostream<charT, traits> {
   public:
     using char_type   = charT;
-    using int_type    = typename traits::int_type;
-    using pos_type    = typename traits::pos_type;
-    using off_type    = typename traits::off_type;
+    using int_type    = traits::int_type;
+    using pos_type    = traits::pos_type;
+    using off_type    = traits::off_type;
     using traits_type = traits;
 
     using allocator_type = Allocator;
@@ -13576,7 +13543,10 @@ system or for a particular file system.
 
 \pnum
 \begin{note}
-Class \tcode{path} is used to support the differences between the string types used by different operating systems to represent pathnames, and to perform conversions between encodings when necessary.
+Class \tcode{path} is used to support the differences
+between the string types used by different operating systems
+to represent pathnames,
+and to perform conversions between encodings when necessary.
 \end{note}
 
 \pnum
@@ -13707,7 +13677,8 @@ namespace std::filesystem {
              class Allocator = allocator<EcharT>>
       basic_string<EcharT, traits, Allocator>
         string(const Allocator& a = Allocator()) const;
-    std::string    string() const;
+    std::string    display_string() const;
+    std::string    native_encoded_string() const;
     std::wstring   wstring() const;
     std::u8string  u8string() const;
     std::u16string u16string() const;
@@ -13718,7 +13689,8 @@ namespace std::filesystem {
              class Allocator = allocator<EcharT>>
       basic_string<EcharT, traits, Allocator>
         generic_string(const Allocator& a = Allocator()) const;
-    std::string    generic_string() const;
+    std::string    generic_display_string() const;
+    std::string    generic_native_encoded_string() const;
     std::wstring   generic_wstring() const;
     std::u8string  generic_u8string() const;
     std::u16string generic_u16string() const;
@@ -13778,7 +13750,7 @@ namespace std::filesystem {
 
 \indexlibrarymember{value_type}{path}%
 \pnum
-\tcode{value_type} is a \keyword{typedef} for the
+\tcode{value_type} is a \grammarterm{typedef-name} for the
 operating system dependent encoded character type used to represent pathnames.
 
 \indexlibrarymember{preferred_separator}{path}%
@@ -14040,7 +14012,8 @@ For POSIX-based operating systems \tcode{path::value_type} is \tcode{char}
 so no conversion from \tcode{char} value type arguments or to \tcode{char}
 value type return values is performed.
 For Windows-based operating systems, the
-native ordinary encoding is determined by calling a Windows API function.
+native ordinary encoding is determined by
+the current locale encoding and the Windows \tcode{AreFileApisANSI} function.
 \end{note}
 \begin{note}
 This results in behavior identical to other C and \Cpp{}
@@ -14671,10 +14644,8 @@ operator string_type() const;
 
 \indexlibrarymember{string}{path}%
 \begin{itemdecl}
-template<class EcharT, class traits = char_traits<EcharT>,
-         class Allocator = allocator<EcharT>>
-  basic_string<EcharT, traits, Allocator>
-    string(const Allocator& a = Allocator()) const;
+template<class EcharT, class traits = char_traits<EcharT>, class Allocator = allocator<EcharT>>
+  basic_string<EcharT, traits, Allocator> string(const Allocator& a = Allocator()) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -14689,13 +14660,13 @@ be performed by \tcode{a}. Conversion, if any, is specified by
 \ref{fs.path.cvt}.
 \end{itemdescr}
 
-\indexlibrarymember{string}{path}%
+\indexlibrarymember{native_encoded_string}{path}%
 \indexlibrarymember{wstring}{path}%
 \indexlibrarymember{u8string}{path}%
 \indexlibrarymember{u16string}{path}%
 \indexlibrarymember{u32string}{path}%
 \begin{itemdecl}
-std::string string() const;
+std::string native_encoded_string() const;
 std::wstring wstring() const;
 std::u8string u8string() const;
 std::u16string u16string() const;
@@ -14713,6 +14684,20 @@ Conversion, if any, is performed as specified
 by \ref{fs.path.cvt}.
 \end{itemdescr}
 
+\indexlibrarymember{display_string}{path}%
+\begin{itemdecl}
+std::string display_string() const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{std::format("\{\}", *this)}.
+\begin{note}
+The returned string is suitable for use with formatting\iref{format.functions}
+and print functions\iref{print.fun}.
+\end{note}
+\end{itemdescr}
 
 \rSec4[fs.path.generic.obs]{Generic format observers}
 
@@ -14734,10 +14719,8 @@ returns \tcode{"foo/bar"}.
 
 \indexlibrarymember{generic_string}{path}%
 \begin{itemdecl}
-template<class EcharT, class traits = char_traits<EcharT>,
-         class Allocator = allocator<EcharT>>
-  basic_string<EcharT, traits, Allocator>
-    generic_string(const Allocator& a = Allocator()) const;
+template<class EcharT, class traits = char_traits<EcharT>, class Allocator = allocator<EcharT>>
+  basic_string<EcharT, traits, Allocator> generic_string(const Allocator& a = Allocator()) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -14752,13 +14735,13 @@ be performed by \tcode{a}. Conversion, if any, is specified by
 \ref{fs.path.cvt}.
 \end{itemdescr}
 
-\indexlibrarymember{generic_string}{path}%
+\indexlibrarymember{generic_native_encoded_string}{path}%
 \indexlibrarymember{generic_wstring}{path}%
 \indexlibrarymember{generic_u8string}{path}%
 \indexlibrarymember{generic_u16string}{path}%
 \indexlibrarymember{generic_u32string}{path}%
 \begin{itemdecl}
-std::string generic_string() const;
+std::string generic_native_encoded_string() const;
 std::wstring generic_wstring() const;
 std::u8string generic_u8string() const;
 std::u16string generic_u16string() const;
@@ -14773,6 +14756,21 @@ The pathname in the generic format.
 \pnum
 \remarks
 Conversion, if any, is specified by~\ref{fs.path.cvt}.
+\end{itemdescr}
+
+\indexlibrarymember{generic_display_string}{path}%
+\begin{itemdecl}
+std::string generic_display_string() const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{std::format("\{:g\}", *this)}.
+\begin{note}
+The returned string is suitable for use with formatting\iref{format.functions}
+and print functions\iref{print.fun}.
+\end{note}
 \end{itemdescr}
 
 \rSec4[fs.path.compare]{Compare}
@@ -17254,7 +17252,7 @@ Equivalent to
 \begin{itemdecl}
 void filesystem::copy(const path& from, const path& to, copy_options options);
 void filesystem::copy(const path& from, const path& to, copy_options options,
-          error_code& ec);
+                      error_code& ec);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -17432,7 +17430,7 @@ As specified in~\ref{fs.err.report}.
 \begin{itemdecl}
 bool filesystem::copy_file(const path& from, const path& to, copy_options options);
 bool filesystem::copy_file(const path& from, const path& to, copy_options options,
-               error_code& ec);
+                           error_code& ec);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -17495,7 +17493,7 @@ At most one direct or indirect invocation of \tcode{status(to)}.
 \begin{itemdecl}
 void filesystem::copy_symlink(const path& existing_symlink, const path& new_symlink);
 void filesystem::copy_symlink(const path& existing_symlink, const path& new_symlink,
-                  error_code& ec) noexcept;
+                              error_code& ec) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -17611,7 +17609,7 @@ As specified in~\ref{fs.err.report}.
 \begin{itemdecl}
 void filesystem::create_directory_symlink(const path& to, const path& new_symlink);
 void filesystem::create_directory_symlink(const path& to, const path& new_symlink,
-                              error_code& ec) noexcept;
+                                          error_code& ec) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -17652,7 +17650,7 @@ Some operating systems do not support symbolic links at all or support
 \begin{itemdecl}
 void filesystem::create_hard_link(const path& to, const path& new_hard_link);
 void filesystem::create_hard_link(const path& to, const path& new_hard_link,
-                                      error_code& ec) noexcept;
+                                  error_code& ec) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -17687,7 +17685,7 @@ Some operating systems do not support hard links at all or support
 \begin{itemdecl}
 void filesystem::create_symlink(const path& to, const path& new_symlink);
 void filesystem::create_symlink(const path& to, const path& new_symlink,
-                    error_code& ec) noexcept;
+                                error_code& ec) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -18243,7 +18241,7 @@ As specified in~\ref{fs.err.report}.
 \begin{itemdecl}
 void filesystem::last_write_time(const path& p, file_time_type new_time);
 void filesystem::last_write_time(const path& p, file_time_type new_time,
-                     error_code& ec) noexcept;
+                                 error_code& ec) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -18874,6 +18872,8 @@ As specified in~\ref{fs.err.report}.
 \indexlibraryglobal{ferror}%
 \indexlibraryglobal{perror}%
 \begin{codeblock}
+#define __STDC_VERSION_STDIO_H__ 202311L
+
 namespace std {
   using size_t = @\textit{see \ref{support.types.layout}}@;
   using FILE = @\seebelow@;
@@ -18888,6 +18888,7 @@ namespace std {
 #define @\libmacro{EOF}@ @\seebelow@
 #define @\libmacro{FOPEN_MAX}@ @\seebelow@
 #define @\libmacro{FILENAME_MAX}@ @\seebelow@
+#define @\libmacro{_PRINTF_NAN_LEN_MAX}@ @\seebelow@
 #define @\libmacro{L_tmpnam}@ @\seebelow@
 #define @\libmacro{SEEK_CUR}@ @\seebelow@
 #define @\libmacro{SEEK_END}@ @\seebelow@
@@ -18954,15 +18955,24 @@ are the same as the C standard library header \libheader{stdio.h}.
 The return from each function call
 that delivers data
 to the host environment
-to be written to a file (\xrefc{7.21.3})
+to be written to a file (\xrefc{7.23.3})
 is an observable checkpoint\iref{intro.abstract}.
+
+\pnum
+When the input item for the \tcode{\%p} conversion
+of the \tcode{fscanf} function (or equivalent)
+is one that can be produced
+from more than one pointer value\iref{basic.compound},
+the pointer that results is an unspecified choice among all those values
+that would result in the program having defined behavior.
+If no such value exists, the behavior is undefined.
 
 \pnum
 Calls to the function \tcode{tmpnam} with an argument that is a null pointer value may
 introduce a data race\iref{res.on.data.races} with other calls to \tcode{tmpnam} with
 an argument that is a null pointer value.
 
-\xrefc{7.21}
+\xrefc{7.23}
 
 \rSec2[cinttypes.syn]{Header \tcode{<cinttypes>} synopsis}
 
@@ -18982,33 +18992,42 @@ an argument that is a null pointer value.
 \indexlibraryglobal{PRIuN}%
 \indexlibraryglobal{PRIxN}%
 \indexlibraryglobal{PRIXN}%
+\indexlibraryglobal{PRIbN}%
+\indexlibraryglobal{PRIBN}%
 \indexlibraryglobal{SCNdN}%
 \indexlibraryglobal{SCNiN}%
 \indexlibraryglobal{SCNoN}%
 \indexlibraryglobal{SCNuN}%
 \indexlibraryglobal{SCNxN}%
+\indexlibraryglobal{SCNbN}%
 \indexlibraryglobal{PRIdLEASTN}%
 \indexlibraryglobal{PRIiLEASTN}%
 \indexlibraryglobal{PRIoLEASTN}%
 \indexlibraryglobal{PRIuLEASTN}%
 \indexlibraryglobal{PRIxLEASTN}%
 \indexlibraryglobal{PRIXLEASTN}%
+\indexlibraryglobal{PRIbLEASTN}%
+\indexlibraryglobal{PRIBLEASTN}%
 \indexlibraryglobal{SCNdLEASTN}%
 \indexlibraryglobal{SCNiLEASTN}%
 \indexlibraryglobal{SCNoLEASTN}%
 \indexlibraryglobal{SCNuLEASTN}%
 \indexlibraryglobal{SCNxLEASTN}%
+\indexlibraryglobal{SCNbLEASTN}%
 \indexlibraryglobal{PRIdFASTN}%
 \indexlibraryglobal{PRIiFASTN}%
 \indexlibraryglobal{PRIoFASTN}%
 \indexlibraryglobal{PRIuFASTN}%
 \indexlibraryglobal{PRIxFASTN}%
 \indexlibraryglobal{PRIXFASTN}%
+\indexlibraryglobal{PRIbFASTN}%
+\indexlibraryglobal{PRIBFASTN}%
 \indexlibraryglobal{SCNdFASTN}%
 \indexlibraryglobal{SCNiFASTN}%
 \indexlibraryglobal{SCNoFASTN}%
 \indexlibraryglobal{SCNuFASTN}%
 \indexlibraryglobal{SCNxFASTN}%
+\indexlibraryglobal{SCNbFASTN}%
 \begin{codeblock}
 #include <cstdint>  // see \ref{cstdint.syn}
 
@@ -19026,61 +19045,78 @@ namespace std {
   constexpr imaxdiv_t div(intmax_t, intmax_t);  // optional, see below
 }
 
+#define __STDC_VERSION_INTTYPES_H__ 202311L
+
 #define PRId@\placeholdernc{N}@ @\seebelow@
 #define PRIi@\placeholdernc{N}@ @\seebelow@
 #define PRIo@\placeholdernc{N}@ @\seebelow@
 #define PRIu@\placeholdernc{N}@ @\seebelow@
 #define PRIx@\placeholdernc{N}@ @\seebelow@
 #define PRIX@\placeholdernc{N}@ @\seebelow@
+#define PRIb@\placeholdernc{N}@ @\seebelow@
+#define PRIB@\placeholdernc{N}@ @\seebelow@
 #define SCNd@\placeholdernc{N}@ @\seebelow@
 #define SCNi@\placeholdernc{N}@ @\seebelow@
 #define SCNo@\placeholdernc{N}@ @\seebelow@
 #define SCNu@\placeholdernc{N}@ @\seebelow@
 #define SCNx@\placeholdernc{N}@ @\seebelow@
+#define SCNb@\placeholdernc{N}@ @\seebelow@
 #define PRIdLEAST@\placeholdernc{N}@ @\seebelow@
 #define PRIiLEAST@\placeholdernc{N}@ @\seebelow@
 #define PRIoLEAST@\placeholdernc{N}@ @\seebelow@
 #define PRIuLEAST@\placeholdernc{N}@ @\seebelow@
 #define PRIxLEAST@\placeholdernc{N}@ @\seebelow@
 #define PRIXLEAST@\placeholdernc{N}@ @\seebelow@
+#define PRIbLEAST@\placeholdernc{N}@ @\seebelow@
+#define PRIBLEAST@\placeholdernc{N}@ @\seebelow@
 #define SCNdLEAST@\placeholdernc{N}@ @\seebelow@
 #define SCNiLEAST@\placeholdernc{N}@ @\seebelow@
 #define SCNoLEAST@\placeholdernc{N}@ @\seebelow@
 #define SCNuLEAST@\placeholdernc{N}@ @\seebelow@
 #define SCNxLEAST@\placeholdernc{N}@ @\seebelow@
+#define SCNbLEAST@\placeholdernc{N}@ @\seebelow@
 #define PRIdFAST@\placeholdernc{N}@ @\seebelow@
 #define PRIiFAST@\placeholdernc{N}@ @\seebelow@
 #define PRIoFAST@\placeholdernc{N}@ @\seebelow@
 #define PRIuFAST@\placeholdernc{N}@ @\seebelow@
 #define PRIxFAST@\placeholdernc{N}@ @\seebelow@
 #define PRIXFAST@\placeholdernc{N}@ @\seebelow@
+#define PRIbFAST@\placeholdernc{N}@ @\seebelow@
+#define PRIBFAST@\placeholdernc{N}@ @\seebelow@
 #define SCNdFAST@\placeholdernc{N}@ @\seebelow@
 #define SCNiFAST@\placeholdernc{N}@ @\seebelow@
 #define SCNoFAST@\placeholdernc{N}@ @\seebelow@
 #define SCNuFAST@\placeholdernc{N}@ @\seebelow@
 #define SCNxFAST@\placeholdernc{N}@ @\seebelow@
+#define SCNbFAST@\placeholdernc{N}@ @\seebelow@
 #define @\libmacro{PRIdMAX}@ @\seebelow@
 #define @\libmacro{PRIiMAX}@ @\seebelow@
 #define @\libmacro{PRIoMAX}@ @\seebelow@
 #define @\libmacro{PRIuMAX}@ @\seebelow@
 #define @\libmacro{PRIxMAX}@ @\seebelow@
 #define @\libmacro{PRIXMAX}@ @\seebelow@
+#define @\libmacro{PRIbMAX}@ @\seebelow@
+#define @\libmacro{PRIBMAX}@ @\seebelow@
 #define @\libmacro{SCNdMAX}@ @\seebelow@
 #define @\libmacro{SCNiMAX}@ @\seebelow@
 #define @\libmacro{SCNoMAX}@ @\seebelow@
 #define @\libmacro{SCNuMAX}@ @\seebelow@
 #define @\libmacro{SCNxMAX}@ @\seebelow@
+#define @\libmacro{SCNbMAX}@ @\seebelow@
 #define @\libmacro{PRIdPTR}@ @\seebelow@
 #define @\libmacro{PRIiPTR}@ @\seebelow@
 #define @\libmacro{PRIoPTR}@ @\seebelow@
 #define @\libmacro{PRIuPTR}@ @\seebelow@
 #define @\libmacro{PRIxPTR}@ @\seebelow@
 #define @\libmacro{PRIXPTR}@ @\seebelow@
+#define @\libmacro{PRIbPTR}@ @\seebelow@
+#define @\libmacro{PRIBPTR}@ @\seebelow@
 #define @\libmacro{SCNdPTR}@ @\seebelow@
 #define @\libmacro{SCNiPTR}@ @\seebelow@
 #define @\libmacro{SCNoPTR}@ @\seebelow@
 #define @\libmacro{SCNuPTR}@ @\seebelow@
 #define @\libmacro{SCNxPTR}@ @\seebelow@
+#define @\libmacro{SCNbPTR}@ @\seebelow@
 \end{codeblock}
 
 \pnum
@@ -19091,10 +19127,6 @@ with the following changes:
 \item
 The header \libheader{cinttypes} includes the header \libheaderref{cstdint} instead
 of \libheader{stdint.h}, and
-\item
-\tcode{intmax_t} and \tcode{uintmax_t} are not required
-to be able to represent all values of extended integer types
-wider than \tcode{long long} and \tcode{unsigned long long}, respectively, and
 \item
 if and only if the type \tcode{intmax_t} designates an extended integer
 type\iref{basic.fundamental}, the following function signatures are added:
@@ -19117,3 +19149,6 @@ Each of the \tcode{SCN} macros listed in this subclause
 is defined if and only if the implementation
 defines the corresponding \grammarterm{typedef-name} in~\ref{cstdint.syn} and
 has a suitable \tcode{fscanf} length modifier for the type.
+Each of the \tcode{PRIB} macros listed in this subclause
+is defined if and only if \tcode{fprintf} supports
+the \tcode{B} conversion specifier.

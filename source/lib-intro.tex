@@ -369,6 +369,11 @@ and also define the function as deleted.
 \end{example}
 
 \item
+\constantwhen
+the conditions that are required for a call to the function
+to be a constant subexpression\iref{defns.const.subexpr}.
+
+\item
 \expects
 conditions that the function assumes to hold whenever it is called;
 violation of any preconditions results in undefined behavior.
@@ -385,12 +390,9 @@ conditions that the function assumes to hold whenever it is called.
 \item
 When invoking the function in a hardened implementation,
 prior to any other observable side effects of the function,
-one or more contract assertions
+contract assertions
 whose predicates are as described in the hardened precondition
-are evaluated with a checking semantic\iref{basic.contract.eval}.
-If any of these assertions is evaluated with a non-terminating semantic
-and the contract-violation handler returns,
-the program has undefined behavior.
+are evaluated with a terminating semantic\iref{basic.contract.eval}.
 \item
 When invoking the function in a non-hardened implementation,
 if any hardened precondition is violated,
@@ -454,6 +456,7 @@ then those requirements are logically imposed prior to the \term{equivalent-to} 
 Next, the semantics of the code sequence are determined by the
 \Fundescx{Constraints},
 \Fundescx{Mandates},
+\Fundescx{Constant When},
 \Fundescx{Preconditions},
 \Fundescx{Hardened preconditions},
 \Fundescx{Effects},
@@ -524,25 +527,25 @@ and member functions\iref{functions.within.classes}.
 \rSec3[expos.only.entity]{Exposition-only entities, etc.}
 
 \pnum
-Several entities and \grammarterm{typedef-name}{s}
-defined in \ref{\firstlibchapter} through \ref{\lastlibchapter} and \ref{depr}
-are only defined for the purpose of exposition.
-The declaration of such an entity or \grammarterm{typedef-name}
+Several entities
+declared in \ref{\firstlibchapter} through \ref{\lastlibchapter} and \ref{depr}
+are provided for exposition only.
+The declaration of such an entity
 is followed by a comment ending in \expos.
 
 \pnum
-The following are defined for exposition only
+The following are provided for exposition only
 to aid in the specification of the library:
-\indexlibrary{decay-copy@\tcode{\placeholder{decay-copy}}}%
+\indexlibrary{decay-copy@\exposid{decay-copy}}%
 \begin{codeblock}
 namespace std {
   template<class T>
     requires @\libconcept{convertible_to}@<T, decay_t<T>>
-      constexpr decay_t<T> @\placeholdernc{decay-copy}@(T&& v)       // \expos
+      constexpr decay_t<T> @\exposidnc{decay-copy}@(T&& v)          // \expos
         noexcept(is_nothrow_convertible_v<T, decay_t<T>>)
       { return std::forward<T>(v); }
 
-  constexpr auto @\placeholdernc{synth-three-way}@ =                 // \expos
+  constexpr auto @\exposidnc{synth-three-way}@ =                    // \expos
     []<class T, class U>(const T& t, const U& u)
       requires requires {
         { t < u } -> @\exposconcept{boolean-testable}@;
@@ -558,9 +561,16 @@ namespace std {
       }
     };
 
-  template<class T, class U=T>
-  using @\placeholdernc{synth-three-way-result}@ =                  // \expos
-    decltype(@\placeholdernc{synth-three-way}@(declval<T&>(), declval<U&>()));
+  template<class T, class U = T>
+  using @\exposidnc{synth-three-way-result}@ =                      // \expos
+    decltype(@\exposidnc{synth-three-way}@(declval<T&>(), declval<U&>()));
+
+  template<class T>
+    concept @\defexposconceptnc{constexpr-wrapper-like}@ =                  // \expos
+      @\libconcept{convertible_to}@<T, decltype(T::value)> &&
+      @\libconcept{equality_comparable_with}@<T, decltype(T::value)> &&
+      bool_constant<T() == T::value>::value &&
+      bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
 }
 \end{codeblock}
 
@@ -595,14 +605,14 @@ may be supplied as arguments by a \Cpp{} program when instantiating template com
 the library.
 
 \pnum
-Certain types defined in \ref{input.output} are used to describe implementation-defined types.
+Certain types shown in \ref{input.output} are used to describe implementation-defined types.
 \indextext{types!implementation-defined}%
 They are based on other types, but with added constraints.
 
 \rSec4[enumerated.types]{Enumerated types}
 
 \pnum
-Several types defined in \ref{input.output} are
+Several types specified in \ref{input.output} and \ref{re} are
 \defnadjx{enumerated}{types}{type}.
 Each enumerated type may be implemented as an enumeration or as a synonym for
 an enumeration.
@@ -635,7 +645,7 @@ All such elements have distinct values.
 \rSec4[bitmask.types]{Bitmask types}
 
 \pnum
-Several types defined in \ref{\firstlibchapter} through \ref{\lastlibchapter}
+Several types specified in \ref{\firstlibchapter} through \ref{\lastlibchapter}
 and \ref{depr} are
 \defnx{bitmask types}{type!bitmask}.
 Each bitmask type can be implemented as an
@@ -783,6 +793,11 @@ array have defined contents up to and including an element determined by some
 predicate.
 A character sequence can be designated by a pointer value
 \tcode{\placeholder{S}} that points to its first element.
+\item
+\indextext{STATICALLY-WIDEN@\exposid{STATICALLY-WIDEN}}%
+Let \exposid{STATICALLY-WIDEN}\tcode{<charT>("...")} be
+\tcode{"..."} if \tcode{charT} is \tcode{char} and
+\tcode{L"..."} if \tcode{charT} is \keyword{wchar_t}.
 \end{itemize}
 
 \rSec5[byte.strings]{Byte strings}
@@ -854,13 +869,18 @@ is an \ntmbs{} with static storage duration.
 \rSec4[customization.point.object]{Customization Point Object types}
 
 \pnum
-A \term{customization point object} is a function object\iref{function.objects}
+A \defnadj{customization point}{object} is a function object\iref{function.objects}
 with a literal class type that interacts with program-defined types while
 enforcing semantic requirements on that interaction.
 
 \pnum
 The type of a customization point object, ignoring cv-qualifiers, shall model
-\libconcept{semiregular}\iref{concepts.object}.
+\libconcept{semiregular}\iref{concepts.object}
+and shall be
+a structural type\iref{temp.param} and
+a trivially copyable type\iref{class.prop}.
+Every constructor of this type
+shall have a non-throwing exception specification\iref{except.spec}.
 
 \pnum
 All instances of a specific customization point object type shall
@@ -972,7 +992,7 @@ An implementation may use any technique that provides equivalent observable beha
 \pnum
 \indextext{item!freestanding|see{freestanding item}}%
 A \defn{freestanding item} is
-a declaration, entity, \grammarterm{typedef-name}, or macro
+a declaration, entity, or macro
 that is required to be present in
 a freestanding implementation and a hosted implementation.
 
@@ -1028,8 +1048,7 @@ namespace std {
 \pnum
 \indextext{entity!freestanding item}%
 \indextext{deduction guide!freestanding item}%
-\indextext{\idxgram{typedef-name}!freestanding item}%
-An entity, deduction guide, or \grammarterm{typedef-name}
+An entity or deduction guide
 is a freestanding item if its introducing declaration is not followed by
 a comment that includes \textit{hosted}, and is:
 \begin{itemize}
@@ -1039,7 +1058,7 @@ a comment that includes \textit{hosted}, and is:
 \item a deduction guide of a freestanding item,
 \item an enclosing namespace of a freestanding item,
 \item a friend of a freestanding item,
-\item denoted by a \grammarterm{typedef-name} that is a freestanding item, or
+\item denoted by a type alias that is a freestanding item, or
 \item denoted by an alias template that is a freestanding item.
 \end{itemize}
 
@@ -1223,8 +1242,8 @@ shown in \tref{headers.cpp}.
 \tcode{<flat_map>} \\
 \tcode{<flat_set>} \\
 \tcode{<format>} \\
-\tcode{<forward_list>} \\
 \columnbreak
+\tcode{<forward_list>} \\
 \tcode{<fstream>} \\
 \tcode{<functional>} \\
 \tcode{<future>} \\
@@ -1248,8 +1267,9 @@ shown in \tref{headers.cpp}.
 \tcode{<mdspan>} \\
 \tcode{<memory>} \\
 \tcode{<memory_resource>} \\
-\tcode{<mutex>} \\
 \columnbreak
+\tcode{<meta>} \\
+\tcode{<mutex>} \\
 \tcode{<new>} \\
 \tcode{<numbers>} \\
 \tcode{<numeric>} \\
@@ -1271,9 +1291,9 @@ shown in \tref{headers.cpp}.
 \tcode{<span>} \\
 \tcode{<spanstream>} \\
 \tcode{<sstream>} \\
+\columnbreak
 \tcode{<stack>} \\
 \tcode{<stacktrace>} \\
-\columnbreak
 \tcode{<stdexcept>} \\
 \tcode{<stdfloat>} \\
 \tcode{<stop_token>} \\
@@ -1604,9 +1624,9 @@ include at least the headers shown in \tref{headers.cpp.fs}.
 \ref{support.rtti}       & Type identification       & \tcode{<typeinfo>}         \\ \rowsep
 \ref{support.srcloc}     & Source location           & \tcode{<source_location>}  \\ \rowsep
 \ref{support.exception}  & Exception handling        & \tcode{<exception>}        \\ \rowsep
+\ref{support.contract}   & Contract-violation handling & \tcode{<contracts>}      \\ \rowsep
 \ref{support.initlist}   & Initializer lists         & \tcode{<initializer_list>} \\ \rowsep
 \ref{cmp}                & Comparisons               & \tcode{<compare>}          \\ \rowsep
-\ref{support.contract}   & Contract-violation handling & \tcode{<contracts>}      \\ \rowsep
 \ref{support.coroutine}  & Coroutines support        & \tcode{<coroutine>}        \\ \rowsep
 \ref{support.runtime}    & Other runtime support     & \tcode{<cstdarg>}          \\ \rowsep
 \ref{concepts}           & Concepts library          & \tcode{<concepts>}         \\ \rowsep
@@ -1623,6 +1643,7 @@ include at least the headers shown in \tref{headers.cpp.fs}.
 \ref{expected}           & Expected objects          & \tcode{<expected>}         \\ \rowsep
 \ref{function.objects}   & Function objects          & \tcode{<functional>}       \\ \rowsep
 \ref{bit}                & Bit manipulation          & \tcode{<bit>}              \\ \rowsep
+\ref{stdbit.h.syn}       & C-compatible bit manipulation & \tcode{<stdbit.h>}     \\ \rowsep
 \ref{array}              & Class template \tcode{array} & \tcode{<array>}         \\ \rowsep
 \ref{inplace.vector}     & Class template \tcode{inplace_vector} & \tcode{<inplace_vector>} \\ \rowsep
 \ref{views.contiguous}   & Contiguous access         & \tcode{<span>}             \\ \rowsep
@@ -1630,7 +1651,7 @@ include at least the headers shown in \tref{headers.cpp.fs}.
 \ref{iterators}          & Iterators library         & \tcode{<iterator>}         \\ \rowsep
 \ref{ranges}             & Ranges library            & \tcode{<ranges>}           \\ \rowsep
 \ref{algorithms}         & Algorithms library        & \tcode{<algorithm>}, \tcode{<numeric>} \\ \rowsep
-\ref{execpol}            & Execution policies        & \tcode{<execpol>}          \\ \rowsep
+\ref{execpol}            & Execution policies        & \tcode{<execution>}        \\ \rowsep
 \ref{string.view}        & String view classes       & \tcode{<string_view>}      \\ \rowsep
 \ref{string.classes}     & String classes            & \tcode{<string>}           \\ \rowsep
 \ref{c.strings}          & Null-terminated sequence utilities & \tcode{<cstring>}, \tcode{<cwchar>} \\ \rowsep
@@ -1654,7 +1675,7 @@ A freestanding implementation provides
 a (possibly empty) implementation-defined subset of
 the hosted library facilities.
 Unless otherwise specified, the requirements on
-each declaration, entity, \grammarterm{typedef-name}, and macro
+each declaration, entity, and macro
 provided in this way are the same as
 the corresponding requirements for a hosted implementation,
 except that not all of the members of the namespaces are required to be present.
@@ -1803,12 +1824,6 @@ supplied by a \Cpp{} program instantiating a template,
 rvalue of type \tcode{const T}.
 \end{itemize}
 
-\pnum
-In general, a default constructor is not required. Certain container class
-member function signatures specify \tcode{T()} as a default argument.
-\tcode{T()} shall be a well-defined expression\iref{dcl.init} if one of those
-signatures is called using the default argument\iref{dcl.fct.default}.
-
 \begin{oldconcepttable}{EqualityComparable}{}{cpp17.equalitycomparable}
 {x{1in}x{1in}p{3in}}
 \topline
@@ -1836,7 +1851,6 @@ If \tcode{a == b} and \tcode{b == c}, then \tcode{a == c}.
 \tcode{<} is a strict weak ordering relation\iref{alg.sorting}    \\
 \end{oldconcepttable}
 
-\enlargethispage{-3\baselineskip}
 \begin{oldconcepttable}{DefaultConstructible}{}{cpp17.defaultconstructible}
 {x{2.15in}p{3in}}
 \topline
@@ -1902,7 +1916,7 @@ If \tcode{a == b} and \tcode{b == c}, then \tcode{a == c}.
 {p{1in}p{4.15in}}
 \topline
 \hdstyle{Expression}      &   \hdstyle{Post-condition}  \\ \capsep
-\tcode{u.\~T()} &   All resources owned by \tcode{u} are reclaimed, no exception is propagated. \\ \rowsep
+\tcode{a.\~T()} & No exception is propagated. \\ \rowsep
 \multicolumn{2}{|l|}{
   \begin{tailnote}
   Array types and non-object types are not \oldconcept{Destructible}.
@@ -2333,12 +2347,12 @@ For all \tcode{U} (including \tcode{T}),
 
 \pnum
 \remarks
-If \tcode{Allocator} is a class template instantiation of the form
+If \tcode{Allocator} is a class template specialization of the form
 \tcode{SomeAllocator<T, Args>}, where \tcode{Args} is zero or more type
 arguments, and \tcode{Allocator} does not supply a \tcode{rebind} member
 template, the standard \tcode{allocator_traits} template uses
 \tcode{SomeAllocator<U, Args>} in place of \tcode{Allocator::re\-bind<U>::other}
-by default. For allocator types that are not template instantiations of the
+by default. For allocator types that are not template specializations of the
 above form, no default is provided.
 
 \pnum
@@ -2950,14 +2964,16 @@ struct SimpleAllocator {
 The following exposition-only concept defines
 the minimal requirements on an Allocator type.
 \begin{codeblock}
-template<class Alloc>
-concept @\defexposconcept{simple-allocator}@ =
-  requires(Alloc alloc, size_t n) {
-    { *alloc.allocate(n) } -> @\libconcept{same_as}@<typename Alloc::value_type&>;
-    { alloc.deallocate(alloc.allocate(n), n) };
-  } &&
-  @\libconcept{copy_constructible}@<Alloc> &&
-  @\libconcept{equality_comparable}@<Alloc>;
+namespace std {
+  template<class Alloc>
+  concept @\defexposconcept{simple-allocator}@ =
+    requires(Alloc alloc, size_t n) {
+      { *alloc.allocate(n) } -> @\libconcept{same_as}@<typename Alloc::value_type&>;
+      { alloc.deallocate(alloc.allocate(n), n) };
+    } &&
+    @\libconcept{copy_constructible}@<Alloc> &&
+    @\libconcept{equality_comparable}@<Alloc>;
+}
 \end{codeblock}
 A type \tcode{Alloc} models \exposconcept{simple-allocator}
 if it meets the requirements of \ref{allocator.requirements.general}.
@@ -3058,7 +3074,7 @@ original template.
 Let \tcode{\placeholder{F}} denote
 a standard library function\iref{global.functions},
 a standard library static member function,
-or an instantiation
+or a specialization
 of a standard library function template.
 Unless \tcode{\placeholder{F}} is designated
 an \defnadj{addressable}{function},
@@ -3080,7 +3096,35 @@ to \tcode{\placeholder{F}}
 or
 if it attempts to form a pointer-to-member designating
 either a standard library non-static member function\iref{member.functions}
-or an instantiation of a standard library member function template.
+or a specialization of a standard library member function template.
+
+\pnum
+Let \tcode{\placeholder{F}} denote
+a standard library function or function template.
+Unless \tcode{\placeholder{F}} is designated an addressable function,
+it is unspecified if or how
+a reflection value designating the associated entity can be formed.
+For any value \tcode{\placeholder{p}} of type \tcode{meta::info} that
+represents a reflection of a parameter of \tcode{\placeholder{F}},
+it is unspecified if \tcode{has_identifier(\placeholder{p})}
+returns \tcode{true} or \tcode{false}, and
+if \tcode{meta::has_identifier(\placeholder{p})} is \tcode{true}, then
+the \ntmbs{} produced by
+\tcode{meta::identifier_of(\placeholder{p})} and
+\tcode{meta::u8identifier_of(\placeholder{p})} is unspecified.
+%FIXME: Why is this not an example, but a note that begins with "For example"?
+\begin{note}
+For example, it is possible that \tcode{std::meta::members_of}
+will not return reflections of standard library functions
+that an implementation handles through an extra-linguistic mechanism.
+\end{note}
+
+\pnum
+Let \tcode{\placeholder{C}} denote
+a standard library class or class template specialization.
+It is unspecified if or how
+a reflection value can be formed to any private member of \tcode{\placeholder{C}},
+or what the names of such members may be.
 
 \pnum
 A translation unit shall not declare namespace \tcode{std} to be an inline namespace\iref{namespace.def}.
@@ -3269,16 +3313,6 @@ A translation unit that includes a standard library header shall not
 \tcode{\#define} or \tcode{\#undef} names declared in any standard
 library header.
 
-\pnum
-\indextext{unit!translation}%
-A translation unit shall not \tcode{\#define} or \tcode{\#undef}
-names lexically identical
-to keywords,
-to the identifiers listed in \tref{lex.name.special}, or
-to the \grammarterm{attribute-token}{s} described in~\ref{dcl.attr},
-except that the names \tcode{likely} and \tcode{unlikely} may be
-defined as function-like macros~\iref{cpp.replace}.
-
 \rSec4[extern.names]{External linkage}
 
 \pnum
@@ -3358,7 +3392,7 @@ the types
 \tcode{::T}
 and
 \tcode{std::T}
-are reserved to the implementation and, when defined,
+are reserved to the implementation and, when declared,
 \tcode{::T}
 shall be identical to
 \tcode{std::T}.
@@ -3398,7 +3432,7 @@ library may be overridden in a derived class defined in the program\iref{class.v
 \pnum
 If a function defined in
 \ref{\firstlibchapter} through \ref{\lastlibchapter} and \ref{depr}
-is specified as replaceable\iref{dcl.fct.def.replace},
+is specified as replaceable\iref{term.replaceable.function},
 the description of function semantics apply
 to both the default version defined by the \Cpp{} standard library and
 the replacement function defined by the program.
@@ -3442,7 +3476,7 @@ functions:
 
 \pnum
 Calling the \tcode{set_*} and \tcode{get_*} functions shall not incur a data race\iref{intro.races}.
-A call to any of the \tcode{set_*} functions shall synchronize with subsequent calls to the same
+A call to any of the \tcode{set_*} functions synchronizes with subsequent calls to the same
 \tcode{set_*} function and to the corresponding \tcode{get_*} function.
 
 \rSec3[res.on.functions]{Other functions}
@@ -3671,15 +3705,9 @@ The phrase ``unless otherwise specified'' applies to cases such as
 the swappable with requirements\iref{swappable.requirements}.
 The exception for overloaded operators allows argument-dependent lookup
 in cases like that of
-\tcode{ostream_iterator::operator=}\iref{ostream.iterator.ops}:
-
-\effects
-\begin{codeblock}
-*@\textit{out_stream}@ << value;
-if (@\textit{delim}@ != 0)
-  *@\textit{out_stream}@ << @\textit{delim}@;
-return *this;
-\end{codeblock}
+\tcode{ostream_iterator::operator=}\iref{ostream.iterator.ops}
+where lookup for the expression \tcode{*out_stream << value}
+includes the associated namespaces of \tcode{value}'s type.
 \end{note}
 
 \rSec3[member.functions]{Member functions}
@@ -3732,7 +3760,7 @@ This document explicitly requires that certain standard library functions are
 any standard library function signature as \keyword{constexpr} except for those where
 it is explicitly required.
 Within any header that provides any non-defining declarations of constexpr
-functions or constructors an implementation shall provide corresponding definitions.
+functions an implementation shall provide corresponding definitions.
 
 \rSec3[algorithm.stable]{Requirements for stable algorithms}
 
@@ -3761,6 +3789,16 @@ original order).
 Except where explicitly specified in this document, it is \impldef{which functions in
 the \Cpp{} standard library may be recursively reentered} which functions in the \Cpp{} standard
 library may be recursively reentered.
+
+\pnum
+During the execution of
+a standard library non-static member function $F$ on an object,
+if that object is accessed through a glvalue that is not obtained,
+directly or indirectly,
+from the object parameter of $F$,
+in a manner that can conflict\iref{intro.races}
+with any access that $F$ is permitted to perform\iref{res.on.data.races},
+the behavior is undefined unless otherwise specified.
 
 \rSec3[res.on.data.races]{Data race avoidance}
 
@@ -3825,20 +3863,6 @@ Unless explicitly stated otherwise, it is unspecified whether any class
 described in \ref{\firstlibchapter} through \ref{\lastlibchapter} and
 \ref{depr} is a trivially copyable class, a standard-layout class, or an
 implicit-lifetime class\iref{class.prop}.
-
-\pnum
-Unless explicitly stated otherwise, it is unspecified whether any class for
-which trivial relocation (i.e., the effects of
-\tcode{trivially_relocate}\iref{obj.lifetime}) would be semantically equivalent
-to move-construction of the destination object followed by destruction of the
-source object is a trivially relocatable class\iref{class.prop}.
-
-\pnum
-Unless explicitly stated otherwise, it is unspecified whether a class \tcode{C}
-is a replaceable class\iref{class.prop} if assigning an xvalue \tcode{a} of
-type \tcode{C} to an object \tcode{b} of type \tcode{C} is semantically
-equivalent to destroying \tcode{b} and then constructing from \tcode{a} in
-\tcode{b}'s place.
 
 \rSec3[protection.within.classes]{Protection within classes}
 
@@ -3965,9 +3989,9 @@ assertions\iref{basic.contract,structure.specifications}.
 \rSec3[value.error.codes]{Value of error codes}
 
 \pnum
-Certain functions in the \Cpp{} standard library report errors via a
-\tcode{std::error_code}\iref{syserr.errcode.overview} object. That object's
-\tcode{category()} member shall return \tcode{std::system_category()} for
+Certain functions in the \Cpp{} standard library report errors via an
+\tcode{error_code}\iref{syserr.errcode.overview} object. That object's
+\tcode{category()} member shall return \tcode{system_category()} for
 errors originating from the operating system, or a reference to an
 \impldef{\tcode{error_category} for errors originating outside the
 operating system} \tcode{error_category} object for errors originating elsewhere.

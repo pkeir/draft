@@ -8,12 +8,13 @@ This Clause describes components for memory management.
 
 \pnum
 The following subclauses describe general memory management facilities,
-smart pointers, memory resources, and scoped allocators,
+smart pointers, pointer tagging, memory resources, and scoped allocators,
 as summarized in \tref{mem.summary}.
 
 \begin{libsumtab}{Memory management library summary}{mem.summary}
 \ref{memory}                & Memory                            & \tcode{<cstdlib>}, \tcode{<memory>} \\ \rowsep
 \ref{smartptr}              & Smart pointers                    & \tcode{<memory>}           \\ \rowsep
+\ref{ptrtag}                & Pointer tagging                   & \tcode{<memory>}           \\ \rowsep
 \ref{mem.composite.types}   & Types for composite class design  & \tcode{<memory>}           \\ \rowsep
 \ref{mem.res}               & Memory resources                  & \tcode{<memory_resource>}  \\ \rowsep
 \ref{allocator.adaptor}     & Scoped allocators                 & \tcode{<scoped_allocator>} \\
@@ -37,6 +38,10 @@ for containers and other template types, destroy objects, and
 construct objects in
 uninitialized memory
 buffers~(\ref{pointer.traits}--\ref{specialized.addressof} and \ref{specialized.algorithms}).
+The header also defines class template \tcode{pointer_tag_pair}
+to support storing additional information in unused bits of pointers.
+Selection of the bits is implementation-defined,
+and the size of the pointer wrapping object is the same as the size of the original pointer.
 The header also defines the templates
 \tcode{unique_ptr}, \tcode{shared_ptr}, \tcode{weak_ptr},
 \tcode{out_ptr_t}, \tcode{inout_ptr_t}, and various function
@@ -85,9 +90,11 @@ namespace std {
   template<size_t N, class T>
     constexpr T* assume_aligned(T* ptr);                                            // freestanding
   template<size_t Alignment, class T>
-    bool is_sufficiently_aligned(T* ptr);
+    bool is_sufficiently_aligned(T* ptr);                                           // freestanding
 
   // \ref{obj.lifetime}, explicit lifetime management
+  template<class T>
+    constexpr void start_lifetime(T& r) noexcept;                                   // freestanding
   template<class T>
     T* start_lifetime_as(void* p) noexcept;                                         // freestanding
   template<class T>
@@ -105,10 +112,6 @@ namespace std {
   template<class T>
     const volatile T* start_lifetime_as_array(const volatile void* p,               // freestanding
 	                                      size_t n) noexcept;
-  template<class T>
-    T* trivially_relocate(T* first, T* last, T* result);                            // freestanding
-  template<class T>
-    constexpr T* relocate(T* first, T* last, T* result);                            // freestanding
 
   // \ref{allocator.tag}, allocator argument tag
   struct allocator_arg_t { explicit allocator_arg_t() = default; };                 // freestanding
@@ -162,9 +165,9 @@ namespace std {
   template<class Alloc> struct allocator_traits;                                    // freestanding
 
   template<class Pointer, class SizeType = size_t>
-  struct allocation_result {                                                        // freestanding
-    Pointer ptr;
-    SizeType count;
+  struct @\libglobal{allocation_result}@ {                                                        // freestanding
+    Pointer @\libmember{ptr}{allocation_result}@;
+    SizeType @\libmember{count}{allocation_result}@;
   };
 
   // \ref{default.allocator}, the default allocator
@@ -181,15 +184,27 @@ namespace std {
   // \ref{specialized.algorithms}, specialized algorithms
   // \ref{special.mem.concepts}, special memory concepts
   template<class I>
-    concept @\exposconcept{nothrow-input-iterator}@ = @\seebelow@;    // \expos
+    concept @\exposconcept{nothrow-input-iterator}@ = @\seebelow@;                // \expos
   template<class I>
-    concept @\exposconcept{nothrow-forward-iterator}@ = @\seebelow@;  // \expos
+    concept @\exposconcept{nothrow-forward-iterator}@ = @\seebelow@;              // \expos
+  template<class I>
+    concept @\exposconcept{nothrow-bidirectional-iterator}@ = @\seebelow@;        // \expos
+  template<class I>
+    concept @\exposconcept{nothrow-random-access-iterator}@ = @\seebelow@;        // \expos
   template<class S, class I>
-    concept @\exposconcept{nothrow-sentinel-for}@ = @\seebelow@;      // \expos
+    concept @\exposconcept{nothrow-sentinel-for}@ = @\seebelow@;                  // \expos
+  template<class S, class I>
+    concept @\exposconcept{nothrow-sized-sentinel-for}@ = @\seebelow@;            // \expos
   template<class R>
-    concept @\exposconcept{nothrow-input-range}@ = @\seebelow@;       // \expos
+    concept @\exposconcept{nothrow-input-range}@ = @\seebelow@;                   // \expos
   template<class R>
-    concept @\exposconcept{nothrow-forward-range}@ = @\seebelow@;     // \expos
+    concept @\exposconcept{nothrow-forward-range}@ = @\seebelow@;                 // \expos
+  template<class R>
+    concept @\exposconcept{nothrow-bidirectional-range}@ = @\seebelow@;           // \expos
+  template<class R>
+    concept @\exposconcept{nothrow-random-access-range}@ = @\seebelow@;           // \expos
+  template<class R>
+    concept @\exposconcept{nothrow-sized-random-access-range}@ = @\seebelow@;     // \expos
 
   template<class NoThrowForwardIterator>
     constexpr void uninitialized_default_construct(NoThrowForwardIterator first,    // freestanding
@@ -219,6 +234,21 @@ namespace std {
       requires @\libconcept{default_initializable}@<iter_value_t<I>>
         constexpr I uninitialized_default_construct_n(I first,                      // freestanding
                                                       iter_difference_t<I> n);
+
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I,
+             @\exposconcept{nothrow-sized-sentinel-for}@<I> S>
+      requires @\libconcept{default_initializable}@<iter_value_t<I>>
+        I uninitialized_default_construct(Ep&& exec, I first, S last);      // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-sized-random-access-range}@ R>
+      requires @\libconcept{default_initializable}@<range_value_t<R>>
+        borrowed_iterator_t<R> uninitialized_default_construct(Ep&& exec,   // freestanding-deleted,
+                                                               R&& r);      // see \ref{algorithms.parallel.overloads}
+
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I>
+      requires @\libconcept{default_initializable}@<iter_value_t<I>>
+        I uninitialized_default_construct_n(Ep&& exec, I first,             // freestanding-deleted,
+                                            iter_difference_t<I> n);        // see \ref{algorithms.parallel.overloads}
   }
 
   template<class NoThrowForwardIterator>
@@ -249,6 +279,21 @@ namespace std {
       requires @\libconcept{default_initializable}@<iter_value_t<I>>
         constexpr I uninitialized_value_construct_n(I first,                        // freestanding
                                                     iter_difference_t<I> n);
+
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I,
+             @\exposconcept{nothrow-sized-sentinel-for}@<I> S>
+      requires @\libconcept{default_initializable}@<iter_value_t<I>>
+        I uninitialized_value_construct(Ep&& exec, I first, S last);        // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-sized-random-access-range}@ R>
+      requires @\libconcept{default_initializable}@<range_value_t<R>>
+        borrowed_iterator_t<R> uninitialized_value_construct(Ep&& exec,     // freestanding-deleted,
+                                                             R&& r);        // see \ref{algorithms.parallel.overloads}
+
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I>
+      requires @\libconcept{default_initializable}@<iter_value_t<I>>
+        I uninitialized_value_construct_n(Ep&& exec, I first,               // freestanding-deleted,
+                                          iter_difference_t<I> n);          // see \ref{algorithms.parallel.overloads}
   }
 
   template<class InputIterator, class NoThrowForwardIterator>
@@ -273,7 +318,7 @@ namespace std {
 
   namespace ranges {
     template<class I, class O>
-      using uninitialized_copy_result = in_out_result<I, O>;                        // freestanding
+      using @\libglobal{uninitialized_copy_result}@ = in_out_result<I, O>;                        // freestanding
     template<@\libconcept{input_iterator}@ I, @\libconcept{sentinel_for}@<I> S1,
              @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S2>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
@@ -285,12 +330,31 @@ namespace std {
           uninitialized_copy(IR&& in_range, OR&& out_range);                        // freestanding
 
     template<class I, class O>
-      using uninitialized_copy_n_result = in_out_result<I, O>;                      // freestanding
+      using @\libglobal{uninitialized_copy_n_result}@ = in_out_result<I, O>;                      // freestanding
     template<@\libconcept{input_iterator}@ I, @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
         constexpr uninitialized_copy_n_result<I, O>
           uninitialized_copy_n(I ifirst, iter_difference_t<I> n,                    // freestanding
                                O ofirst, S olast);
+
+    template<@\exposconcept{execution-policy}@ Ep, @\libconcept{random_access_iterator}@ I, @\libconcept{sized_sentinel_for}@<I> S1,
+             @\exposconcept{nothrow-random-access-iterator}@ O, @\exposconcept{nothrow-sized-sentinel-for}@<O> S2>
+      requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
+        uninitialized_copy_result<I, O>
+          uninitialized_copy(Ep&& exec, I ifirst, S1 ilast,                 // freestanding-deleted,
+                             O ofirst, S2 olast);                           // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{sized-random-access-range}@ IR,
+             @\exposconcept{nothrow-sized-random-access-range}@ OR>
+      requires @\libconcept{constructible_from}@<range_value_t<OR>, range_reference_t<IR>>
+        uninitialized_copy_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
+          uninitialized_copy(Ep&& exec, IR&& in_range, OR&& out_range);     // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\libconcept{random_access_iterator}@ I, @\exposconcept{nothrow-random-access-iterator}@ O,
+             @\exposconcept{nothrow-sized-sentinel-for}@<O> S>
+      requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_reference_t<I>>
+        uninitialized_copy_n_result<I, O>
+          uninitialized_copy_n(Ep&& exec, I ifirst, iter_difference_t<I> n, // freestanding-deleted,
+                               O ofirst, S olast);                          // see \ref{algorithms.parallel.overloads}
   }
 
   template<class InputIterator, class NoThrowForwardIterator>
@@ -315,7 +379,7 @@ namespace std {
 
   namespace ranges {
     template<class I, class O>
-      using uninitialized_move_result = in_out_result<I, O>;                        // freestanding
+      using @\libglobal{uninitialized_move_result}@ = in_out_result<I, O>;                        // freestanding
     template<@\libconcept{input_iterator}@ I, @\libconcept{sentinel_for}@<I> S1,
              @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S2>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
@@ -327,44 +391,84 @@ namespace std {
           uninitialized_move(IR&& in_range, OR&& out_range);                        // freestanding
 
     template<class I, class O>
-      using uninitialized_move_n_result = in_out_result<I, O>;                      // freestanding
+      using @\libglobal{uninitialized_move_n_result}@ = in_out_result<I, O>;                      // freestanding
     template<@\libconcept{input_iterator}@ I,
              @\exposconcept{nothrow-forward-iterator}@ O, @\exposconcept{nothrow-sentinel-for}@<O> S>
       requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
         constexpr uninitialized_move_n_result<I, O>
           uninitialized_move_n(I ifirst, iter_difference_t<I> n,                    // freestanding
                                O ofirst, S olast);
+
+    template<@\exposconcept{execution-policy}@ Ep, @\libconcept{random_access_iterator}@ I, @\libconcept{sized_sentinel_for}@<I> S1,
+             @\exposconcept{nothrow-random-access-iterator}@ O, @\exposconcept{nothrow-sized-sentinel-for}@<O> S2>
+      requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
+        uninitialized_move_result<I, O>
+          uninitialized_move(Ep&& exec, I ifirst, S1 ilast,                 // freestanding-deleted,
+                             O ofirst, S2 olast);                           // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{sized-random-access-range}@ IR,
+             @\exposconcept{nothrow-sized-random-access-range}@ OR>
+      requires @\libconcept{constructible_from}@<range_value_t<OR>, range_rvalue_reference_t<IR>>
+        uninitialized_move_result<borrowed_iterator_t<IR>, borrowed_iterator_t<OR>>
+          uninitialized_move(Ep&& exec, IR&& in_range, OR&& out_range);     // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
+
+    template<@\exposconcept{execution-policy}@ Ep, @\libconcept{random_access_iterator}@ I,
+             @\exposconcept{nothrow-random-access-iterator}@ O, @\exposconcept{nothrow-sized-sentinel-for}@<O> S>
+      requires @\libconcept{constructible_from}@<iter_value_t<O>, iter_rvalue_reference_t<I>>
+        uninitialized_move_n_result<I, O>
+          uninitialized_move_n(Ep&& exec, I ifirst, iter_difference_t<I> n, // freestanding-deleted,
+                               O ofirst, S olast);                          // see \ref{algorithms.parallel.overloads}
   }
 
-  template<class NoThrowForwardIterator, class T>
+  template<class NoThrowForwardIterator,
+           class T = iterator_traits<NoThrowForwardIterator>::value_type>
     constexpr void uninitialized_fill(NoThrowForwardIterator first,                 // freestanding
                                       NoThrowForwardIterator last, const T& x);
-  template<class ExecutionPolicy, class NoThrowForwardIterator, class T>
+  template<class ExecutionPolicy, class NoThrowForwardIterator,
+           class T = iterator_traits<NoThrowForwardIterator>::value_type>
     void uninitialized_fill(ExecutionPolicy&& exec,                         // freestanding-deleted,
                             NoThrowForwardIterator first,                   // see \ref{algorithms.parallel.overloads}
                             NoThrowForwardIterator last,
                             const T& x);
-  template<class NoThrowForwardIterator, class Size, class T>
+  template<class NoThrowForwardIterator, class Size,
+           class T = iterator_traits<NoThrowForwardIterator>::value_type>
     constexpr NoThrowForwardIterator
       uninitialized_fill_n(NoThrowForwardIterator first, Size n, const T& x);       // freestanding
-  template<class ExecutionPolicy, class NoThrowForwardIterator, class Size, class T>
+  template<class ExecutionPolicy, class NoThrowForwardIterator, class Size,
+           class T = iterator_traits<NoThrowForwardIterator>::value_type>
     NoThrowForwardIterator
       uninitialized_fill_n(ExecutionPolicy&& exec,                          // freestanding-deleted,
                            NoThrowForwardIterator first,                    // see \ref{algorithms.parallel.overloads}
                            Size n, const T& x);
 
   namespace ranges {
-    template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S, class T>
+    template<@\exposconcept{nothrow-forward-iterator}@ I, @\exposconcept{nothrow-sentinel-for}@<I> S, class T = iter_value_t<I>>
       requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
         constexpr I uninitialized_fill(I first, S last, const T& x);                // freestanding
-    template<@\exposconcept{nothrow-forward-range}@ R, class T>
+    template<@\exposconcept{nothrow-forward-range}@ R, class T = range_value_t<R>>
       requires @\libconcept{constructible_from}@<range_value_t<R>, const T&>
         constexpr borrowed_iterator_t<R> uninitialized_fill(R&& r, const T& x);     // freestanding
 
-    template<@\exposconcept{nothrow-forward-iterator}@ I, class T>
+    template<@\exposconcept{nothrow-forward-iterator}@ I, class T = iter_value_t<I>>
       requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
         constexpr I uninitialized_fill_n(I first,                                   // freestanding
                                          iter_difference_t<I> n, const T& x);
+
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I,
+             @\exposconcept{nothrow-sized-sentinel-for}@<I> S, class T = iter_value_t<I>>
+      requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
+        I uninitialized_fill(Ep&& exec, I first, S last, const T& x);       // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-sized-random-access-range}@ R,
+             class T = range_value_t<R>>
+      requires @\libconcept{constructible_from}@<range_value_t<R>, const T&>
+        borrowed_iterator_t<R> uninitialized_fill(Ep&& exec, R&& r,         // freestanding-deleted,
+                                                  const T& x);              // see \ref{algorithms.parallel.overloads}
+
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I, class T = iter_value_t<I>>
+      requires @\libconcept{constructible_from}@<iter_value_t<I>, const T&>
+        I uninitialized_fill_n(Ep&& exec, I first,                          // freestanding-deleted,
+                               iter_difference_t<I> n, const T& x);         // see \ref{algorithms.parallel.overloads}
   }
 
   // \ref{specialized.construct}, \tcode{construct_at}
@@ -407,7 +511,60 @@ namespace std {
     template<@\exposconcept{nothrow-input-iterator}@ I>
       requires @\libconcept{destructible}@<iter_value_t<I>>
         constexpr I destroy_n(I first, iter_difference_t<I> n) noexcept;            // freestanding
+
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I,
+             @\exposconcept{nothrow-sized-sentinel-for}@<I> S>
+      requires @\libconcept{destructible}@<iter_value_t<I>>
+        I destroy(Ep&& exec, I first, S last);                              // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-sized-random-access-range}@ R>
+      requires @\libconcept{destructible}@<range_value_t<R>>
+        borrowed_iterator_t<R> destroy(Ep&& exec, R&& r);                   // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
+    template<@\exposconcept{execution-policy}@ Ep, @\exposconcept{nothrow-random-access-iterator}@ I>
+      requires @\libconcept{destructible}@<iter_value_t<I>>
+        I destroy_n(Ep&& exec, I first, iter_difference_t<I> n);            // freestanding-deleted,
+                                                                            // see \ref{algorithms.parallel.overloads}
   }
+
+  // \ref{ptrtag}, pointer tagging
+  inline constexpr unsigned max_pointer_bits_available = @\seebelownc@;                 // freestanding
+  constexpr unsigned pointer_bits_available(size_t alignment);                      // freestanding
+
+  template<class T>
+    constexpr unsigned @\exposidnc{bits-available}@ = pointer_bits_available(alignof(T));     // \expos
+
+  template<class U> using @\exposidnc{element-of}@ = pointer_traits<U>::element_type;         // \expos
+
+  template<class Ptr, unsigned BitsRequested = @\exposidnc{bits-available}@<@\exposidnc{element-of}@<Ptr>>,
+           class TagT = unsigned>
+    class pointer_tag_pair;                                                         // freestanding
+
+  template<class Ptr, unsigned BitsRequested, class TagT>
+    struct tuple_size<pointer_tag_pair<Ptr, BitsRequested, TagT>>                   // freestanding
+      : integral_constant<size_t, 2> { };
+
+  template<class Ptr, unsigned BitsRequested, class TagT>
+    struct tuple_element<0, pointer_tag_pair<Ptr, BitsRequested, TagT>> {           // freestanding
+      using type = Ptr;
+    };
+  template<class Ptr, unsigned BitsRequested, class TagT>
+    struct tuple_element<1, pointer_tag_pair<Ptr, BitsRequested, TagT>> {           // freestanding
+      using type = TagT;
+    };
+
+  template<class Ptr, unsigned BitsRequested, class TagT>
+    struct tuple_element<0, const pointer_tag_pair<Ptr, BitsRequested, TagT>> {     // freestanding
+      using type = Ptr;
+    };
+  template<class Ptr, unsigned BitsRequested, class TagT>
+    struct tuple_element<1, const pointer_tag_pair<Ptr, BitsRequested, TagT>> {     // freestanding
+      using type = TagT;
+    };
+
+  template<size_t I, class Ptr, unsigned BitsRequested, class TagT>
+    constexpr tuple_element_t<I, pointer_tag_pair<Ptr, BitsRequested, TagT>>        // freestanding
+      get(pointer_tag_pair<Ptr, BitsRequested, TagT> p) noexcept;
 
   // \ref{unique.ptr}, class template \tcode{unique_ptr}
   template<class T> struct default_delete;                                          // freestanding
@@ -436,18 +593,22 @@ namespace std {
     constexpr bool operator==(const unique_ptr<T1, D1>& x,                          // freestanding
                               const unique_ptr<T2, D2>& y);
   template<class T1, class D1, class T2, class D2>
-    constexpr bool operator<(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);       // freestanding
+    constexpr bool operator<(const unique_ptr<T1, D1>& x,                           // freestanding
+                             const unique_ptr<T2, D2>& y);
   template<class T1, class D1, class T2, class D2>
-    constexpr bool operator>(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);       // freestanding
+    constexpr bool operator>(const unique_ptr<T1, D1>& x,                           // freestanding
+                             const unique_ptr<T2, D2>& y);
   template<class T1, class D1, class T2, class D2>
-    constexpr bool operator<=(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);      // freestanding
+    constexpr bool operator<=(const unique_ptr<T1, D1>& x,                          // freestanding
+                              const unique_ptr<T2, D2>& y);
   template<class T1, class D1, class T2, class D2>
-    constexpr bool operator>=(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);      // freestanding
+    constexpr bool operator>=(const unique_ptr<T1, D1>& x,                          // freestanding
+                              const unique_ptr<T2, D2>& y);
   template<class T1, class D1, class T2, class D2>
     requires @\libconcept{three_way_comparable_with}@<typename unique_ptr<T1, D1>::pointer,
                                        typename unique_ptr<T2, D2>::pointer>
     constexpr compare_three_way_result_t<typename unique_ptr<T1, D1>::pointer,
-                               typename unique_ptr<T2, D2>::pointer>
+                                         typename unique_ptr<T2, D2>::pointer>
       operator<=>(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);        // freestanding
 
   template<class T, class D>
@@ -484,46 +645,48 @@ namespace std {
 
   // \ref{util.smartptr.shared.create}, \tcode{shared_ptr} creation
   template<class T, class... Args>
-    constexpr shared_ptr<T> make_shared(Args&&... args);                                  // \tcode{T} is not array
+    constexpr shared_ptr<T> make_shared(Args&&... args);                        // \tcode{T} is not array
   template<class T, class A, class... Args>
-    constexpr shared_ptr<T> allocate_shared(const A& a, Args&&... args);                  // \tcode{T} is not array
+    constexpr shared_ptr<T> allocate_shared(const A& a, Args&&... args);        // \tcode{T} is not array
 
   template<class T>
-    constexpr shared_ptr<T> make_shared(size_t N);                                        // \tcode{T} is \tcode{U[]}
+    constexpr shared_ptr<T> make_shared(size_t N);                                  // \tcode{T} is \tcode{U[]}
   template<class T, class A>
-    constexpr shared_ptr<T> allocate_shared(const A& a, size_t N);                        // \tcode{T} is \tcode{U[]}
+    constexpr shared_ptr<T> allocate_shared(const A& a, size_t N);                  // \tcode{T} is \tcode{U[]}
 
   template<class T>
-    constexpr shared_ptr<T> make_shared();                                                // \tcode{T} is \tcode{U[N]}
+    constexpr shared_ptr<T> make_shared();                                          // \tcode{T} is \tcode{U[N]}
   template<class T, class A>
-    constexpr shared_ptr<T> allocate_shared(const A& a);                                  // \tcode{T} is \tcode{U[N]}
+    constexpr shared_ptr<T> allocate_shared(const A& a);                            // \tcode{T} is \tcode{U[N]}
 
   template<class T>
-    constexpr shared_ptr<T> make_shared(size_t N, const remove_extent_t<T>& u);           // \tcode{T} is \tcode{U[]}
+    constexpr shared_ptr<T> make_shared(size_t N, const remove_extent_t<T>& u);     // \tcode{T} is \tcode{U[]}
   template<class T, class A>
     constexpr shared_ptr<T> allocate_shared(const A& a, size_t N,
-                                  const remove_extent_t<T>& u);                 // \tcode{T} is \tcode{U[]}
+                                            const remove_extent_t<T>& u);           // \tcode{T} is \tcode{U[]}
 
   template<class T>
-    constexpr shared_ptr<T> make_shared(const remove_extent_t<T>& u);                     // \tcode{T} is \tcode{U[N]}
+    constexpr shared_ptr<T> make_shared(const remove_extent_t<T>& u);               // \tcode{T} is \tcode{U[N]}
   template<class T, class A>
-    constexpr shared_ptr<T> allocate_shared(const A& a, const remove_extent_t<T>& u);     // \tcode{T} is \tcode{U[N]}
+    constexpr shared_ptr<T> allocate_shared(const A& a,                             // \tcode{T} is \tcode{U[N]}
+                                            const remove_extent_t<T>& u);
 
   template<class T>
-    constexpr shared_ptr<T> make_shared_for_overwrite();                                  // \tcode{T} is not \tcode{U[]}
+    constexpr shared_ptr<T> make_shared_for_overwrite();                            // \tcode{T} is not \tcode{U[]}
   template<class T, class A>
-    constexpr shared_ptr<T> allocate_shared_for_overwrite(const A& a);                    // \tcode{T} is not \tcode{U[]}
+    constexpr shared_ptr<T> allocate_shared_for_overwrite(const A& a);              // \tcode{T} is not \tcode{U[]}
 
   template<class T>
-    constexpr shared_ptr<T> make_shared_for_overwrite(size_t N);                          // \tcode{T} is \tcode{U[]}
+    constexpr shared_ptr<T> make_shared_for_overwrite(size_t N);                    // \tcode{T} is \tcode{U[]}
   template<class T, class A>
-    constexpr shared_ptr<T> allocate_shared_for_overwrite(const A& a, size_t N);          // \tcode{T} is \tcode{U[]}
+    constexpr shared_ptr<T> allocate_shared_for_overwrite(const A& a, size_t N);    // \tcode{T} is \tcode{U[]}
 
   // \ref{util.smartptr.shared.cmp}, \tcode{shared_ptr} comparisons
   template<class T, class U>
     constexpr bool operator==(const shared_ptr<T>& a, const shared_ptr<U>& b) noexcept;
   template<class T, class U>
-    constexpr strong_ordering operator<=>(const shared_ptr<T>& a, const shared_ptr<U>& b) noexcept;
+    constexpr strong_ordering operator<=>(const shared_ptr<T>& a,
+                                          const shared_ptr<U>& b) noexcept;
 
   template<class T>
     constexpr bool operator==(const shared_ptr<T>& x, nullptr_t) noexcept;
@@ -594,7 +757,7 @@ namespace std {
 
   // \ref{out.ptr}, function template \tcode{out_ptr}
   template<class Pointer = void, class Smart, class... Args>
-    constexpr auto out_ptr(Smart& s, Args&&... args);                                         // freestanding
+    constexpr auto out_ptr(Smart& s, Args&&... args);                               // freestanding
 
   // \ref{inout.ptr.t}, class template \tcode{inout_ptr_t}
   template<class Smart, class Pointer, class... Args>
@@ -602,7 +765,7 @@ namespace std {
 
   // \ref{inout.ptr}, function template \tcode{inout_ptr}
   template<class Pointer = void, class Smart, class... Args>
-    constexpr auto inout_ptr(Smart& s, Args&&... args);                                       // freestanding
+    constexpr auto inout_ptr(Smart& s, Args&&... args);                             // freestanding
 
   // \ref{indirect}, class template \tcode{indirect}
   template<class T, class Allocator = allocator<T>>
@@ -661,7 +824,7 @@ struct @\exposid{ptr-traits-elem}@          // \expos
 
 template<class T> requires requires { typename T::element_type; }
 struct @\exposid{ptr-traits-elem}@<T>
-{ using type = typename T::element_type; };
+{ using type = T::element_type; };
 
 template<template<class...> class SomePointer, class T, class... Args>
   requires (!requires { typename SomePointer<T, Args...>::element_type; })
@@ -725,7 +888,7 @@ template<class U> using rebind = @\seebelow@;
 the \grammarterm{qualified-id} \tcode{Ptr::rebind<U>} is valid and denotes a
 type\iref{temp.deduct}; otherwise,
 \tcode{SomePointer<U, Args>} if
-\tcode{Ptr} is a class template instantiation of the form \tcode{SomePointer<T, Args>},
+\tcode{Ptr} is a class template specialization of the form \tcode{SomePointer<T, Args>},
 where \tcode{Args} is zero or more type arguments; otherwise, the instantiation of
 \tcode{rebind} is ill-formed.
 \end{itemdescr}
@@ -734,7 +897,7 @@ where \tcode{Args} is zero or more type arguments; otherwise, the instantiation 
 
 \indexlibrarymember{pointer_to}{pointer_traits}%
 \begin{itemdecl}
-static pointer pointer_traits::pointer_to(@\seebelow@ r);
+static constexpr pointer pointer_traits::pointer_to(@\seebelow@ r);
 static constexpr pointer pointer_traits<T*>::pointer_to(@\seebelow@ r) noexcept;
 \end{itemdecl}
 
@@ -908,6 +1071,10 @@ template<size_t Alignment, class T>
 
 \begin{itemdescr}
 \pnum
+\mandates
+\tcode{Alignment} is a power of two.
+
+\pnum
 \expects
 \tcode{p} points to
 an object \tcode{X} of a type similar\iref{conv.qual} to \tcode{T}.
@@ -923,6 +1090,31 @@ Nothing.
 \end{itemdescr}
 
 \rSec2[obj.lifetime]{Explicit lifetime management}
+
+\indexlibraryglobal{start_lifetime}%
+\begin{itemdecl}
+template<class T>
+  constexpr void start_lifetime(T& r) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\mandates
+\tcode{T} is a complete type and
+an implicit-lifetime\iref{basic.types} aggregate\iref{dcl.init.aggr} type.
+
+\pnum
+\effects
+If the object referenced by \tcode{r}
+is already within its lifetime\iref{basic.life},
+no effects.
+Otherwise, begins the lifetime of the object referenced by \tcode{r}.
+\begin{note}
+No initialization is performed and no subobject has its lifetime started.
+If \tcode{r} denotes a member of a union $U$,
+it becomes the active member of $U$\iref{class.union}.
+\end{note}
+\end{itemdescr}
 
 \indexlibraryglobal{start_lifetime_as}%
 \begin{itemdecl}
@@ -1019,128 +1211,6 @@ otherwise,
 a pointer that compares equal to \tcode{p}\iref{expr.eq}.
 \end{itemdescr}
 
-\indexlibraryglobal{trivially_relocate}%
-\begin{itemdecl}
-template<class T>
-  T* trivially_relocate(T* first, T* last, T* result);
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\mandates
-\tcode{is_trivially_relocatable_v<T> \&\& !is_const_v<T>} is \tcode{true}.
-\tcode{T} is not an array of unknown bound.
-
-\pnum
-\expects
-\begin{itemize}
-\item
-  \range{first}{last} is a valid range.
-\item
-  \range{result}{result + (last - first)} denotes a region of storage that
-  is a subset of the region reachable through \tcode{result}\iref{basic.compound}
-  and suitably aligned for the type \tcode{T}.
-\item
-  No element in the range \range{first}{last} is a potentially-overlapping subobject.
-\end{itemize}
-
-\pnum
-\ensures
-No effect if \tcode{result == first} is \tcode{true}.
-Otherwise, the range denoted by \range{result}{result + (last - first)}
-contains objects (including subobjects) whose lifetime has begun and whose
-object representations are the original object representations of the
-corresponding objects in the source range \range{first}{last} except
-for any parts of the object representations used by the implementation to
-represent type information\iref{intro.object}. If any of the objects has
-union type, its active member is the same as that of the corresponding object
-in the source range. If any of the aforementioned objects has a non-static
-data member of reference type, that reference refers to the same entity as
-does the corresponding reference in the source range. The lifetimes of the
-original objects in the source range have ended.
-
-\pnum
-\returns
-\tcode{result + (last - first)}.
-
-\pnum
-\throws
-Nothing.
-
-\pnum
-\complexity
-Linear in the length of the source range.
-
-\pnum
-\remarks
-The destination region of storage is considered reused\iref{basic.life}.
-No constructors or destructors are invoked.
-
-\begin{note}
-Overlapping ranges are supported.
-\end{note}
-\end{itemdescr}
-
-\indexlibraryglobal{relocate}%
-\begin{itemdecl}
-template<class T>
-  constexpr T* relocate(T* first, T* last, T* result);
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\mandates
-\tcode{is_nothrow_relocatable_v<T> \&\& !is_const_v<T>} is \tcode{true}.
-\tcode{T} is not an array of unknown bound.
-
-\pnum
-\expects
-\begin{itemize}
-\item
-  \range{first}{last} is a valid range.
-\item
-  \range{result}{result + (last - first)} denotes a region of storage that is
-  a subset of the region reachable through \tcode{result}\iref{basic.compound}
-  and suitably aligned for the type \tcode{T}.
-\item
-  No element in the range \range{first}{last} is a potentially-overlapping
-  subobject.
-\end{itemize}
-
-\pnum
-\effects
-\begin{itemize}
-\item
-  If \tcode{result == first} is \tcode{true}, no effect;
-\item
-  otherwise, if not called during constant evaluation and
-  \tcode{is_trivially_relocatable_v<T>} is \tcode{true}, then has
-  effects equivalent to: \tcode{trivially_relocate(first, last, result);}
-\item
-  otherwise, for each integer \tcode{i} in  \range{0}{last - first},
-  \begin{itemize}
-  \item
-    if \tcode{T} is an array type, equivalent to:
-    \tcode{relocate(begin(first[i]), end(first[i]), *start_lifetime_as<T>(result + i));}
-  \item
-    otherwise, equivalent to:
-    \tcode{construct_at(result + i, std::move(first[i])); destroy_at(first + i);}
-  \end{itemize}
-\end{itemize}
-
-\pnum
-\returns
-\tcode{result + (last - first)}.
-
-\pnum
-\throws
-Nothing.
-
-\begin{note}
-Overlapping ranges are supported.
-\end{note}
-\end{itemdescr}
-
 \rSec2[allocator.tag]{Allocator argument tag}
 
 \indexlibraryglobal{allocator_arg_t}%
@@ -1210,7 +1280,7 @@ three conventions for passing \tcode{alloc} to a constructor:
   then \tcode{alloc} is ignored.
 \item
   Otherwise, if \tcode{T} has a constructor invocable as
-  \tcode{T(allocator_arg, alloc, args...)} (leading-allocator convention),
+  \tcode{T(allocator_arg_t\{\}, alloc, args...)} (leading-allocator convention),
   then uses-allocator construction chooses this constructor form.
 \item
   Otherwise, if \tcode{T} has a constructor invocable as
@@ -1541,7 +1611,7 @@ namespace std {
   template<class Alloc> struct allocator_traits {
     using allocator_type     = Alloc;
 
-    using value_type         = typename Alloc::value_type;
+    using value_type         = Alloc::value_type;
 
     using pointer            = @\seebelow@;
     using const_pointer      = @\seebelow@;
@@ -1720,7 +1790,7 @@ template<class T> using rebind_alloc = @\seebelow@;
 \templalias \tcode{Alloc::rebind<T>::other} if
 the \grammarterm{qualified-id} \tcode{Alloc::rebind<T>::other} is valid and denotes a
 type\iref{temp.deduct}; otherwise,
-\tcode{Alloc<T, Args>} if \tcode{Alloc} is a class template instantiation
+\tcode{Alloc<T, Args>} if \tcode{Alloc} is a class template specialization
 of the form \tcode{Alloc<U, Args>}, where \tcode{Args} is zero or more type arguments;
 otherwise, the instantiation of \tcode{rebind_alloc} is ill-formed.
 \end{itemdescr}
@@ -2022,12 +2092,10 @@ declares the functions described in this subclause.
 \indexlibraryglobal{aligned_alloc}%
 \indexlibraryglobal{calloc}%
 \indexlibraryglobal{malloc}%
-\indexlibraryglobal{realloc}%
 \begin{itemdecl}
 void* aligned_alloc(size_t alignment, size_t size);
 void* calloc(size_t nmemb, size_t size);
 void* malloc(size_t size);
-void* realloc(void* ptr, size_t size);
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -2039,14 +2107,40 @@ These functions have the semantics specified in the C standard library.
 \remarks
 These functions do not attempt to allocate
 storage by calling \tcode{::operator new()}\iref{new.delete}.
-\indexlibrarymember{new}{operator}%
 
 \pnum
 These functions implicitly create objects\iref{intro.object}
 in the returned region of storage and
 return a pointer to a suitable created object.
-In the case of \tcode{calloc} and \tcode{realloc},
-the objects are created before the storage is zeroed or copied, respectively.
+In the case of \tcode{calloc},
+the objects are created before the storage is zeroed.
+\end{itemdescr}
+
+\indexlibraryglobal{realloc}%
+\begin{itemdecl}
+void* realloc(void* ptr, size_t size);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{free(ptr)} has well-defined behavior.
+
+\pnum
+\effects
+If \tcode{ptr} is not null and \tcode{size} is zero,
+the behavior is erroneous and the effects are implementation-defined.
+Otherwise, this function has the semantics specified in the C standard library.
+
+\pnum
+\remarks
+This function does not attempt to allocate storage
+by calling \tcode{::operator new()}\iref{new.delete}.
+When a non-null pointer is returned,
+this function implicitly creates objects\iref{intro.object}
+in the returned region of storage and
+returns a pointer to a suitable created object.
+The objects are created before the storage is copied.
 \end{itemdescr}
 
 \indexlibraryglobal{free}%
@@ -2063,10 +2157,433 @@ This function has the semantics specified in the C standard library.
 \remarks
 This function does not attempt to
 deallocate storage by calling
-\tcode{::operator delete()}\indexlibrarymember{delete}{operator}.
+\tcode{::operator delete()}\iref{new.delete}.
 \end{itemdescr}
 
-\xrefc{7.22.3}
+\xrefc{7.24.4}
+
+\rSec1[ptrtag]{Pointer tagging}
+
+\rSec2[ptrtag.bits]{Pointer tagging limits}
+
+\indexlibraryglobal{max_pointer_bits_available}%
+\begin{itemdecl}
+inline constexpr unsigned max_pointer_bits_available = @\seebelow@;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+The \impldef{value of \tcode{max_pointer_bits_available}}
+limit of usable bits for pointer tagging.
+
+\pnum
+\remarks
+A non-zero value of \tcode{max_pointer_bits_available} indicates
+that non-arithmetic operations on invalid pointers
+with implementation-defined behavior\iref{basic.compound}
+preserve sufficient information to guarantee that
+for an object \tcode{tp} of a type \tcode{TP}
+that is a specialization of \tcode{tagged_pointer_pair} and a pointer value \tcode{q},
+that is a result of applying a sequence of such operations
+to the result of \tcode{tp.tagged()},
+\tcode{tp} is equal to \tcode{TP::from_tagged(q)}.
+\end{itemdescr}
+
+\indexlibraryglobal{pointer_bits_available}%
+\begin{itemdecl}
+constexpr unsigned pointer_bits_available(size_t alignment);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\constantwhen
+Precondition is met.
+
+\pnum
+\expects
+\tcode{alignment} is a power of two.
+
+\pnum
+\returns
+The \impldef{value returned by \tcode{pointer_bits_available}}
+number of unused bits in a pointer
+pointing to a hypothetical object with alignment \tcode{alignment}.
+
+\pnum
+\recommended
+The result is non-zero for \tcode{alignment} values larger than \tcode{1}.
+
+\pnum
+\begin{note}
+On most platforms, the value is the minimum of
+\tcode{countr_zero(alignment)} and \tcode{max_pointer_bits_available}.
+\end{note}
+\end{itemdescr}
+
+\rSec2[ptrtag.pair]{Class template \tcode{pointer_tag_pair}}
+
+\rSec3[ptrtag.pair.general]{General}
+
+\pnum
+The class template \tcode{pointer_tag_pair} provides a type to store an
+object pointer together with a tag value.
+
+\indexlibraryglobal{pointer_tag_pair}%
+\begin{codeblock}
+namespace std {
+  template<class U, class PtrT, unsigned BitsRequested, size_t Alignment = alignof(U)>
+    concept @\defexposconceptnc{tagging-compatible-pointee}@ =                        // \expos
+      @\libconcept{convertible_to}@<U*, PtrT> &&
+      pointer_bits_available(Alignment) >= BitsRequested &&
+      (is_void_v<@\exposid{element-of}@<PtrT>> ||
+       is_scalar_v<@\exposid{element-of}@<PtrT>> ||
+       is_union_v<@\exposid{element-of}@<PtrT>> ||
+       is_pointer_interconvertible_base_of_v<@\exposid{element-of}@<PtrT>, U>);
+
+  template<class TagT>
+    constexpr unsigned @\exposidnc{tag-bit-width}@(TagT value) noexcept;      // \expos
+
+  template<class Ptr, unsigned BitsRequested = @\exposid{bits-available}@<@\exposid{element-of}@<Ptr>>,
+           class TagT = unsigned>
+  class pointer_tag_pair {                                      // freestanding
+  public:
+    using pointer_type        = Ptr;
+    using element_type        = pointer_traits<Ptr>::element_type;
+    using tagged_pointer_type = @\seebelow@;
+    using tag_type            = TagT;
+    static constexpr unsigned bits_requested = BitsRequested;
+
+    // \ref{ptrtag.pair.cons}, constructors
+    constexpr pointer_tag_pair() noexcept;
+
+    template<@\exposconcept{tagging-compatible-pointee}@<pointer_type, bits_requested> U>
+      constexpr pointer_tag_pair(U* p, tag_type t);
+    constexpr pointer_tag_pair(nullptr_t p, tag_type t);
+
+    // \ref{ptrtag.pair.overalign}, support for overaligned pointers
+    template<size_t PromisedAlignment,
+             @\exposconceptnc{tagging-compatible-pointee}@<pointer_type, bits_requested, PromisedAlignment> U>
+      static constexpr pointer_tag_pair from_overaligned(U* p, tag_type t);
+
+    // \ref{ptrtag.pair.tagops}, tagged pointer operations
+    tagged_pointer_type tagged_pointer() const noexcept;
+    static pointer_tag_pair from_tagged(tagged_pointer_type p) noexcept;
+
+    // \ref{ptrtag.pair.accessors}, accessors
+    constexpr pointer_type pointer() const noexcept;
+    constexpr tag_type tag() const noexcept;
+
+    // \ref{ptrtag.pair.swap}, swap
+    constexpr void swap(pointer_tag_pair& o) noexcept;
+
+    // \ref{ptrtag.pair.comp}, comparisons
+    friend constexpr @\seebelow@ operator<=>(pointer_tag_pair lhs, pointer_tag_pair rhs)
+      noexcept requires @\libconcept{three_way_comparable}@<tag_type>;
+    friend constexpr bool operator==(pointer_tag_pair, pointer_tag_pair)
+      noexcept requires @\libconcept{equality_comparable}@<tag_type>;
+  };
+
+  template<class Ptr>
+    pointer_tag_pair(Ptr*)
+      -> pointer_tag_pair<Ptr*>;
+  template<class Ptr, class TagT>
+    pointer_tag_pair(Ptr*, TagT tag)
+      -> pointer_tag_pair<Ptr*, @\exposid{bits-available}@<@\exposid{element-of}@<Ptr>>, TagT>;
+}
+\end{codeblock}
+
+\pnum
+An object of class \tcode{pointer_tag_pair<Ptr, BitsRequested, TagT>}
+represents a pair of
+pointer value of type \tcode{Ptr} and
+tag value of type \tcode{TagT}.
+
+\pnum
+Each specialization \tcode{PT} of \tcode{pointer_tag_pair}
+is a trivially copyable type that models \libconcept{copyable} such that
+\tcode{sizeof(PT)} is equal to \tcode{sizeof(Ptr)} and
+\tcode{alignof(PT)} is equal to \tcode{alignof(Ptr)}.
+
+\pnum
+\mandates
+\begin{itemize}
+\item \tcode{is_same_v<remove_cvref_t<Ptr>, Ptr>} is \tcode{true}.
+\item \tcode{is_same_v<remove_cvref_t<TagT>, TagT>} is \tcode{true}.
+\item \tcode{is_pointer_v<Ptr> \&\& !is_function_v<remove_pointer_t<Ptr>>} is \tcode{true}.
+\item \tcode{is_unsigned_v<UT>} is \tcode{true},
+where \tcode{UT} is
+\tcode{underlying_type_t<TagT>} if \tcode{TagT} is an enumeration type, and
+\tcode{TagT} otherwise.
+\item \tcode{sizeof(TagT) <= sizeof(void*)} is \tcode{true}.
+\item \tcode{BitsRequested <= max_pointer_bits_available} is \tcode{true}.
+\end{itemize}
+
+\indexlibraryglobal{\exposid{tag-bit-width}}%
+\begin{itemdecl}
+template<class T> constexpr unsigned @\exposid{tag-bit-width}@(T v) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{static_cast<unsigned>(bit_width(to_underlying(v)))}
+if \tcode{is_enum_v<T>} is \tcode{true},
+otherwise \tcode{static_cast<unsigned>(bit_width(v))}.
+\end{itemdescr}
+
+\rSec3[ptrtag.pair.cons]{Constructors}
+
+\indexlibraryglobal{pointer_tag_pair}%
+\begin{itemdecl}
+constexpr pointer_tag_pair() noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\ensures
+\tcode{pointer()} is equal to \tcode{nullptr} and
+\tcode{tag()} is equal to \tcode{TagT()}.
+\end{itemdescr}
+
+\indexlibraryglobal{pointer_tag_pair}%
+\begin{itemdecl}
+template<@\exposconcept{tagging-compatible-pointee}@<pointer_type, bits_requested> U>
+  constexpr pointer_tag_pair(U* p, tag_type t);
+constexpr pointer_tag_pair(nullptr_t p, tag_type t);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\constantwhen
+Preconditions are met.
+
+\pnum
+\expects
+\begin{itemize}
+\item \tcode{p} is not a pointer past the end of an object\iref{basic.compound}.
+\item \tcode{\exposid{tag-bit-width}(t) <= bits_requested} is \tcode{true}.
+\end{itemize}
+
+\pnum
+\ensures
+\tcode{pointer()} is equal to \tcode{p} and
+\tcode{tag()} is equal to \tcode{t}.
+
+\pnum
+\throws
+Nothing.
+\end{itemdescr}
+
+\rSec3[ptrtag.pair.overalign]{Support for overaligned pointers}
+
+\indexlibraryglobal{from_overaligned}%
+\begin{itemdecl}
+template<size_t PromisedAlignment,
+         @\exposconcept{tagging-compatible-pointee}@<pointer_type, bits_requested, PromisedAlignment> U>
+  static constexpr pointer_tag_pair from_overaligned(U* p, tag_type t);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\constantwhen
+Preconditions are met.
+
+\pnum
+\expects
+\begin{itemize}
+\item \tcode{p} is not a pointer past the end of an object\iref{basic.compound}.
+\item \tcode{p == nullptr || is_sufficiently_aligned<PromisedAlignment>(p)} is \tcode{true}.
+\item \tcode{\exposid{tag-bit-width}(t) <= bits_requested} is \tcode{true}.
+\end{itemize}
+
+\pnum
+\returns
+An object \tcode{ptp} of type \tcode{pointer_tag_pair} such that both
+\tcode{ptp.pointer()} is equal to \tcode{p} and
+\tcode{ptp.tag()} is equal to \tcode{t}.
+
+\pnum
+\throws
+Nothing.
+\end{itemdescr}
+
+\rSec3[ptrtag.pair.tagops]{Tagged pointer operations}
+
+\indexlibraryglobal{tagged_pointer_type}%
+\begin{itemdecl}
+using tagged_pointer_type = @\seebelow@;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\tcode{tagged_pointer_type} denotes \cv{}~\tcode{void*},
+%FIXME: what do we mean by "pointer denotes"? \tcode{pointer()}?
+for \cv{} such that pointer denotes \cv{}~\tcode{U*} for some type \tcode{U}.
+\end{itemdescr}
+
+\indexlibraryglobal{tagged_pointer}%
+\begin{itemdecl}
+tagged_pointer_type tagged_pointer() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+An unspecified value \tcode{tp} of \tcode{tagged_pointer_type} type
+such that for any specialization \tcode{DP} of \tcode{pointer_tag_pair} and
+alignment value \tcode{A} for which
+\begin{itemize}
+\item \tcode{pointer_bits_available(A) >= DP::bits_requested} is \tcode{true},
+\item \tcode{is_sufficiently_aligned<A>(ptr)} is \tcode{true}, and
+\item \tcode{\exposid{tag-bit-width}(tag) <= DP::bits_requested} is \tcode{true},
+\end{itemize}
+\tcode{DP::from_tagged(tp)} produces an object \tcode{dp} such that
+\tcode{reinterpret_cast<pointer_type>(dp.poin\-ter())} is equal to \tcode{ptr} and
+\tcode{static_cast<TagT>(dp.tag())} is equal to \tcode{tag}.
+\begin{note}
+This function returns an invalid pointer value\iref{basic.compound}
+with implementation-defined behavior.
+\end{note}
+\end{itemdescr}
+
+\indexlibraryglobal{from_tagged}%
+\begin{itemdecl}
+static pointer_tag_pair from_tagged(tagged_pointer_type p) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+An object \tcode{dp} of type \tcode{pointer_tag_type}, such that
+\begin{itemize}
+\item
+\tcode{reinterpret_cast<pointer_type>(sp.pointer())} is equal to \tcode{dp.pointer()} and\\
+\tcode{static_cast<TagT>(sp.tag())} is equal to \tcode{dp.tag()},
+if \tcode{p} is equal to \tcode{sp.tagged_pointer()}
+for some object \tcode{sp} of a type that is a specialization of \tcode{pointer_tag_type},
+such that for some alignment value \tcode{A}
+\begin{itemize}
+\item \tcode{pointer_bits_available(A) >= bits_requested} is \tcode{true},
+\item \tcode{is_sufficiently_aligned<A>(sp.pointer())} is \tcode{true}, and
+\item \tcode{\exposid{tag-bit-width}(sp.tag()) <= bits_requested} is \tcode{true},
+\end{itemize}
+\item
+otherwise, the values of \tcode{dp.pointer()} and \tcode{dp.tag()} are unspecified.
+\end{itemize}
+\end{itemdescr}
+
+\rSec3[ptrtag.pair.accessors]{Accessors}
+
+\indexlibraryglobal{pointer}%
+\begin{itemdecl}
+constexpr pointer_type pointer() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+The pointer value represented by \tcode{*this}.
+\end{itemdescr}
+
+\indexlibraryglobal{tag}%
+\begin{itemdecl}
+constexpr tag_type tag() const noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+The tag value represented by \tcode{*this}.
+\end{itemdescr}
+
+\rSec3[ptrtag.pair.swap]{Swap}
+
+\indexlibraryglobal{swap}%
+\begin{itemdecl}
+constexpr void swap(pointer_tag_pair& o) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Exchanges the values of \tcode{*this} and \tcode{o}.
+\end{itemdescr}
+
+\rSec3[ptrtag.pair.comp]{Comparisons}
+
+\indexlibrarymember{operator<=>}{pointer_tag_pair}%
+\begin{itemdecl}
+friend constexpr auto operator<=>(pointer_tag_pair lhs, pointer_tag_pair rhs)
+  noexcept requires @\libconcept{three_way_comparable}@<tag_type>;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to:
+\begin{codeblock}
+return pair(lhs.pointer(), lhs.tag()) <=> pair(rhs.pointer(), rhs.tag());
+\end{codeblock}
+
+\pnum
+\recommended
+%FIXME: These imperative instructions directly addressing compiler developers seem highly unusual.
+%Don't we normally say something like "implementations should"?
+%Same issue for operator==.
+Directly compare the internal bit representations
+if the expression \tcode{lhs.tag() <=> rhs.tag()}
+results in a call to a built-in operator \tcode{<=>}
+comparing values of type \tcode{tag_type}.
+
+\begin{note}
+The result of comparing unrelated pointers is unspecified.
+\end{note}
+\end{itemdescr}
+
+\indexlibrarymember{operator==}{pointer_tag_pair}%
+\begin{itemdecl}
+friend constexpr bool operator==(pointer_tag_pair lhs, pointer_tag_pair rhs)
+  noexcept requires @\libconcept{equality_comparable}@<tag_type>;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to:
+\begin{codeblock}
+return pair(lhs.pointer(), lhs.tag()) == pair(rhs.pointer(), rhs.tag());
+\end{codeblock}
+
+\pnum
+\recommended
+Directly compare the internal bit representations
+if the expression \tcode{lhs.tag() == rhs.tag()}
+results in a call to a built-in operator \tcode{==}
+comparing values of type \tcode{tag_type}.
+\end{itemdescr}
+
+\rSec3[ptrtag.pair.get]{Tuple interface}
+
+\indexlibrarymember{get}{pointer_tag_pair}%
+\begin{itemdecl}
+template<size_t I, class Ptr, unsigned BitsRequested, class TagT>
+  constexpr tuple_element_t<I, pointer_tag_pair<Ptr, BitsRequested, TagT>>
+    get(pointer_tag_pair<Ptr, BitsRequested, TagT> p) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\mandates
+%FIXME: is true
+\tcode{I < 2}.
+
+\pnum
+\returns
+\begin{itemize}
+\item \tcode{p.pointer()} if \tcode{I} is equal to zero,
+\item \tcode{p.tag()} otherwise.
+\end{itemize}
+\end{itemdescr}
 
 \rSec1[smartptr]{Smart pointers}
 
@@ -2623,6 +3140,10 @@ constexpr add_lvalue_reference_t<T> operator*() const noexcept(noexcept(*declval
 
 \begin{itemdescr}
 \pnum
+\constraints
+\tcode{*declval<pointer>()} is a well-formed expression.
+
+\pnum
 \mandates
 \tcode{reference_converts_from_temporary_v<add_lvalue_reference_t<T>, decltype(\linebreak{}*declval<pointer>())>} is \tcode{false}.
 
@@ -3177,7 +3698,7 @@ template<class T1, class D1, class T2, class D2>
   requires @\libconcept{three_way_comparable_with}@<typename unique_ptr<T1, D1>::pointer,
                                      typename unique_ptr<T2, D2>::pointer>
   constexpr compare_three_way_result_t<typename unique_ptr<T1, D1>::pointer,
-                             typename unique_ptr<T2, D2>::pointer>
+                                       typename unique_ptr<T2, D2>::pointer>
     operator<=>(const unique_ptr<T1, D1>& x, const unique_ptr<T2, D2>& y);
 \end{itemdecl}
 
@@ -3372,13 +3893,18 @@ namespace std {
       constexpr shared_ptr(nullptr_t p, D d);
     template<class D, class A>
       constexpr shared_ptr(nullptr_t p, D d, A a);
-    template<class Y> constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
-    template<class Y> constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
+    template<class Y>
+      constexpr shared_ptr(const shared_ptr<Y>& r, element_type* p) noexcept;
+    template<class Y>
+      constexpr shared_ptr(shared_ptr<Y>&& r, element_type* p) noexcept;
     constexpr shared_ptr(const shared_ptr& r) noexcept;
-    template<class Y> constexpr shared_ptr(const shared_ptr<Y>& r) noexcept;
+    template<class Y>
+      constexpr shared_ptr(const shared_ptr<Y>& r) noexcept;
     constexpr shared_ptr(shared_ptr&& r) noexcept;
-    template<class Y> constexpr shared_ptr(shared_ptr<Y>&& r) noexcept;
-    template<class Y> constexpr explicit shared_ptr(const weak_ptr<Y>& r);
+    template<class Y>
+      constexpr shared_ptr(shared_ptr<Y>&& r) noexcept;
+    template<class Y>
+      constexpr explicit shared_ptr(const weak_ptr<Y>& r);
     template<class Y, class D>
       constexpr shared_ptr(unique_ptr<Y, D>&& r);
 
@@ -3387,9 +3913,11 @@ namespace std {
 
     // \ref{util.smartptr.shared.assign}, assignment
     constexpr shared_ptr& operator=(const shared_ptr& r) noexcept;
-    template<class Y> constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
+    template<class Y>
+      constexpr shared_ptr& operator=(const shared_ptr<Y>& r) noexcept;
     constexpr shared_ptr& operator=(shared_ptr&& r) noexcept;
-    template<class Y> constexpr shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
+    template<class Y>
+      constexpr shared_ptr& operator=(shared_ptr<Y>&& r) noexcept;
     template<class Y, class D>
       constexpr shared_ptr& operator=(unique_ptr<Y, D>&& r);
 
@@ -3410,8 +3938,10 @@ namespace std {
     constexpr element_type& operator[](ptrdiff_t i) const;
     constexpr long use_count() const noexcept;
     constexpr explicit operator bool() const noexcept;
-    template<class U> constexpr bool owner_before(const shared_ptr<U>& b) const noexcept;
-    template<class U> constexpr bool owner_before(const weak_ptr<U>& b) const noexcept;
+    template<class U>
+      bool owner_before(const shared_ptr<U>& b) const noexcept;
+    template<class U>
+      bool owner_before(const weak_ptr<U>& b) const noexcept;
     size_t owner_hash() const noexcept;
     template<class U>
       constexpr bool owner_equal(const shared_ptr<U>& b) const noexcept;
@@ -3943,8 +4473,11 @@ constexpr element_type& operator[](ptrdiff_t i) const;
 \begin{itemdescr}
 \pnum
 \expects
-\tcode{get() != nullptr \&\& i >= 0}.
-If \tcode{T} is \tcode{U[N]}, \tcode{i < N}.
+\tcode{get() != nullptr} is \tcode{true}.
+
+\pnum
+\hardexpects
+$\tcode{i} \ge 0$. If \tcode{T} is \tcode{U[N]}, $\tcode{i} < \tcode{N}$.
 
 \pnum
 \returns
@@ -4254,8 +4787,8 @@ shared_ptr<vector<int>> q = make_shared<vector<int>>(16, 1);
 \indexlibraryglobal{make_shared}%
 \indexlibraryglobal{allocate_shared}%
 \begin{itemdecl}
-template<class T> shared_ptr<T>
-  constexpr make_shared(size_t N);                                        // \tcode{T} is \tcode{U[]}
+template<class T>
+  constexpr shared_ptr<T> make_shared(size_t N);                          // \tcode{T} is \tcode{U[]}
 template<class T, class A>
   constexpr shared_ptr<T> allocate_shared(const A& a, size_t N);          // \tcode{T} is \tcode{U[]}
 \end{itemdecl}
@@ -4263,13 +4796,13 @@ template<class T, class A>
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{T} is of the form \tcode{U[]}.
+\tcode{T} is an array of unknown bound.
 
 \pnum
 \returns
-A \tcode{shared_ptr} to an object of type \tcode{U[N]}
-with a default initial value,
-where \tcode{U} is \tcode{remove_extent_t<T>}.
+A \tcode{shared_ptr} to an array of
+\tcode{N} elements of type \tcode{remove_extent_t<T>}
+with a default initial value.
 
 \pnum
 \begin{example}
@@ -4294,7 +4827,7 @@ template<class T, class A>
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{T} is of the form \tcode{U[N]}.
+\tcode{T} is an array of known bound.
 
 \pnum
 \returns
@@ -4316,21 +4849,23 @@ shared_ptr<double[6][2][2]> q = make_shared<double[6][2][2]>();
 \indexlibraryglobal{allocate_shared}%
 \begin{itemdecl}
 template<class T>
-  constexpr shared_ptr<T> make_shared(size_t N, const remove_extent_t<T>& u);       // \tcode{T} is \tcode{U[]}
+  constexpr shared_ptr<T> make_shared(size_t N,
+                                      const remove_extent_t<T>& u);     // \tcode{T} is \tcode{U[]}
 template<class T, class A>
-  constexpr shared_ptr<T> allocate_shared(const A& a, size_t N, const remove_extent_t<T>& u);   // \tcode{T} is \tcode{U[]}
+  constexpr shared_ptr<T> allocate_shared(const A& a, size_t N,
+                                          const remove_extent_t<T>& u); // \tcode{T} is \tcode{U[]}
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{T} is of the form \tcode{U[]}.
+\tcode{T} is an array of unknown bound.
 
 \pnum
 \returns
-A \tcode{shared_ptr} to an object of type \tcode{U[N]},
-where \tcode{U} is \tcode{remove_extent_t<T>} and
-each array element has an initial value of \tcode{u}.
+A \tcode{shared_ptr} to an array of
+\tcode{N} elements of type \tcode{remove_extent_t<T>}
+where each array element has an initial value of \tcode{u}.
 
 \pnum
 \begin{example}
@@ -4351,13 +4886,14 @@ shared_ptr<vector<int>[]> r = make_shared<vector<int>[]>(4, {1, 2});
 template<class T>
   constexpr shared_ptr<T> make_shared(const remove_extent_t<T>& u);       // \tcode{T} is \tcode{U[N]}
 template<class T, class A>
-  constexpr shared_ptr<T> allocate_shared(const A& a, const remove_extent_t<T>& u);   // \tcode{T} is \tcode{U[N]}
+  constexpr shared_ptr<T> allocate_shared(const A& a,
+                                          const remove_extent_t<T>& u);   // \tcode{T} is \tcode{U[N]}
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \constraints
-\tcode{T} is of the form \tcode{U[N]}.
+\tcode{T} is an array of known bound.
 
 \pnum
 \returns
@@ -4371,7 +4907,7 @@ has an initial value of \tcode{u}.
 shared_ptr<double[1024]> p = make_shared<double[1024]>(1.0);
   // \tcode{shared_ptr} to a \tcode{double[1024]}, where each element is \tcode{1.0}
 shared_ptr<double[6][2]> q = make_shared<double[6][2]>({1.0, 0.0});
-  // \tcode{shared_ptr} to a \tcode{double[6][2]}, where each double[2] element is \tcode{\{1.0, 0.0\}}
+  // \tcode{shared_ptr} to a \tcode{double[6][2]}, where each \tcode{double[2]} element is \tcode{\{1.0, 0.0\}}
 shared_ptr<vector<int>[4]> r = make_shared<vector<int>[4]>({1, 2});
   // \tcode{shared_ptr} to a \tcode{vector<int>[4]}, where each vector has contents \tcode{\{1, 2\}}
 \end{codeblock}
@@ -4425,8 +4961,8 @@ template<class T, class A>
 
 \pnum
 \returns
-A \tcode{shared_ptr} to an object of type \tcode{U[N]},
-where \tcode{U} is \tcode{remove_extent_t<T>}.
+A \tcode{shared_ptr} to an array of
+\tcode{N} elements of type \tcode{remove_extent_t<T>}.
 
 \pnum
 \begin{example}
@@ -4453,7 +4989,8 @@ template<class T, class U>
 
 \indexlibrarymember{operator==}{shared_ptr}%
 \begin{itemdecl}
-template<class T> constexpr bool operator==(const shared_ptr<T>& a, nullptr_t) noexcept;
+template<class T>
+  constexpr bool operator==(const shared_ptr<T>& a, nullptr_t) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -5312,7 +5849,7 @@ namespace std {
     constexpr ~out_ptr_t();
 
     constexpr operator Pointer*() const noexcept;
-    constexpr operator void**() const noexcept;
+    operator void**() const noexcept;
 
   private:
     Smart& s;                   // \expos
@@ -5499,7 +6036,7 @@ otherwise \tcode{\exposid{POINTER_OF}(Smart)}.
 
 \pnum
 \returns
-\tcode{out_ptr_t<Smart, P, Args\&\&...>(s, std::forward<Args>(args)...)}
+\tcode{out_ptr_t<Smart, P, Args\&\&...>(s, std::forward<Args>(args)...)}.
 \end{itemdescr}
 
 \rSec3[inout.ptr.t]{Class template \tcode{inout_ptr_t}}
@@ -5552,7 +6089,7 @@ namespace std {
     constexpr ~inout_ptr_t();
 
     constexpr operator Pointer*() const noexcept;
-    constexpr operator void**() const noexcept;
+    operator void**() const noexcept;
 
   private:
     Smart& s;                   // \expos
@@ -5823,8 +6360,8 @@ namespace std {
   public:
     using value_type = T;
     using allocator_type = Allocator;
-    using pointer = typename allocator_traits<Allocator>::pointer;
-    using const_pointer = typename allocator_traits<Allocator>::const_pointer;
+    using pointer = allocator_traits<Allocator>::pointer;
+    using const_pointer = allocator_traits<Allocator>::const_pointer;
 
     // \ref{indirect.ctor}, constructors
     constexpr explicit indirect();
@@ -5852,7 +6389,7 @@ namespace std {
     // \ref{indirect.dtor}, destructor
     constexpr ~indirect();
 
-    // \ref{indirect.asgn}, assignment
+    // \ref{indirect.assign}, assignment
     constexpr indirect& operator=(const indirect& other);
     constexpr indirect& operator=(indirect&& other) noexcept(@\seebelow@);
     template<class U = T>
@@ -6192,7 +6729,7 @@ using \tcode{allocator_traits<Allocator>::de\-stroy} and
 then the storage is deallocated.
 \end{itemdescr}
 
-\rSec3[indirect.asgn]{Assignment}
+\rSec3[indirect.assign]{Assignment}
 
 \indexlibrarymember{operator=}{indirect}%
 \begin{itemdecl}
@@ -6269,7 +6806,7 @@ remains unchanged.
 If an exception is thrown during
 the call to \tcode{T}{'s} selected copy constructor, no effect.
 If an exception is thrown during the call to \tcode{T}{'s} copy assignment,
-the state of its contained value
+the state of its owned object
 is as defined by the exception safety guarantee of
 \tcode{T}{'s} copy assignment.
 \end{itemdescr}
@@ -6284,7 +6821,11 @@ constexpr indirect& operator=(indirect&& other)
 \begin{itemdescr}
 \pnum
 \mandates
-\tcode{is_copy_constructible_t<T>} is \tcode{true}.
+If
+\tcode{allocator_traits<Allocator>::propagate_on_container_move_assignment::val\-ue}
+is \tcode{false} and
+\tcode{allocator_traits<Allocator>::is_always_equal::value} is \tcode{false},
+\tcode{is_move_con\-structible_v<T>} is \tcode{true}.
 
 \pnum
 \effects
@@ -6301,28 +6842,20 @@ is \tcode{true}.
 
 \item
 If \tcode{other} is valueless,
-\tcode{*this} becomes valueless and
-the owned object in \tcode{*this}, if any,
-is destroyed using \tcode{allocator_traits<Allocator>::destroy} and
-then the storage is deallocated.
+\tcode{*this} becomes valueless.
 
 \item
 Otherwise,
+if the allocator needs updating or
 if \tcode{\exposid{alloc} == other.\exposid{alloc}} is \tcode{true},
-swaps the owned objects in \tcode{*this} and \tcode{other};
-the owned object in \tcode{other}, if any,
-is then destroyed using \tcode{allocator_traits<Allocator>::destroy} and
-then the storage is deallocated.
+\tcode{*this} takes ownership of the owned object of \tcode{other}.
 
 \item
 Otherwise,
 constructs a new owned object with
 %FIXME: "as the argument as an rvalue" is awkward.
 the owned object of \tcode{other} as the argument as an rvalue,
-using either
-the allocator in \tcode{*this} or
-the allocator in \tcode{other}
-if the allocator needs updating.
+using the allocator in \tcode{*this}.
 
 \item
 The previously owned object in \tcode{*this}, if any,
@@ -6504,7 +7037,7 @@ Equivalent to \tcode{lhs.swap(rhs)}.
 \begin{itemdecl}
 template<class U, class AA>
   constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
-    noexcept(noexcept(*lhs == *rhs));
+    noexcept(noexcept(bool(*lhs == *rhs)));
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6543,7 +7076,8 @@ otherwise
 %FIXME: "friend" included on declaration in synopsis but not here.
 \begin{itemdecl}
 template<class U>
-  constexpr bool operator==(const indirect& lhs, const U& rhs) noexcept(noexcept(*lhs == rhs));
+  constexpr bool operator==(const indirect& lhs, const U& rhs)
+    noexcept(noexcept(bool(*lhs == rhs)));
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6681,8 +7215,8 @@ namespace std {
   public:
     using value_type = T;
     using allocator_type = Allocator;
-    using pointer = typename allocator_traits<Allocator>::pointer;
-    using const_pointer = typename allocator_traits<Allocator>::const_pointer;
+    using pointer = allocator_traits<Allocator>::pointer;
+    using const_pointer = allocator_traits<Allocator>::const_pointer;
 
     // \ref{polymorphic.ctor}, constructors
     constexpr explicit polymorphic();
@@ -6710,7 +7244,7 @@ namespace std {
     // \ref{polymorphic.dtor}, destructor
     constexpr ~polymorphic();
 
-    // \ref{polymorphic.asgn}, assignment
+    // \ref{polymorphic.assign}, assignment
     constexpr polymorphic& operator=(const polymorphic& other);
     constexpr polymorphic& operator=(polymorphic&& other) noexcept(@\seebelow@);
 
@@ -6769,7 +7303,7 @@ Constructs an owned object of type \tcode{T} with an empty argument list
 using the allocator \exposid{alloc}.
 \end{itemdescr}
 
-\indexlibraryctor{indirect}%
+\indexlibraryctor{polymorphic}%
 \begin{itemdecl}
 constexpr explicit polymorphic(allocator_arg_t, const Allocator& a);
 \end{itemdecl}
@@ -6867,8 +7401,9 @@ the owned object of \tcode{other}
 considering that owned object as an rvalue.
 Otherwise,
 if \tcode{\exposid{alloc} != other.\exposid{alloc}} is \tcode{true},
-constructs an object of type \tcode{polymorphic},
-considering the owned object in \tcode{other} as an rvalue,
+constructs an owned object of type \tcode{U},
+where \tcode{U} is the type of the owned object in \tcode{other},
+with the owned object in \tcode{other} as an rvalue,
 using the allocator \exposid{alloc}.
 \end{itemdescr}
 
@@ -6899,7 +7434,7 @@ Where \tcode{UU} is \tcode{remove_cvref_t<U>},
 
 \pnum
 \effects
-Constructs an owned object of type \tcode{U} with \tcode{std::forward<U>(u)}
+Constructs an owned object of type \tcode{UU} with \tcode{std::forward<U>(u)}
 using the allocator \exposid{alloc}.
 \end{itemdescr}
 
@@ -6929,7 +7464,7 @@ Where \tcode{UU} is \tcode{remove_cvref_t<U>},
 \pnum
 \effects
 \exposid{alloc} is direct-non-list-initialized with \tcode{a}.
-Constructs an owned object of type \tcode{U} with \tcode{std::forward<U>(u)}
+Constructs an owned object of type \tcode{UU} with \tcode{std::forward<U>(u)}
 using the allocator \exposid{alloc}.
 \end{itemdescr}
 
@@ -7065,11 +7600,14 @@ constexpr ~polymorphic();
 \pnum
 \effects
 If \tcode{*this} is not valueless,
-destroys the owned object using \tcode{allocator_traits<Allocator>::de\-stroy} and
+calls \tcode{allocator_traits<Allocator>::destroy(p)},
+where \tcode{p} is a pointer of type \tcode{U*} to
+the owned object and
+\tcode{U} is the type of the owned object;
 then the storage is deallocated.
 \end{itemdescr}
 
-\rSec3[polymorphic.asgn]{Assignment}
+\rSec3[polymorphic.assign]{Assignment}
 
 \indexlibrarymember{operator=}{polymorphic}%
 \indexlibrarydtor{polymorphic}%
@@ -7097,7 +7635,9 @@ is \tcode{true}.
 
 \item
 If \tcode{other} is not valueless,
-a new owned object is constructed in \tcode{*this} using
+a new owned object of type \tcode{U},
+where \tcode{U} is the type of the owned object in \tcode{other},
+is constructed in \tcode{*this} using
 \tcode{allocator_traits<Allocator>::construct} with
 the owned object from \tcode{other} as the argument, using either
 the allocator in \tcode{*this} or
@@ -7133,7 +7673,10 @@ constexpr polymorphic& operator=(polymorphic&& other)
 \begin{itemdescr}
 \pnum
 \mandates
-If \tcode{allocator_traits<Allocator>::is_always_equal::value} is \tcode{false},
+If
+\tcode{allocator_traits<Allocator>::propagate_on_container_move_assignment::val\-ue}
+is \tcode{false} and
+\tcode{allocator_traits<Allocator>::is_always_equal::value} is \tcode{false},
 \tcode{T} is a complete type.
 
 \pnum
@@ -7150,22 +7693,21 @@ The allocator needs updating if
 is \tcode{true}.
 
 \item
-If \tcode{\exposid{alloc} == other.\exposid{alloc}} is \tcode{true},
-swaps the owned objects in \tcode{*this} and \tcode{other};
-the owned object in \tcode{other}, if any,
-is then destroyed using \tcode{allocator_traits<Allocator>::destroy} and
-then the storage is deallocated.
+If \tcode{other} is valueless, \tcode{*this} becomes valueless.
 
 \item
 Otherwise,
-if \tcode{\exposid{alloc} != other.\exposid{alloc}} is \tcode{true};
-if \tcode{other} is not valueless,
-a new owned object is constructed in \tcode{*this}
-using \tcode{allocator_traits<Allocator>::construct} with
-%FIXME: Cleanup wording.
-the owned object from \tcode{other} as the argument as an rvalue,
-using either the allocator in \tcode{*this} or
-the allocator in \tcode{other} if the allocator needs updating.
+if the allocator needs updating or
+\tcode{\exposid{alloc} == other.\exposid{alloc}} is \tcode{true},
+\tcode{*this} takes ownership of the owned object of \tcode{other}.
+
+\item
+Otherwise,
+constructs a new owned object of type \tcode{U},
+where \tcode{U} is the type of the owned object in \tcode{other},
+with the owned object of
+\tcode{other} as the argument as an rvalue,
+using the allocator in \tcode{*this}.
 
 \item
 The previously owned object in \tcode{*this}, if any,
@@ -7779,7 +8321,7 @@ and constructor arguments \tcode{std::forward<Args>(args)...} is well-formed.
 
 \pnum
 \effects
-Construct a \tcode{T} object in the storage
+Constructs a \tcode{T} object in the storage
 whose address is represented by \tcode{p}
 by uses-allocator construction with allocator \tcode{*this}
 and constructor arguments \tcode{std::forward<Args>(args)...}.
@@ -7902,9 +8444,9 @@ The previous value of the default memory resource pointer.
 \pnum
 \remarks
 Calling the \tcode{set_default_resource} and
-\tcode{get_default_resource} functions shall not incur a data race.
+\tcode{get_default_resource} functions shall not incur a data race\iref{intro.races}.
 A call to the \tcode{set_default_resource} function
-shall synchronize with subsequent calls to
+synchronizes with subsequent calls to
 the \tcode{set_default_resource} and \tcode{get_default_resource} functions.
 \end{itemdescr}
 
@@ -7984,11 +8526,11 @@ namespace std::pmr {
     synchronized_pool_resource(const pool_options& opts, memory_resource* upstream);
 
     synchronized_pool_resource()
-        : synchronized_pool_resource(pool_options(), get_default_resource()) {}
+      : synchronized_pool_resource(pool_options(), get_default_resource()) {}
     explicit synchronized_pool_resource(memory_resource* upstream)
-        : synchronized_pool_resource(pool_options(), upstream) {}
+      : synchronized_pool_resource(pool_options(), upstream) {}
     explicit synchronized_pool_resource(const pool_options& opts)
-        : synchronized_pool_resource(opts, get_default_resource()) {}
+      : synchronized_pool_resource(opts, get_default_resource()) {}
 
     synchronized_pool_resource(const synchronized_pool_resource&) = delete;
     virtual ~synchronized_pool_resource();
@@ -8011,11 +8553,11 @@ namespace std::pmr {
     unsynchronized_pool_resource(const pool_options& opts, memory_resource* upstream);
 
     unsynchronized_pool_resource()
-        : unsynchronized_pool_resource(pool_options(), get_default_resource()) {}
+      : unsynchronized_pool_resource(pool_options(), get_default_resource()) {}
     explicit unsynchronized_pool_resource(memory_resource* upstream)
-        : unsynchronized_pool_resource(pool_options(), upstream) {}
+      : unsynchronized_pool_resource(pool_options(), upstream) {}
     explicit unsynchronized_pool_resource(const pool_options& opts)
-        : unsynchronized_pool_resource(opts, get_default_resource()) {}
+      : unsynchronized_pool_resource(opts, get_default_resource()) {}
 
     unsynchronized_pool_resource(const unsynchronized_pool_resource&) = delete;
     virtual ~unsynchronized_pool_resource();
@@ -8100,9 +8642,8 @@ from its own internal data structures.
 The resulting object will hold a copy of \tcode{upstream},
 but will not own the resource to which \tcode{upstream} points.
 \begin{note}
-The intention is that calls to \tcode{upstream->allocate()}
-will be substantially fewer than calls to \tcode{this->allocate()}
-in most cases.
+The intention is that in most cases there will be substantially fewer
+calls to \tcode{upstream->allocate()} than to \tcode{this->allocate()}.
 \end{note}
 The behavior of the pooling mechanism is tuned
 according to the value of the \tcode{opts} argument.
@@ -8493,13 +9034,13 @@ namespace std {
     using outer_allocator_type = OuterAlloc;
     using inner_allocator_type = @\seebelow@;
 
-    using value_type           = typename OuterTraits::value_type;
-    using size_type            = typename OuterTraits::size_type;
-    using difference_type      = typename OuterTraits::difference_type;
-    using pointer              = typename OuterTraits::pointer;
-    using const_pointer        = typename OuterTraits::const_pointer;
-    using void_pointer         = typename OuterTraits::void_pointer;
-    using const_void_pointer   = typename OuterTraits::const_void_pointer;
+    using value_type           = OuterTraits::value_type;
+    using size_type            = OuterTraits::size_type;
+    using difference_type      = OuterTraits::difference_type;
+    using pointer              = OuterTraits::pointer;
+    using const_pointer        = OuterTraits::const_pointer;
+    using void_pointer         = OuterTraits::void_pointer;
+    using const_void_pointer   = OuterTraits::const_void_pointer;
 
     using propagate_on_container_copy_assignment = @\seebelow@;
     using propagate_on_container_move_assignment = @\seebelow@;

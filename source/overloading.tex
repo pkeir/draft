@@ -16,13 +16,18 @@ is commonly called an ``overload''.
 \end{note}
 
 \pnum
-When a function is named in a call, which function
+When a function is designated in a call, which function
 declaration is being referenced and the validity of the call
 are determined by comparing the types
 of the arguments at the point of use with the types of the parameters
 in the declarations in the overload set.
 This function selection process is called
 \defn{overload resolution} and is defined in~\ref{over.match}.
+\begin{note}
+Overload sets are formed by \grammarterm{id-expression}s
+naming functions and function templates and
+by \grammarterm{splice-expression}s designating entities of the same kinds.
+\end{note}
 \begin{example}
 \indextext{overloading!example of}%
 \begin{codeblock}
@@ -380,13 +385,13 @@ The resolution of the address of an
 overload set in other contexts is described in \ref{over.over}.
 \end{note}
 
-\rSec4[over.call.func]{Call to named function}
+\rSec4[over.call.func]{Call to designated function}
 
 \pnum
-Of interest in~\ref{over.call.func} are only those function calls in
-which the \grammarterm{postfix-expression}
-ultimately contains an \grammarterm{id-expression} that
-denotes one or more functions.
+Of interest in~\ref{over.call.func} are only those function calls
+in which the \grammarterm{postfix-expression} ultimately contains
+an \grammarterm{id-expression} or \grammarterm{splice-expression}
+that designates one or more functions.
 Such a
 \grammarterm{postfix-expression},
 perhaps nested arbitrarily deep in
@@ -395,8 +400,11 @@ parentheses, has one of the following forms:
 \begin{ncbnf}
 postfix-expression:\br
     postfix-expression \terminal{.} id-expression\br
+    postfix-expression \terminal{.} splice-expression\br
     postfix-expression \terminal{->} id-expression\br
-    primary-expression
+    postfix-expression \terminal{->} splice-expression\br
+    id-expression\br
+    splice-expression
 \end{ncbnf}
 
 These represent two syntactic subcategories of function calls:
@@ -404,7 +412,8 @@ qualified function calls and unqualified function calls.
 
 \pnum
 In qualified function calls,
-the function is named by an \grammarterm{id-expression}
+the function is designated by
+an \grammarterm{id-expression} or \grammarterm{splice-expression} $E$
 preceded by an \tcode{->} or \tcode{.} operator.
 Since the
 construct
@@ -433,8 +442,11 @@ significant in overload
 resolution for
 both glvalue and class prvalue objects.
 \end{footnote}
-The function declarations found by name lookup\iref{class.member.lookup}
-constitute the set of candidate functions.
+The set of candidate functions either
+is the set found by name lookup\iref{class.member.lookup}
+if $E$ is an \grammarterm{id-expression} or
+is the set determined as specified in~\ref{expr.prim.splice}
+if $E$ is a \grammarterm{splice-expression}.
 The argument list is the
 \grammarterm{expression-list}
 in the call augmented by the addition of the left operand of
@@ -444,16 +456,20 @@ operator in the normalized member function call as the
 implied object argument\iref{over.match.funcs}.
 
 \pnum
-In unqualified function calls, the function is named by a
-\grammarterm{primary-expression}.
-The function declarations found by name lookup\iref{basic.lookup} constitute the
-set of candidate functions.
-Because of the rules for name lookup, the set of candidate functions
+In unqualified function calls, the function is designated by
+an \grammarterm{id-expression} or a \grammarterm{splice-expression} $E$.
+The set of candidate functions either
+is the set found by name lookup\iref{basic.lookup}
+if $E$ is an \grammarterm{id-expression} or
+is the set determined as specified in~\ref{expr.prim.splice}
+if $E$ is a \grammarterm{splice-expression}.
+The set of candidate functions
 consists either entirely of non-member functions or entirely of
 member functions of some class
 \tcode{T}.
 In the former case or
-if the \grammarterm{primary-expression} is the address of an overload set,
+if $E$ is either a \grammarterm{splice-expression} or
+the address of an overload set,
 the argument list is
 the same as the
 \grammarterm{expression-list}
@@ -586,12 +602,16 @@ or the type
 ``reference to function of ($\tcode{P}_1, \dotsc, \tcode{P}_n$)
 returning \tcode{R}'', a \defn{surrogate call function} with the unique name
 \placeholder{call-function}
-and having the form
+and having a declaration of the form
 \begin{ncbnf}
 \terminal{R} \placeholder{call-function} \terminal{(} conversion-type-id \ %
-\terminal{F, P$_1$ a$_1$, $\dotsc$, P$_n$ a$_n$)} \terminal{\{ return F (a$_1$, $\dotsc$, a$_n$); \}}
+\terminal{F, P$_1$ a$_1$, $\dotsc$, P$_n$ a$_n$);}
 \end{ncbnf}
 is also considered as a candidate function.
+\begin{note}
+If a surrogate call function is selected by overload resolution,
+the behavior is as described in~\ref{over.call}.
+\end{note}
 Similarly, surrogate
 call functions are added to the set of candidate functions for
 each non-explicit conversion function declared in a base class of
@@ -1036,7 +1056,8 @@ the non-explicit constructors\iref{class.conv.ctor} of that
 class.
 The argument list is the
 \grammarterm{expression-list} or \grammarterm{assignment-expression}
-of the \grammarterm{initializer}.
+of the \grammarterm{initializer};
+for default-initialization, the argument list is empty.
 For default-initialization in the context of copy-list-initialization,
 if an explicit constructor is chosen, the initialization is ill-formed.
 
@@ -1140,23 +1161,23 @@ type of the reference being initialized,
 the candidate functions are selected as follows:
 \begin{itemize}
 \item
-Let $R$ be a set of types including
+Let $R$ be the set of all
 \begin{itemize}
 \item
-``lvalue reference to \cvqual{cv2} \tcode{T2}''
+lvalue reference types
 (when converting to an lvalue) and
 \item
-``\cvqual{cv2} \tcode{T2}''
-and ``rvalue reference to \cvqual{cv2} \tcode{T2}''
-(when converting to an rvalue or an lvalue of function type)
+non-reference types and rvalue reference types
+(when converting to an rvalue or an lvalue of function type).
 \end{itemize}
-for any \tcode{T2}.
 The permissible types for non-explicit conversion functions are
 the members of $R$
+having the form ``\cv{}~\tcode{T2}'' or ``reference to \cvqual{cv2}~\tcode{T2}''
 where ``\cvqual{cv1} \tcode{T}'' is reference-compatible\iref{dcl.init.ref}
 with ``\cvqual{cv2} \tcode{T2}''.
 For direct-initialization, the permissible types for explicit
 conversion functions are the members of $R$
+having the form ``\cv{}~\tcode{T2}'' or ``reference to \cvqual{cv2}~\tcode{T2}''
 where \tcode{T2} can be converted to type \tcode{T}
 with a (possibly trivial) qualification conversion\iref{conv.qual};
 otherwise there are none.
@@ -1210,7 +1231,8 @@ resolution.
 
 \pnum
 When resolving a placeholder for a deduced class type\iref{dcl.type.class.deduct}
-where the \grammarterm{template-name} names a primary class template \tcode{C},
+where the \grammarterm{template-name} or \grammarterm{splice-type-specifier}
+designates a primary class template \tcode{C},
 a set of functions and function templates, called the guides of \tcode{C},
 is formed comprising:
 \begin{itemize}
@@ -1411,8 +1433,25 @@ J j = { "ghi" };    // error: cannot bind reference to array of \tcode{unsigned 
 \end{example}
 
 \pnum
+When resolving a placeholder for a deduced class type
+where the \grammarterm{template-name}
+designates a type template template parameter \tcode{P},
+the type template template argument for \tcode{P}
+shall be a deducible template.
+Let \tcode{A} be an alias template
+whose template parameter list is that of \tcode{P} and
+whose \grammarterm{defining-type-id} is a \grammarterm{simple-template-id}
+whose \grammarterm{template-name} designates the type template template argument and
+whose \grammarterm{template-argument-list} is the template argument list of \tcode{P}.
+The alias template \tcode{A} is then used
+instead of the original \grammarterm{template-name}
+to resolve the placeholder.
+
+\pnum
 When resolving a placeholder for a deduced class type\iref{dcl.type.simple}
-where the \grammarterm{template-name} names an alias template \tcode{A},
+where
+the \grammarterm{template-name} or \grammarterm{splice-type-specifier}
+designates an alias template \tcode{A},
 the \grammarterm{defining-type-id} of \tcode{A} must be of the form
 \begin{ncsimplebnf}
 \opt{\keyword{typename}} \opt{nested-name-specifier} \opt{\keyword{template}} simple-template-id
@@ -1665,6 +1704,25 @@ template<std::@\libconcept{integral}@ W, class U>
 \indextext{overloading!argument lists|)}%
 \indextext{overloading!candidate functions|)}
 
+\pnum
+\begin{example}
+\begin{codeblock}
+template<typename ... Ts>
+struct Y {
+  Y();
+  Y(Ts ...);
+};
+template<template<typename T = char> class X>
+void f() {
+  X x;          // OK, deduces \tcode{Y<char>}
+  X x0{};       // OK, deduces \tcode{Y<char>}
+  X x1{1};      // OK, deduces \tcode{Y<int>}
+  X x2{1, 2};   // error: cannot deduce \tcode{X<T>} from \tcode{Y<int, int>}
+}
+template void f<Y>();
+\end{codeblock}
+\end{example}
+
 \rSec2[over.match.viable]{Viable functions}%
 \indextext{overloading!resolution!viable functions|(}
 
@@ -1698,13 +1756,76 @@ For the purposes of overload resolution,
 any argument for which there is no corresponding parameter is
 considered to ``match the ellipsis''\iref{over.ics.ellipsis}.
 \item
-A candidate function having more than $m$ parameters is viable
-only if all parameters following the $m^\text{th}$
-have default arguments\iref{dcl.fct.default}.
+A candidate function \tcode{C} having more than $m$ parameters is viable
+only if the set of scopes $G$, as defined below, is not empty.
+$G$ consists of every scope $X$ that satisfies all of the following:
+\begin{itemize}
+\item There is a declaration of \tcode{C}, whose host scope is $X$,
+considered by the overload resolution.
+\item For every $k^\textrm{th}$ parameter $P$ where $k$ > $m$,
+there is a reachable declaration, whose host scope is $X$,
+that specifies a default argument\iref{dcl.fct.default} for $P$.
+\end{itemize}
+If \tcode{C} is selected as the best viable function\iref{over.match.best}:
+\begin{itemize}
+\item
+$G$ shall contain exactly one scope (call it $S$).
+\item
+If the candidates are denoted by a \grammarterm{splice-expression},
+then $S$ shall not be a block scope.
+\item
+The default arguments used in the call to \tcode{C} are
+the default arguments specified by
+the reachable declarations whose host scope is $S$.
+\end{itemize}
 For the purposes of overload resolution,
 the parameter list is truncated on the right,
 so that there are exactly $m$ parameters.
 \end{itemize}
+\begin{example}
+\begin{codeblock}
+namespace A {
+  extern "C" void f(int, int = 5);
+  extern "C" void f(int = 6, int);
+}
+namespace B {
+  extern "C" void f(int, int = 7);
+}
+
+void use() {
+  [:^^A::f:](3, 4);     // OK, default argument was not used for viability
+  [:^^A::f:](3);        // error: default argument provided by declarations from two scopes
+  [:^^A::f:]();         // OK, default arguments provided by declarations in the scope of \tcode{A}
+
+  using A::f;
+  using B::f;
+  f(3, 4);              // OK, default argument was not used for viability
+  f(3);                 // error: default argument provided by declaration from two scopes
+  f();                  // OK, default arguments provided by declarations in the scope of \tcode{A}
+
+  void g(int = 8);
+  g();                  // OK
+  [:^^g:]();            // error: host scope is block scope
+}
+
+void h(int = 7);
+constexpr std::meta::info r = ^^h;
+void poison() {
+  void h(int = 8);
+  h();                  // OK, calls \tcode{h(8)}
+  [:^^h:]();            // error: default argument provided by declarations from two scopes
+}
+void call_h() {
+  [:^^h:]();            // error: default argument provided by declarations from two scopes
+  [:r:]();              // error: default argument provided by declarations from two scopes
+}
+
+template<typename... Ts>
+int k(int = 3, Ts...);
+int i = k<int>();       // error: no default argument for the second parameter
+int j = k<>();          // OK
+\end{codeblock}
+\end{example}
 
 \pnum
 Second, for a function to be viable, if it has associated constraints\iref{temp.constr.decl},
@@ -2006,29 +2127,10 @@ void f() {
 \end{example}
 
 \pnum
-If the best viable function resolves to a function
-for which multiple declarations were found, and
-if any two of these declarations inhabit different scopes and
-specify a default argument that made the function viable,
-the program is ill-formed.
-\begin{example}
-\begin{codeblock}
-namespace A {
-  extern "C" void f(int = 5);
-}
-namespace B {
-  extern "C" void f(int = 5);
-}
-
-using A::f;
-using B::f;
-
-void use() {
-  f(3);             // OK, default argument was not used for viability
-  f();              // error: found default argument twice
-}
-\end{codeblock}
-\end{example}
+\begin{note}
+If the best viable function was made viable by one or more default arguments,
+additional requirements apply\iref{over.match.viable}.
+\end{note}
 
 \rSec3[over.best.ics]{Implicit conversion sequences}%
 
@@ -2126,24 +2228,13 @@ When the parameter has a class type, this is a conceptual conversion
 defined for the purposes of \ref{over}; the actual initialization is
 defined in terms of constructors and is not a conversion.
 \end{note}
-Any difference in top-level cv-qualification is
-subsumed by the initialization itself and does not constitute a conversion.
-\begin{example}
-A parameter of type
-\tcode{A}
-can be initialized from an argument of type
-\tcode{const A}.
-The implicit conversion sequence for that case is the identity sequence; it
-contains no ``conversion'' from
-\tcode{const A}
-to
-\tcode{A}.
-\end{example}
 
 \pnum
-When the parameter has a class type and the argument expression has the
-same type, the implicit conversion sequence is an identity conversion.
+When the cv-unqualified version of the type of the argument expression
+is the same as the parameter type,
+the implicit conversion sequence is an identity conversion.
 When the parameter has a class type and the argument expression has a
+(possibly cv-qualified)
 derived class type, the implicit conversion sequence is a
 derived-to-base
 \indextext{conversion!derived-to-base}%
@@ -2153,6 +2244,14 @@ A derived-to-base conversion has Conversion rank\iref{over.ics.scs}.
 There is no such standard conversion; this derived-to-base conversion exists
 only in the description of implicit conversion sequences.
 \end{note}
+\begin{example}
+An implicit conversion sequence from an argument of type \tcode{const A}
+to a parameter of type \tcode{A} can be formed,
+even if overload resolution for copy-initialization of \tcode{A}
+from the argument would not find a viable function\iref{over.match.ctor,over.match.viable}.
+The implicit conversion sequence for that case is the identity sequence; it
+contains no ``conversion'' from \tcode{const A} to \tcode{A}.
+\end{example}
 
 \pnum
 When the parameter is the implicit object parameter of a static member function,
@@ -2337,10 +2436,10 @@ When a parameter of type ``reference to \cv~\tcode{T}''
 binds directly\iref{dcl.init.ref} to an argument expression:
 \begin{itemize}
 \item
-If the argument expression has a type that
-is a derived class of the parameter type,
+If the argument expression has a type \tcode{D} that
+is a derived class of \tcode{T},
 the implicit conversion sequence is a derived-to-base
-conversion\iref{over.best.ics}.
+conversion from \tcode{D} to \tcode{T}\iref{over.best.ics}.
 
 \item
 Otherwise,
@@ -3020,15 +3119,6 @@ int i = f(pc);                  // calls \tcode{f(B*)}
 \end{example}
 
 \item
-binding of an expression of type
-\tcode{C}
-to a reference to type
-\tcode{B}
-is better than binding an expression of type
-\tcode{C}
-to a reference to type
-\tcode{A},
-\item
 conversion of
 \tcode{A::*}
 to
@@ -3055,16 +3145,6 @@ is better than conversion of
 \tcode{C*}
 to
 \tcode{A*},
-\item
-binding of an expression of type
-\tcode{B}
-to a reference to type
-\tcode{A}
-is better than binding an expression of type
-\tcode{C}
-to a
-reference to type
-\tcode{A},
 \item
 conversion of
 \tcode{B::*}
@@ -3103,8 +3183,8 @@ types will be different.
 \indextext{overloaded function!address of}
 
 \pnum
-An \grammarterm{id-expression}
-whose terminal name refers to an overload set $S$ and
+An expression
+that designates an overload set $S$ and
 that appears without arguments
 is resolved to
 a function,
@@ -3134,7 +3214,7 @@ a constant template parameter\iref{temp.arg.nontype}.
 If the target type contains a placeholder type,
 placeholder type deduction is performed\iref{dcl.type.auto.deduct}, and
 the remainder of this subclause uses the target type so deduced.
-The \grammarterm{id-expression} can be preceded by the \tcode{\&} operator.
+The expression can be preceded by the \tcode{\&} operator.
 \begin{note}
 Any redundant set of parentheses surrounding the function name is
 ignored\iref{expr.prim.paren}.
@@ -3245,12 +3325,16 @@ int    (*p6)(long) = &(X::f);   // OK
 \begin{example}
 \begin{codeblock}
 template<bool B> struct X {
+  void e(int) requires B;       // \#1
+  void e(int);
   void f(short) requires B;
   void f(long);
   template<typename> void g(short) requires B;
   template<typename> void g(long);
 };
 void test() {
+  auto ep = &X<true>::e;        // OK, placeholder type deduction succeeds,
+                                // then selects \#1 as more partial-ordering-constrained
   &X<true>::f;                  // error: ambiguous; constraints are not considered
   &X<true>::g<int>;             // error: ambiguous; constraints are not considered
 }
@@ -3309,11 +3393,11 @@ the operator named in its
 %% Ed. note: character protrusion would misalign various operators.
 \microtypesetup{protrusion=false}
 \nontermdef{operator} \textnormal{one of}\br
-    \terminal{new \ \ \ \ \ delete \ \ new[] \ \ \ delete[] co_await (\rlap{\,)} \ \ \ \ \ \ \ [\rlap{\,]} \ \ \ \ \ \ \ -> \ \ \ \ \ \ ->*}\br
+    \terminal{\keyword{new} \ \ \ \ \ \keyword{delete} \ \ \keyword{new}[] \ \ \ \keyword{delete}[] \keyword{co_await} (\rlap{\,)} \ \ \ \ \ \ \ [\rlap{\,]} \ \ \ \ \ \ \ -> \ \ \ \ \ \ ->*}\br
     \terminal{\~ \ \ \ \ \ \ \ ! \ \ \ \ \ \ \ + \ \ \ \ \ \ \ - \ \ \ \ \ \ \ * \ \ \ \ \ \ \ / \ \ \ \ \ \ \ \% \ \ \ \ \ \ \ \caret{} \ \ \ \ \ \ \ \&}\br
     \terminal{| \ \ \ \ \ \ \ = \ \ \ \ \ \ \ += \ \ \ \ \ \ -= \ \ \ \ \ \ *= \ \ \ \ \ \ /= \ \ \ \ \ \ \%= \ \ \ \ \ \ \caret{}= \ \ \ \ \ \ \&=}\br
     \terminal{|= \ \ \ \ \ \ == \ \ \ \ \ \ != \ \ \ \ \ \ < \ \ \ \ \ \ \ > \ \ \ \ \ \ \ <= \ \ \ \ \ \ >= \ \ \ \ \ \ <=> \ \ \ \ \ \&\&}\br
-    \terminal{|| \ \ \ \ \ \ << \ \ \ \ \ \ >> \ \ \ \ \ \ <<= \ \ \ \ \ >>= \ \ \ \ \ ++ \ \ \ \ \ \ -- \ \ \ \ \ \ ,}\br
+    \terminal{|| \ \ \ \ \ \ << \ \ \ \ \ \ >> \ \ \ \ \ \ <<= \ \ \ \ \ >>= \ \ \ \ \ ++ \ \ \ \ \ \ -- \ \ \ \ \ \ ,}
 \end{bnf}
 \begin{note}
 The operators
@@ -3648,12 +3732,23 @@ and the expression is interpreted as
 \begin{ncsimplebnf}
 \terminal{(} postfix-expression . \keyword{operator} \terminal{->} \terminal{(}\terminal{)} \terminal{)} \terminal{->} \opt{\keyword{template}} id-expression
 \end{ncsimplebnf}
+Analogously, for an expression of the form
+\begin{ncsimplebnf}
+postfix-expression \terminal{->} splice-expression
+\end{ncsimplebnf}
+the operator function is selected by overload resolution,
+and the expression is interpreted as
+\begin{ncsimplebnf}
+\terminal{(} postfix-expression . \keyword{operator} \terminal{->} \terminal{(}\terminal{)} \terminal{)} \terminal{->} splice-expression
+\end{ncsimplebnf}
 
 \rSec2[over.inc]{Increment and decrement}
 \indextext{increment operator!overloaded|see{overloading, increment operator}}%
 \indextext{decrement operator!overloaded|see{overloading, decrement operator}}%
 \indextext{prefix ++ and -{-} overloading@prefix \tcode{++} and \tcode{--}!overloading}%
 \indextext{postfix ++ and -{-} overloading@postfix \tcode{++} and \tcode{--}!overloading}%
+
+\rSec3[over.inc.general]{General}
 
 \pnum
 \indextext{overloading!increment operator}%
@@ -3719,6 +3814,104 @@ is a function named \tcode{\keyword{operator}--}
 and is handled analogously to an increment operator function.
 \indextext{overloading!operator|)}
 
+\rSec3[over.inc.default]{Defaulted function}
+
+\pnum
+A defaulted postfix increment or decrement operator function
+for a type \tcode{C} shall be a non-template function that
+\begin{itemize}
+\item
+has a first parameter of type ``reference to \tcode{C}'' or
+a first parameter of type ``reference to volatile \tcode{C}'',
+where the implicit object parameter (if any)
+is considered to be the first parameter,
+\item
+is defined as defaulted in \tcode{C} or
+in a context where \tcode{C} is complete, and
+\item
+has a declared return type of \tcode{C}.
+\end{itemize}
+\begin{note}
+A postfix increment or decrement operator
+always has a parameter of type \tcode{int}\iref{over.inc.general}.
+\end{note}
+Name lookups and access checks
+in the implicit definition\iref{dcl.fct.def.default} of
+a defaulted postfix increment or decrement operator function
+are performed from a context equivalent to its \grammarterm{function-body}.
+A definition of a postfix increment or decrement operator as defaulted
+that appears in a class shall be the first declaration of that function.
+\begin{example}
+\begin{codeblock}
+struct S;
+S operator++(S&, int) = default;        // error: \tcode{S} is not complete
+\end{codeblock}
+\end{example}
+
+\pnum
+A defaulted postfix increment or decrement operator function
+for a type \tcode{C}
+is defined as deleted if
+\begin{itemize}
+\item
+\tcode{C} is a class type for which overload resolution\iref{over.match},
+as applied to direct-initialization of a variable of type \tcode{C}
+from an lvalue of type \tcode{C}, does not result in a usable candidate,
+\item
+\tcode{C} has a destructor that is deleted or inaccessible
+from the context of the \grammarterm{function-body}, or
+\item
+for an lvalue \tcode{c} of type \tcode{C},
+overload resolution as applied to
+\tcode{++c} for a postfix increment operator function or
+\tcode{--c} for a postfix decrement operator function
+does not result in a usable candidate.
+\end{itemize}
+
+\pnum
+The implicit definition of
+a defaulted postfix increment or decrement operator function \tcode{F}
+that is not defined as deleted for a type \tcode{C} is equivalent to
+\begin{codeblock}
+C @\exposid{tmp}@(c);
+++c;
+return @\exposid{tmp}@;
+\end{codeblock}
+for a postfix increment operator function, or
+\begin{codeblock}
+C @\exposid{tmp}@(c);
+--c;
+return @\exposid{tmp}@;
+\end{codeblock}
+for a postfix decrement operator function,
+where \exposid{tmp} is a variable defined for exposition only, and
+\tcode{c} is an lvalue that denotes \tcode{*this}
+if \tcode{F} is an implicit object member function, or
+the first parameter of \tcode{F} otherwise.
+
+\pnum
+\begin{example}
+\begin{codeblock}
+struct S{
+  S(const S&) = default;
+  S& operator++() { return *this; }
+};
+S operator++(S, int) = default;         // error: incorrect parameter type
+
+struct T{
+  T operator++(int) = default;          // OK, defined as deleted
+};
+
+enum class E1 {};
+E1 operator++(E1&, int) = default;      // OK, defined as deleted; built-in \tcode{operator++}
+                                        // does not exist for enumeration types
+
+enum E2 {};
+E2& operator++(E2& e);
+E2 operator++(E2&, int) = default;      // OK, not deleted
+\end{codeblock}
+\end{example}
+
 \rSec1[over.built]{Built-in operators}%
 \indextext{overloading!built-in operators and}
 
@@ -3756,11 +3949,11 @@ to not be included in the set of candidate functions.
 In this subclause, the term
 \defn{promoted integral type}
 is used to refer to those cv-unqualified integral types which are preserved by
-integral promotion\iref{conv.prom} (including e.g.
+integral promotion\iref{conv.prom} (including e.g.,
 \tcode{int}
 and
 \tcode{long}
-but excluding e.g.
+but excluding e.g.,
 \tcode{char}).
 \begin{note}
 In all cases where a promoted integral type is
@@ -3844,7 +4037,7 @@ determination of the operator's result type.
 \pnum
 For every pair of types \tcode{\placeholder{L}} and \tcode{\placeholder{R}},
 where each of \tcode{\placeholder{L}} and \tcode{\placeholder{R}} is a
-floating-point or promoted integral type,
+cv-unqualified floating-point or promoted integral type,
 there exist candidate operator functions of the form
 \begin{codeblock}
 @\placeholder{LR}@      operator*(@\placeholder{L}@, @\placeholder{R}@);
@@ -3866,14 +4059,14 @@ and
 \tcode{\placeholder{R}}.
 
 \pnum
-For every integral type \tcode{\placeholder{T}}
+For every cv-unqualified integral type \tcode{\placeholder{T}}
 there exists a candidate operator function of the form
 \begin{codeblock}
 std::strong_ordering operator<=>(@\placeholder{T}@, @\placeholder{T}@);
 \end{codeblock}
 
 \pnum
-For every pair of floating-point types
+For every pair of cv-unqualified floating-point types
 \tcode{\placeholder{L}} and \tcode{\placeholder{R}},
 there exists a candidate operator function of the form
 \begin{codeblock}
@@ -3919,7 +4112,7 @@ where \tcode{\placeholder{R}} is the result type specified in \ref{expr.spaceshi
 
 \pnum
 For every \tcode{\placeholder{T}}, where \tcode{\placeholder{T}}
-is a pointer-to-member type or \tcode{std::nullptr_t},
+is a pointer-to-member type, \tcode{std::meta::info}, or \tcode{std::nullptr_t},
 there exist candidate operator functions of the form
 \begin{codeblock}
 bool operator==(@\placeholder{T}@, @\placeholder{T}@);
@@ -3950,8 +4143,9 @@ and
 \pnum
 For every triple
 (\tcode{\placeholder{L}}, \cvqual{vq}, \tcode{\placeholder{R}}),
-where \tcode{\placeholder{L}} is an arithmetic type,
-and \tcode{\placeholder{R}} is a floating-point or promoted integral type,
+where \tcode{\placeholder{L}} is a cv-unqualified arithmetic type
+and \tcode{\placeholder{R}} is
+a cv-unqualified floating-point or promoted integral type,
 there exist candidate operator functions of the form
 \begin{codeblock}
 @\cvqual{vq} \placeholder{L}@&   operator=(@\cvqual{vq} \placeholder{L}@&, @\placeholder{R}@);
@@ -4001,7 +4195,7 @@ For every triple
 \tcode{\placeholder{R}}),
 where
 \tcode{\placeholder{L}}
-is an integral type, and
+is a cv-unqualified integral type and
 \tcode{\placeholder{R}}
 is a promoted integral type,
 there exist candidate operator functions of the form
@@ -4025,7 +4219,7 @@ bool    operator||(bool, bool);
 \pnum
 For every pair of types \tcode{\placeholder{L}} and \tcode{\placeholder{R}},
 where each of \tcode{\placeholder{L}} and \tcode{\placeholder{R}} is a
-floating-point or promoted integral type,
+cv-unqualified floating-point or promoted integral type,
 there exist candidate operator functions of the form
 \begin{codeblock}
 @\placeholder{LR}@      operator?:(bool, @\placeholder{L}@, @\placeholder{R}@);
@@ -4078,7 +4272,7 @@ the \grammarterm{identifier} in a \grammarterm{literal-operator-id} is called a
 The first form of \grammarterm{literal-operator-id} is deprecated\iref{depr.lit}.
 Some literal suffix identifiers are reserved for future standardization;
 see~\ref{usrlit.suffix}.  A declaration whose \grammarterm{literal-operator-id} uses
-such a literal suffix identifier is ill-formed, no diagnostic required.
+such a literal suffix identifier is ill-formed, no diagnostic required\ifndrdef{over.literal.reserved}.
 
 \pnum
 A declaration whose \grammarterm{declarator-id} is a

@@ -1,6 +1,87 @@
 %!TEX root = std.tex
 \infannex{diff}{Compatibility}
 
+\rSec1[diff.cpp26]{\Cpp{} and ISO \CppXXVI{}}
+
+\rSec2[diff.cpp26.general]{General}
+
+\pnum
+\indextext{summary!compatibility with ISO \CppXXVI{}}%
+Subclause \ref{diff.cpp26} lists the differences between \Cpp{} and
+ISO \CppXXVI{},
+by the chapters of this document.
+
+\rSec2[diff.cpp26.basic]{\ref*{basic}: basics}
+
+\diffref{basic.stc.dynamic.deallocation}
+\change
+Potentially throwing exception specifications
+on deallocation functions are ill-formed.
+\rationale
+Removes potential undefined behavior.
+\effect
+Valid \CppXXVI{} code that declares a deallocation function
+with a potentially throwing exception specification
+becomes ill-formed.
+\begin{example}
+\begin{codeblock}
+struct T {
+  void operator delete(void *) noexcept(false);         // ill-formed; previously well-formed
+};
+\end{codeblock}
+\end{example}
+
+\rSec2[diff.cpp26.dcl]{\ref*{dcl}: declarations}
+
+\diffref{dcl.init}
+\change
+Support for designated initialization of base classes of aggregates.
+\rationale
+New functionality.
+\effect
+Some valid \CppXXVI{} code may fail to compile.
+\begin{example}
+\begin{codeblock}
+struct A { int a; };
+struct B : A { int b; };
+
+void f(A);              // \#1
+void f(B);              // \#2
+
+void g() {
+  f({.a=1});            // ambiguous between \#1 and \#2; previously called \#1
+}
+\end{codeblock}
+\end{example}
+
+\diffref{dcl.fct.def.default}
+\change
+It is no longer valid
+for explicitly defaulted assignment operators to have a
+\grammarterm{cv-qualifier-seq} or \tcode{\&\&} \grammarterm{ref-qualifier}, or
+for an explicitly defaulted move assignment operator
+to have a parameter of type ``reference to \tcode{T}''
+where \tcode{T} is cv-qualified.
+\rationale
+Removal of rarely-used and confusing feature.
+\effect
+A valid \CppXXVI{} program
+which uses these features on an explicitly defaulted assignment operator
+is ill-formed.
+\begin{example}
+\begin{codeblock}
+struct S {
+  S& operator=(const S&) && = default;          // ill-formed; previously well-formed
+};
+struct T {
+  T& operator=(const T&) const = default;       // ill-formed; previously well-formed but deleted
+};
+struct U {
+  U& operator=(const U&&) = default;            // ill-formed; previously well-formed but deleted
+};
+\end{codeblock}
+\end{example}
+
 \rSec1[diff.cpp23]{\Cpp{} and ISO \CppXXIII{}}
 
 \rSec2[diff.cpp23.general]{General}
@@ -11,7 +92,23 @@ Subclause \ref{diff.cpp23} lists the differences between \Cpp{} and
 ISO \CppXXIII{},
 by the chapters of this document.
 
-\rSec2[diff.cpp23.lex]{\ref{lex}: Lexical conventions}
+\rSec2[diff.cpp23.lex]{\ref*{lex}: lexical conventions}
+
+\diffref{lex.operators}
+\change
+New operator \tcode{\caret\caret}.
+\rationale
+Required for new features.
+\effect
+Valid \CppXXIII{} code that contains two consecutive \tcode{\caret} tokens
+can be ill-formed in this revision of \Cpp{}.
+\begin{example}
+\begin{codeblock}
+struct C { int operator^(int); };
+int operator^(int (C::*p)(int), C);
+int i = &C::operator^^C{};              // ill-formed; previously well-formed
+\end{codeblock}
+\end{example}
 
 \diffref{lex.key}
 \change
@@ -28,7 +125,7 @@ through an \grammarterm{assertion-statement}\iref{stmt.contract.assert}.
 Valid \CppXXIII{} code using \keyword{contract_assert} as an identifier
 is not valid in this revision of \Cpp{}.
 
-\rSec2[diff.cpp23.expr]{\ref{expr}: expressions}
+\rSec2[diff.cpp23.expr]{\ref*{expr}: expressions}
 
 \diffref{expr.arith.conv}
 \change
@@ -89,23 +186,7 @@ struct S {};
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp23.dcl.dcl]{\ref{dcl}: declarations}
-
-\diffref{dcl.decl.general}
-\change
-Introduction of \tcode{trivially_relocatable_if_eligible} and
-\tcode{replaceable_if_eligible} as identifiers with special meaning\iref{lex.name}.
-\rationale
-Support declaration of trivially relocatable and replaceable types\iref{class.prop}.
-\effect
-Valid \CppXXIII{} code can become ill-formed.
-\begin{example}
-\begin{codeblock}
-struct C {};
-struct C replaceable_if_eligible {};    // was well-formed (new variable \tcode{replaceable_if_eligible})
-                                        // now ill-formed (redefines \tcode{C})
-\end{codeblock}
-\end{example}
+\rSec2[diff.cpp23.dcl.dcl]{\ref*{dcl}: declarations}
 
 \diffref{dcl.init.list}
 \change
@@ -148,7 +229,23 @@ int main() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp23.temp]{\ref{temp}: templates}
+\diffref{dcl.attr.grammar}
+\change
+New token \tcode{:]}.
+\rationale
+Required for new features.
+\effect
+Valid \CppXXIII{} code that contained an \grammarterm{attribute-specifier}
+with an \grammarterm{attribute-using-prefix}
+but no attributes and no whitespace is ill-formed in this revision of \Cpp{}.
+\begin{example}
+\begin{codeblock}
+struct [[using CC:]] C;                 // ill-formed; previously well-formed
+struct [[using DD: ]] D;                // OK
+\end{codeblock}
+\end{example}
+
+\rSec2[diff.cpp23.temp]{\ref*{temp}: templates}
 
 \diffref{temp.constr}
 \change
@@ -206,7 +303,24 @@ Type deduction from \#1 does not succeed;
 type deductions from \#2 and \#3 both succeed.
 \end{example}
 
-\rSec2[diff.cpp23.library]{\ref{library}: library introduction}
+\rSec2[diff.cpp23.cpp]{\ref*{cpp}: preprocessing directives}
+
+\diffref{cpp.replace.general}
+\change
+Additional restrictions on macro names.
+\rationale
+Avoid hard to diagnose or non-portable constructs.
+\effect
+Keywords,
+names of identifiers with special meaning\iref{lex.name},
+and (unless otherwise specified) \grammarterm{attribute-token}{s}
+specified in \ref{dcl.attr}
+may not be used as macro names.
+For example, valid \CppXXIII{} code that
+defines \tcode{post} or \tcode{pre} as macros
+is invalid in this revision of \Cpp{}.
+
+\rSec2[diff.cpp23.library]{\ref*{library}: library introduction}
 
 \diffref{headers}
 \change
@@ -221,6 +335,7 @@ The following \Cpp{} headers are new:
 \libheaderref{hive},
 \libheaderrefx{inplace_vector}{inplace.vector.syn},
 \libheaderref{linalg},
+\libheaderref{meta},
 \libheaderref{rcu},
 \libheaderref{simd},
 \libheaderref{stdbit.h},
@@ -229,18 +344,19 @@ The following \Cpp{} headers are new:
 Valid \CppXXIII{} code that \tcode{\#include}{s} headers with these names may be
 invalid in this revision of \Cpp{}.
 
-\diffref{res.on.macro.definitions}
-\change
-Additional restrictions on macro names.
-\rationale
-Avoid hard to diagnose or non-portable constructs.
-\effect
-Names of special identifiers may not be used as macro names.
-Valid \CppXXIII{} code that defines \tcode{replaceable_if_eligible} or
-\tcode{trivially_relocatable_if_eligible} as macros is invalid
-in this revision of \Cpp{}.
+\rSec2[diff.cpp23.mem]{\ref*{mem}: memory management library}
 
-\rSec2[diff.cpp23.strings]{\ref{strings}: strings library}
+\diffref{c.malloc}
+\change
+Calling \tcode{realloc} with a non-null pointer and zero size
+has erroneous behavior.
+\rationale
+The C standard library does not define this behavior.
+\effect
+Valid \CppXXIII{} code that calls \tcode{realloc}
+with a non-null pointer and a size of zero is erroneous and may change behavior.
+
+\rSec2[diff.cpp23.strings]{\ref*{strings}: strings library}
 
 \diffref{string.conversions}
 \change
@@ -259,33 +375,29 @@ auto s = std::to_string(1e-7);  // \tcode{"1e-07"}
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp23.containers]{\ref{containers}: containers library}
+\rSec2[diff.cpp23.io]{\ref*{input.output}: input/output library}
 
-\diffref{span.overview}
+\diffref{istream.unformatted}
 \change
-\tcode{span<const T>} is constructible from \tcode{initializer_list<T>}.
+Overloaded \tcode{std::basic_istream<char, traits>::ignore}.
 \rationale
-Permit passing a braced initializer list to a function taking \tcode{span}.
+Allow \tcode{char} values to be used as delimiters.
 \effect
-Valid \CppXXIII{} code that relies on the lack of this constructor
-may refuse to compile, or change behavior in this revision of \Cpp{}.
+Calls to \tcode{istream::ignore} with a second argument of \tcode{char} type
+can change behavior.
+Calls to \tcode{istream::ignore} with a second argument that is neither
+\tcode{int} nor \tcode{char} type can become ill-formed.
 \begin{example}
 \begin{codeblock}
-void one(pair<int, int>);       // \#1
-void one(span<const int>);      // \#2
-void t1() { one({1, 2}); }      // ambiguous between \#1 and \#2; previously called \#1
-
-void two(span<const int, 2>);
-void t2() { two({{1, 2}}); }    // ill-formed; previously well-formed
-
-void *a[10];
-int x = span<void* const>{a, 0}.size();     // \tcode{x} is \tcode{2}; previously \tcode{0}
-any b[10];
-int y = span<const any>{b, b + 10}.size();  // \tcode{y} is \tcode{2}; previously \tcode{10}
+std::istringstream in("\xF0\x9F\xA4\xA1 Clown Face");
+in.ignore(100, '\xA1');     // ignore up to \tcode{'\textbackslash{}xA1'} delimiter,
+                            // previously might have ignored to EOF
+in.ignore(100, -1L);        // ambiguous overload,
+                            // previously equivalent to \tcode{(int)-1L}
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp23.depr]{\ref{depr}: compatibility features}
+\rSec2[diff.cpp23.depr]{\ref*{depr}: compatibility features}
 
 \nodiffref
 \change
@@ -398,7 +510,7 @@ ISO \CppXX{},
 in addition to those listed above,
 by the chapters of this document.
 
-\rSec2[diff.cpp20.lex]{\ref{lex}: lexical conventions}
+\rSec2[diff.cpp20.lex]{\ref*{lex}: lexical conventions}
 
 \diffref{lex.name}
 \indextext{XID_Start}%
@@ -429,7 +541,7 @@ auto c = L"a" U"b";             // was conditionally-supported; now ill-formed
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.expr]{\ref{expr}: expressions}
+\rSec2[diff.cpp20.expr]{\ref*{expr}: expressions}
 
 \diffref{expr.prim.id.unqual}
 \change
@@ -461,7 +573,7 @@ arr[1, 2]               // was equivalent to \tcode{arr[(1, 2)]},
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.stmt]{\ref{stmt}: statements}
+\rSec2[diff.cpp20.stmt]{\ref*{stmt}: statements}
 
 \diffref{stmt.ranged}
 \change
@@ -485,7 +597,7 @@ void f() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.dcl]{\ref{dcl}: declarations}
+\rSec2[diff.cpp20.dcl]{\ref*{dcl}: declarations}
 
 \diffref{dcl.init.string}
 \change
@@ -516,7 +628,36 @@ int main() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.temp]{\ref{temp}: templates}
+\rSec2[diff.cpp20.over]{\ref*{over}: overloading}
+
+\diffref{over.match.class.deduct}
+\change
+Deducing class template arguments from inherited constructors.
+\rationale
+Making class template argument deduction consistent with construction.
+\effect
+Valid ISO \CppXX{} code may become ill-formed or change meaning
+in this revision of \Cpp{}.
+\begin{example}
+\begin{codeblock}
+template<typename T>
+struct B {
+  B(T);
+};
+
+template<typename T>
+struct D : B<T *> {
+  D(T);
+  using B<T *>::B;
+  T m = "a";    // \#1
+};
+
+D d("");        // ill-formed at \#1 (\tcode{T} deduced as \tcode{const char});
+                // previously well-formed (\tcode{T} deduced as \tcode{const char*})
+\end{codeblock}
+\end{example}
+
+\rSec2[diff.cpp20.temp]{\ref*{temp}: templates}
 
 \diffref{temp.deduct.type}
 \change
@@ -536,7 +677,7 @@ void h() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.library]{\ref{library}: library introduction}
+\rSec2[diff.cpp20.library]{\ref*{library}: library introduction}
 
 \diffref{headers}
 \change
@@ -558,7 +699,7 @@ The following \Cpp{} headers are new:
 Valid \CppXX{} code that \tcode{\#include}{s} headers with these names may be
 invalid in this revision of \Cpp{}.
 
-\rSec2[diff.cpp20.concepts]{\ref{concepts}: concepts library}
+\rSec2[diff.cpp20.concepts]{\ref*{concepts}: concepts library}
 
 \diffref{cmp.concept,concept.equalitycomparable,concept.totallyordered}
 \change
@@ -587,7 +728,7 @@ bool test(shared_ptr<int> p) {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.memory]{\ref{mem}: memory management library}
+\rSec2[diff.cpp20.memory]{\ref*{mem}: memory management library}
 
 \diffref{allocator.traits.general}
 \change
@@ -601,7 +742,7 @@ Valid \CppXX{} code
 that partially or explicitly specializes \tcode{allocator_traits}
 is ill-formed with no diagnostic required in this revision of \Cpp{}.
 
-\rSec2[diff.cpp20.utilities]{\ref{utilities}: general utilities library}
+\rSec2[diff.cpp20.utilities]{\ref*{utilities}: general utilities library}
 
 \diffref{format}
 \change
@@ -677,7 +818,7 @@ which is intended to be instantiated only with cv-unqualified object types.
 Valid \CppXX{} code that instantiated the removed specialization
 can become ill-formed.
 
-\rSec2[diff.cpp20.strings]{\ref{strings}: strings library}
+\rSec2[diff.cpp20.strings]{\ref*{strings}: strings library}
 
 \diffref{string.classes}
 \change
@@ -701,7 +842,7 @@ assert(s1 == s2);       // unspecified, previously guaranteed to be \tcode{true}
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.containers]{\ref{containers}: containers library}
+\rSec2[diff.cpp20.containers]{\ref*{containers}: containers library}
 
 \diffref{associative.reqmts,unord.req}
 \change
@@ -725,7 +866,7 @@ struct D : private B {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp20.thread]{\ref{thread}: concurrency support library}
+\rSec2[diff.cpp20.thread]{\ref*{thread}: concurrency support library}
 
 \diffref{thread.barrier}
 \change
@@ -771,7 +912,7 @@ ISO \CppXVII{},
 in addition to those listed above,
 by the chapters of this document.
 
-\rSec2[diff.cpp17.lex]{\ref{lex}: lexical conventions}
+\rSec2[diff.cpp17.lex]{\ref*{lex}: lexical conventions}
 
 \diffref{lex.pptoken,module.unit,module.import,cpp.pre,cpp.module,cpp.import}
 \change
@@ -833,7 +974,7 @@ The \keyword{constinit} keyword is added to
 prevent unintended dynamic initialization\iref{dcl.constinit}.
 \item
 The \keyword{co_await}, \keyword{co_yield}, and \keyword{co_return} keywords are added
-to enable the definition of coroutines \iref{dcl.fct.def.coroutine}.
+to enable the definition of coroutines\iref{dcl.fct.def.coroutine}.
 \item
 The \tcode{requires} keyword is added
 to introduce constraints through a \grammarterm{requires-clause}\iref{temp.pre}
@@ -903,7 +1044,7 @@ ct<decltype(u8'c')>::type x;    // ill-formed; previously well-formed.
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp17.basic]{\ref{basic}: basics}
+\rSec2[diff.cpp17.basic]{\ref*{basic}: basics}
 
 \diffref{basic.life}
 \change
@@ -938,7 +1079,7 @@ then reading the latter value with a \tcode{memory_order_acquire} load
 no longer provides any ``happens before'' guarantees,
 even in the absence of intervening stores by another thread.
 
-\rSec2[diff.cpp17.expr]{\ref{expr}: expressions}
+\rSec2[diff.cpp17.expr]{\ref*{expr}: expressions}
 
 \diffref{expr.prim.lambda.capture}
 \change
@@ -952,7 +1093,7 @@ that were not captured in \CppXVII{}
 if those entities are only referenced in contexts
 that do not result in an odr-use.
 
-\rSec2[diff.cpp17.dcl.dcl]{\ref{dcl}: declarations}
+\rSec2[diff.cpp17.dcl.dcl]{\ref*{dcl}: declarations}
 
 \diffref{dcl.typedef}
 \change
@@ -1053,7 +1194,7 @@ bool y[] = { "bc" };    // ill-formed; previously well-formed
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp17.class]{\ref{class}: classes}
+\rSec2[diff.cpp17.class]{\ref*{class}: classes}
 
 \diffref{class.ctor,class.conv.fct}
 \change
@@ -1144,7 +1285,7 @@ void g() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp17.over]{\ref{over}: overloading}
+\rSec2[diff.cpp17.over]{\ref*{over}: overloading}
 
 \diffref{over.match.oper}
 \change
@@ -1203,7 +1344,7 @@ bool eq = (b1 == b1);           // ambiguous; previously well-formed
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp17.temp]{\ref{temp}: templates}
+\rSec2[diff.cpp17.temp]{\ref*{temp}: templates}
 
 \diffref{temp.names}
 \change
@@ -1236,7 +1377,7 @@ int main() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp17.except]{\ref{except}: exception handling}
+\rSec2[diff.cpp17.except]{\ref*{except}: exception handling}
 
 \diffref{except.spec}
 \change
@@ -1257,7 +1398,7 @@ except by using the preprocessor to generate
 a different token sequence in each case.
 \end{note}
 
-\rSec2[diff.cpp17.library]{\ref{library}: library introduction}
+\rSec2[diff.cpp17.library]{\ref*{library}: library introduction}
 
 \diffref{headers}
 \change
@@ -1315,7 +1456,7 @@ a \tcode{\#include} of
 can simply be removed.
 \end{itemize}
 
-\rSec2[diff.cpp17.containers]{\ref{containers}: containers library}
+\rSec2[diff.cpp17.containers]{\ref*{containers}: containers library}
 
 \diffref{forward.list,list}
 \change
@@ -1328,7 +1469,7 @@ Code that depends on the return types might have different semantics in this rev
 Translation units compiled against this version of \Cpp{} may be incompatible with
 translation units compiled against \CppXVII{}, either failing to link or having undefined behavior.
 
-\rSec2[diff.cpp17.iterators]{\ref{iterators}: iterators library}
+\rSec2[diff.cpp17.iterators]{\ref*{iterators}: iterators library}
 
 \diffref{iterator.traits}
 \change
@@ -1341,7 +1482,7 @@ as iterator types.
 A valid \CppXVII{} program that relies on the presence of the typedefs
 may fail to compile, or have different behavior.
 
-\rSec2[diff.cpp17.alg.reqs]{\ref{algorithms}: algorithms library}
+\rSec2[diff.cpp17.alg.reqs]{\ref*{algorithms}: algorithms library}
 
 \diffref{algorithms.requirements}
 \change
@@ -1355,7 +1496,7 @@ A valid \CppXVII{} program that passes explicit template arguments to
 algorithms not explicitly specified to allow such in this version of \Cpp{}
 may fail to compile or have undefined behavior.
 
-\rSec2[diff.cpp17.input.output]{\ref{input.output}: input/output library}
+\rSec2[diff.cpp17.input.output]{\ref*{input.output}: input/output library}
 
 \diffref{istream.extractors}
 \change
@@ -1430,7 +1571,7 @@ std::string s2 = p.generic_u8string();  // ill-formed; previously well-formed
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp17.depr]{\ref{depr}: compatibility features}
+\rSec2[diff.cpp17.depr]{\ref*{depr}: compatibility features}
 
 \nodiffref
 \change
@@ -1511,7 +1652,7 @@ object may fail to compile.
 Remove deprecated type traits.
 \rationale
 The traits had unreliable or awkward interfaces. The \tcode{is_literal_type}
-trait provided no way to detect which subset of constructors and member
+trait provided no way to detect which subset of member
 functions of a type were declared \keyword{constexpr}. The \tcode{result_of}
 trait had a surprising syntax that did not directly support function types.
 It has been superseded by the \tcode{invoke_result} trait.
@@ -1531,7 +1672,7 @@ ISO \CppXIV{},
 in addition to those listed above,
 by the chapters of this document.
 
-\rSec2[diff.cpp14.lex]{\ref{lex}: lexical conventions}
+\rSec2[diff.cpp14.lex]{\ref*{lex}: lexical conventions}
 
 \diffref{lex.phases}
 \indextext{trigraph sequence}%
@@ -1566,7 +1707,7 @@ int b0p = F(0p+0);  // ill-formed; equivalent to ``\tcode{int b0p = b0p + 0;}\!'
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp14.expr]{\ref{expr}: expressions}
+\rSec2[diff.cpp14.expr]{\ref*{expr}: expressions}
 
 \diffref{expr.post.incr,expr.pre.incr}
 \change
@@ -1592,7 +1733,7 @@ In this revision of \Cpp{},
 \tcode{::operator new(std::size_t, std::align_val_t)}
 is used instead.
 
-\rSec2[diff.cpp14.dcl.dcl]{\ref{dcl}: declarations}
+\rSec2[diff.cpp14.dcl.dcl]{\ref*{dcl}: declarations}
 
 \diffref{dcl.stc}
 \indextext{\idxcode{register} storage class}%
@@ -1663,7 +1804,7 @@ derived d2;         // still OK
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp14.class]{\ref{class}: classes}
+\rSec2[diff.cpp14.class]{\ref*{class}: classes}
 
 \diffref{class.inhctor.init}
 \change
@@ -1692,7 +1833,7 @@ B b(42L);           // now calls \tcode{B(int)}, used to call \tcode{B<long>(lon
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp14.temp]{\ref{temp}: templates}
+\rSec2[diff.cpp14.temp]{\ref*{temp}: templates}
 
 \diffref{temp.deduct.type}
 \change
@@ -1716,7 +1857,7 @@ void bar(A<0> *p) {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp14.except]{\ref{except}: exception handling}
+\rSec2[diff.cpp14.except]{\ref*{except}: exception handling}
 
 \diffref{except.spec}
 \change
@@ -1739,7 +1880,7 @@ calls \tcode{terminate} rather than \tcode{unexpected},
 and it is unspecified whether stack unwinding is performed
 prior to such a call.
 
-\rSec2[diff.cpp14.library]{\ref{library}: library introduction}
+\rSec2[diff.cpp14.library]{\ref*{library}: library introduction}
 
 \diffref{headers}
 \change
@@ -1773,7 +1914,7 @@ are reserved for future standardization.
 Valid \CppXIV{} code that uses such a top-level namespace,
 e.g., \tcode{std2}, may be invalid in this revision of \Cpp{}.
 
-\rSec2[diff.cpp14.utilities]{\ref{utilities}: general utilities library}
+\rSec2[diff.cpp14.utilities]{\ref*{utilities}: general utilities library}
 
 \diffref{func.wrap}
 \change
@@ -1803,7 +1944,7 @@ std::shared_ptr<int> ptr(std::move(arr));   // error: \tcode{int(*)[]} is not co
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp14.string]{\ref{strings}: strings library}
+\rSec2[diff.cpp14.string]{\ref*{strings}: strings library}
 
 \diffref{basic.string}
 \change
@@ -1827,7 +1968,7 @@ int x = f(s.data());            // ill-formed; previously well-formed
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp14.containers]{\ref{containers}: containers library}
+\rSec2[diff.cpp14.containers]{\ref*{containers}: containers library}
 
 \diffref{associative.reqmts}
 \change
@@ -1857,7 +1998,7 @@ int main() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp14.depr]{\ref{depr}: compatibility features}
+\rSec2[diff.cpp14.depr]{\ref*{depr}: compatibility features}
 
 \nodiffref
 \change
@@ -1901,7 +2042,7 @@ ISO \CppXI{},
 in addition to those listed above,
 by the chapters of this document.
 
-\rSec2[diff.cpp11.lex]{\ref{lex}: lexical conventions}
+\rSec2[diff.cpp11.lex]{\ref*{lex}: lexical conventions}
 
 \diffref{lex.ppnumber}
 \change
@@ -1923,7 +2064,7 @@ int x[2] = { M(1'2,3'4, 5) };
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp11.basic]{\ref{basic}: basics}
+\rSec2[diff.cpp11.basic]{\ref*{basic}: basics}
 
 \diffref{basic.stc.dynamic.deallocation}
 \change
@@ -1943,7 +2084,7 @@ might match a predefined usual (non-placement)
 program is ill-formed, as it was for class member allocation functions and
 deallocation functions\iref{expr.new}.
 
-\rSec2[diff.cpp11.expr]{\ref{expr}: expressions}
+\rSec2[diff.cpp11.expr]{\ref*{expr}: expressions}
 
 \diffref{expr.cond}
 \change
@@ -1978,7 +2119,7 @@ In \CppXI{}, the expression yields \tcode{sizeof(const char*)}. In this
 revision of \Cpp{}, it yields \tcode{sizeof(const char[1])}.
 \end{example}
 
-\rSec2[diff.cpp11.dcl.dcl]{\ref{dcl}: declarations}
+\rSec2[diff.cpp11.dcl.dcl]{\ref*{dcl}: declarations}
 
 \diffref{dcl.constexpr}
 \change
@@ -2024,7 +2165,7 @@ S b{a};             // uses copy constructor in \CppXI{},
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp11.library]{\ref{library}: library introduction}
+\rSec2[diff.cpp11.library]{\ref*{library}: library introduction}
 
 \diffref{headers}
 \change
@@ -2036,7 +2177,7 @@ The \Cpp{} header \libheaderrefx{shared_mutex}{shared.mutex.syn} is new.
 Valid \CppXI{} code that \tcode{\#include}{s} a header with that name may be
 invalid in this revision of \Cpp{}.
 
-\rSec2[diff.cpp11.input.output]{\ref{input.output}: input/output library}
+\rSec2[diff.cpp11.input.output]{\ref*{input.output}: input/output library}
 
 \diffref{c.files}
 \change
@@ -2058,7 +2199,7 @@ ISO \CppIII{},
 in addition to those listed above,
 by the chapters of this document.
 
-\rSec2[diff.cpp03.lex]{\ref{lex}: lexical conventions}
+\rSec2[diff.cpp03.lex]{\ref*{lex}: lexical conventions}
 
 \diffref{lex.pptoken}
 \change
@@ -2126,7 +2267,7 @@ C99 compatibility.
 Certain integer literals larger than can be represented by \tcode{long} could
 change from an unsigned integer type to \tcode{signed long long}.
 
-\rSec2[diff.cpp03.expr]{\ref{expr}: expressions}
+\rSec2[diff.cpp03.expr]{\ref*{expr}: expressions}
 
 \diffref{conv.ptr}
 \change
@@ -2220,7 +2361,7 @@ void f() {
 \end{codeblock}
 \end{example}
 
-\rSec2[diff.cpp03.dcl.dcl]{\ref{dcl}: declarations}
+\rSec2[diff.cpp03.dcl.dcl]{\ref*{dcl}: declarations}
 
 \diffref{dcl.spec}
 \change
@@ -2253,7 +2394,7 @@ conversion.
 
 \diffref{dcl.link}
 \change
-Names declared in an anonymous namespace
+Names declared in an unnamed namespace
 changed from external linkage to internal linkage;
 language linkage applies to names with external linkage only.
 \rationale
@@ -2273,7 +2414,7 @@ but \tcode{\#2} is not a definition for \tcode{\#1}
 in this revision of \Cpp{}, violating the one-definition rule.
 \end{example}
 
-\rSec2[diff.cpp03.class]{\ref{class}: classes}
+\rSec2[diff.cpp03.class]{\ref*{class}: classes}
 
 \diffref{class.default.ctor,class.dtor,class.copy.ctor,class.copy.assign}
 \change
@@ -2297,7 +2438,7 @@ particular, destructors that throw exceptions will call \tcode{std::terminate}
 (without calling \tcode{std::unexpected}) if their exception specification is
 non-throwing.
 
-\rSec2[diff.cpp03.temp]{\ref{temp}: templates}
+\rSec2[diff.cpp03.temp]{\ref*{temp}: templates}
 
 \diffref{temp.param}
 \change
@@ -2339,7 +2480,7 @@ Overly constrained, simplify overload resolution rules.
 A valid \CppIII{} program can get a different result in this
 revision of \Cpp{}.
 
-\rSec2[diff.cpp03.library]{\ref{library}: library introduction}
+\rSec2[diff.cpp03.library]{\ref*{library}: library introduction}
 
 \pnum
 \textbf{Affected:} \ref{library} -- \ref{\lastlibchapter}
@@ -2420,7 +2561,7 @@ code that defines \tcode{override}, \tcode{final}, or
 \tcode{noreturn} as macros is invalid in this
 revision of \Cpp{}.
 
-\rSec2[diff.cpp03.language.support]{\ref{support}:
+\rSec2[diff.cpp03.language.support]{\ref*{support}:
 language support library}
 
 \diffref{new.delete.single}
@@ -2437,7 +2578,7 @@ is ill-formed in this revision of \Cpp{},
 because the exception specification of \tcode{throw(std::bad_alloc)}
 was removed.
 
-\rSec2[diff.cpp03.diagnostics]{\ref{diagnostics}: diagnostics library}
+\rSec2[diff.cpp03.diagnostics]{\ref*{diagnostics}: diagnostics library}
 
 \diffref{errno}
 \change
@@ -2449,7 +2590,7 @@ Valid but implementation-specific \CppIII{} code that relies on
 \tcode{errno} being the same across threads may change behavior in this
 revision of \Cpp{}.
 
-\rSec2[diff.cpp03.utilities]{\ref{utilities}: general utilities library}
+\rSec2[diff.cpp03.utilities]{\ref*{utilities}: general utilities library}
 
 \diffref{refwrap,arithmetic.operations,comparisons,logical.operations,bitwise.operations}
 \change
@@ -2463,7 +2604,7 @@ Valid \CppIII{} code that depends on function object types being derived from
 \tcode{unary_function} or \tcode{binary_function} may fail to compile
 in this revision of \Cpp{}.
 
-\rSec2[diff.cpp03.strings]{\ref{strings}: strings library}
+\rSec2[diff.cpp03.strings]{\ref*{strings}: strings library}
 
 \diffref{string.classes}
 \change
@@ -2485,7 +2626,7 @@ Valid \CppIII{} code may execute differently in this revision of \Cpp{}.
 Some \keyword{const} member functions, such as \tcode{data} and \tcode{c_str},
 no longer invalidate iterators.
 
-\rSec2[diff.cpp03.containers]{\ref{containers}: containers library}
+\rSec2[diff.cpp03.containers]{\ref*{containers}: containers library}
 
 \diffref{container.requirements}
 \change
@@ -2577,7 +2718,7 @@ the fill value passed to \tcode{resize} is now passed by reference instead of
 by value, and an additional overload of \tcode{resize} has been added. Valid
 \CppIII{} code that uses this function may fail to compile with this revision of \Cpp{}.
 
-\rSec2[diff.cpp03.algorithms]{\ref{algorithms}: algorithms library}
+\rSec2[diff.cpp03.algorithms]{\ref*{algorithms}: algorithms library}
 
 \diffref{algorithms.general}
 \change
@@ -2591,7 +2732,7 @@ revision of \Cpp{}. For example, \tcode{std::remove} and
 \tcode{std::remove_if} may leave the tail of the input sequence with a
 different set of values than previously.
 
-\rSec2[diff.cpp03.numerics]{\ref{numerics}: numerics library}
+\rSec2[diff.cpp03.numerics]{\ref*{numerics}: numerics library}
 
 \diffref{complex.numbers}
 \change
@@ -2603,17 +2744,17 @@ Valid \CppIII{} code that uses implementation-specific knowledge about the
 binary representation of the required template specializations of
 \tcode{std::complex} may not be compatible with this revision of \Cpp{}.
 
-\rSec2[diff.cpp03.locale]{\ref{localization}: localization library}
+\rSec2[diff.cpp03.locale]{\ref*{localization}: localization library}
 
 \diffref{facet.num.get.virtuals}
 \change
-The \tcode{num_get} facet recognizes hexadecimal floating point values.
+The \tcode{num_get} facet recognizes hexadecimal floating-point values.
 \rationale
 Required by new feature.
 \effect
 Valid \CppIII{} code may have different behavior in this revision of \Cpp{}.
 
-\rSec2[diff.cpp03.input.output]{\ref{input.output}: input/output library}
+\rSec2[diff.cpp03.input.output]{\ref*{input.output}: input/output library}
 
 \diffref{istream.sentry,ostream.sentry,iostate.flags}
 \change
@@ -2676,7 +2817,7 @@ Subclause \ref{diff.iso} lists the differences between \Cpp{} and C,
 in addition to those listed above,
 by the chapters of this document.
 
-\rSec2[diff.lex]{\ref{lex}: lexical conventions}
+\rSec2[diff.lex]{\ref*{lex}: lexical conventions}
 
 \diffref{lex.key}
 \change
@@ -2781,11 +2922,11 @@ void f(char*) {
 Programs that have a legitimate reason to treat string literal objects
 as potentially modifiable memory are probably rare.
 
-\rSec2[diff.basic]{\ref{basic}: basics}
+\rSec2[diff.basic]{\ref*{basic}: basics}
 
 \diffref{basic.def}
 \change
-\Cpp{} does not have ``tentative definitions'' as in C.\\
+\Cpp{} does not have ``tentative definitions'' as in C.
 \begin{example}
 At file scope,
 \begin{codeblock}
@@ -2876,11 +3017,10 @@ Seldom.
 
 \diffref{basic.types}
 \change
-C allows ``compatible types'' in several places, \Cpp{} does not.\\
+C allows mixing between ``compatible types'' in several places where \Cpp{} does not.\\
 For example,
-otherwise-identical \keyword{struct} types with different tag names
-are ``compatible'' in C but are distinctly different types
-in \Cpp{}.
+enumerated types are ``compatible'' with their underlying types in C but, in \Cpp{},
+enumerations are types distinct from their underlying types.
 \rationale
 Stricter type checking is essential for \Cpp{}.
 \effect
@@ -2888,19 +3028,19 @@ Deletion of semantically well-defined feature.
 \difficulty
 Semantic transformation.
 The ``typesafe linkage'' mechanism will find many, but not all,
-of such problems.
-Those problems not found by typesafe linkage will continue to
-function properly,
+such problems.
+Some cases are allowed by \Cpp{}
 according to the ``layout compatibility rules'' of this
 document.
 \howwide
 Common.
 
-\rSec2[diff.expr]{\ref{expr}: expressions}
+\rSec2[diff.expr]{\ref*{expr}: expressions}
 
 \diffref{conv.ptr}
 \change
-Converting \tcode{\keyword{void}*} to a pointer-to-object type requires casting.
+Converting a prvalue of type ``pointer to \cv{} \tcode{void}''
+to a pointer-to-object type requires casting.
 \begin{example}
 \begin{codeblock}
 char a[10];
@@ -2910,7 +3050,7 @@ void foo() {
 }
 \end{codeblock}
 
-C accepts this usage of pointer to \keyword{void} being assigned
+C accepts this usage of ``pointer to \keyword{void}'' being assigned
 to a pointer to object type.
 \Cpp{} does not.
 \end{example}
@@ -2929,10 +3069,7 @@ char* c = (char*) b;
 \end{example}
 
 \howwide
-This is fairly widely used but it is good
-programming practice to add the cast when assigning pointer-to-void to pointer-to-object.
-Some C translators will give a warning
-if the cast is not used.
+Common.
 
 \diffref{expr.arith.conv}
 \change
@@ -2965,6 +3102,43 @@ int k = +f - e;
 \howwide
 Uncommon.
 
+\diffref{expr.arith.conv}
+\change
+The usual arithmetic conversions differ, between C and \Cpp{},
+in the treatment of enumeration types with no fixed underlying type.
+In \Cpp{}, values of such types are not specified
+as converting to the underlying type of the enumeration
+as part of the usual arithmetic conversions.
+Instead, integral promotions\iref{conv.prom}
+based on the values of the enumeration\iref{dcl.enum} are applied.
+\rationale
+Avoids the difference that can arise in C
+when replacing an enumeration constant in
+an expression with a cast of the same enumeration constant
+to the enumeration type.
+Allows \Cpp{} to treat an enumerator with behavior
+like that of \keyword{int}
+even while giving the enumerator the type of its enumeration.
+\effect
+Changes to semantics of well-defined feature.
+Some C expressions that have a dependence upon
+the implementation-defined
+underlying type of affected enumeration types
+will yield different results
+(as they would if a different underlying type
+is chosen by the C implementation).
+\begin{example}
+\begin{codeblock}
+typedef enum { E0 } E;      // the underlying type of \tcode{E} can be \tcode{unsigned int}
+static_assert(((E)E0 - 1 < 0) == (E0 - 1 < 0), "Must pass for C++");
+\end{codeblock}
+The \tcode{static_assert} may fail in C.
+\end{example}
+\difficulty
+Programs must add explicit casts to the underlying type.
+\howwide
+Rare.
+
 \diffref{expr.post.incr,expr.pre.incr}
 \change
 Decrement operator is not allowed with \keyword{bool} operand.
@@ -2975,6 +3149,33 @@ A valid C expression utilizing the decrement operator on
 a \keyword{bool} lvalue
 (for instance, via the C typedef in \libheaderref{stdbool.h})
 is ill-formed in \Cpp{}.
+
+\diffref{expr.unary.op}
+\change
+In certain contexts,
+taking the address of a dereferenced null or past-the-end pointer value
+is well-defined in C (and yields the original pointer value),
+but results in undefined behavior in \Cpp{}.
+\begin{example}
+\begin{codeblock}
+void f() {
+  char *p = nullptr;
+  char *p2 = &*p;       // well-defined in C, undefined behavior in \Cpp{}
+  char *p3 = &p[0];     // well-defined in C, undefined behavior in \Cpp{}
+  int a[5];
+  int *q = &a[5];       // well-defined in C, undefined behavior in \Cpp{}
+}
+\end{codeblock}
+\end{example}
+\rationale
+Consistent treatment of lvalues in \Cpp{}.
+\effect
+Well-formed and well-defined C code exhibits undefined behavior in \Cpp{}.
+\difficulty
+Syntactic transformation to pointer arithmetic
+and possible addition of a check for null pointer values.
+\howwide
+Occasionally.
 
 \diffref{expr.sizeof,expr.cast}
 \change
@@ -3013,8 +3214,8 @@ using a unary \tcode{+}.
 \begin{codeblock}
 int arr1[5];
 int arr2[5];
-int same = arr1 == arr2;        // valid C, ill-formed C++
-int idem = arr1 == +arr2;       // valid in both C and C++
+int same = arr1 == arr2;        // valid C, ill-formed \Cpp{}
+int idem = arr1 == +arr2;       // valid \Cpp{}, constraint violation in C
 \end{codeblock}
 \end{example}
 \howwide
@@ -3050,7 +3251,7 @@ Programs must add explicit casts to the appropriate rvalue.
 \howwide
 Rare.
 
-\rSec2[diff.stat]{\ref{stmt}: statements}
+\rSec2[diff.stat]{\ref*{stmt}: statements}
 
 \diffref{stmt.switch,stmt.goto}
 \change
@@ -3098,7 +3299,25 @@ Seldom.
 For several years, many existing C implementations have produced warnings in
 this case.
 
-\rSec2[diff.dcl]{\ref{dcl}: declarations}
+\rSec2[diff.dcl]{\ref*{dcl}: declarations}
+
+\diffref{dcl.pre}
+\change
+In \Cpp{}, no declaration of a variable can have \cv{} \tcode{void} type.
+In C, this is allowed, unless the declaration is a definition.
+\begin{example}
+\begin{codeblock}
+extern void x;  // valid C, invalid in \Cpp{}
+\end{codeblock}
+\end{example}
+\rationale
+Stricter type checking in \Cpp{}.
+\effect
+Deletion of semantically well-defined feature.
+\difficulty
+Syntactic transformation.
+\howwide
+Seldom.
 
 \diffref{dcl.stc}
 \change
@@ -3366,14 +3585,15 @@ Common.
 
 \diffref{dcl.enum}
 \change
-In \Cpp{}, the type of an enumerator is its enumeration. In C, the type of an enumerator is \keyword{int}.
+In \Cpp{}, the type of an enumerator is its enumeration. In C, the type of an enumerator is an integer type.
 
 \begin{example}
 \begin{codeblock}
 enum e { A };
-sizeof(A) == sizeof(int)        // in C
-sizeof(A) == sizeof(e)          // in \Cpp{}
-/* and @sizeof(int)@ is not necessarily equal to @sizeof(e)@ */
+void f() {
+  auto x = A;
+  int *p = &x;                  // valid C, invalid \Cpp{}
+}
 \end{codeblock}
 \end{example}
 
@@ -3385,10 +3605,6 @@ Change to semantics of well-defined feature.
 Semantic transformation.
 \howwide
 Seldom.
-The only time this affects existing C code is when the size of an
-enumerator is taken.
-Taking the size of an enumerator is not a
-common C coding practice.
 
 \diffref{dcl.align}
 \change
@@ -3413,7 +3629,7 @@ Syntactic transformation.
 \howwide
 Seldom.
 
-\rSec2[diff.class]{\ref{class}: classes}
+\rSec2[diff.class]{\ref*{class}: classes}
 
 \diffref{class.name} [see also \ref{dcl.typedef}]
 \change
@@ -3591,7 +3807,7 @@ Either the type or the struct member has to be renamed.
 \howwide
 Seldom.
 
-\rSec2[diff.cpp]{\ref{cpp}: preprocessing directives}
+\rSec2[diff.cpp]{\ref*{cpp}: preprocessing directives}
 
 \diffref{cpp.predefined}
 \change
@@ -3641,12 +3857,12 @@ standard library.
 
 \rSec2[diff.mods.to.definitions]{Modifications to definitions}
 
-\rSec3[diff.char16]{Types \tcode{char16_t} and \tcode{char32_t}}
+\rSec3[diff.char16]{Types \tcode{char8_t}, \tcode{char16_t}, and \tcode{char32_t}}
 
 \pnum
-The types \keyword{char16_t} and \keyword{char32_t}
+The types \keyword{char8_t}, \keyword{char16_t}, and \keyword{char32_t}
 are distinct types rather than typedefs to existing integral types.
-The tokens \keyword{char16_t} and \keyword{char32_t}
+The tokens \keyword{char8_t}, \keyword{char16_t}, and \keyword{char32_t}
 are keywords in \Cpp{}\iref{lex.key}.
 They do not appear as macro or type names defined in
 \libheaderref{cuchar}.
@@ -3662,14 +3878,6 @@ It does not appear as a macro or type name defined in any of
 \libheaderref{cstddef},
 \libheaderref{cstdlib},
 or \libheaderref{cwchar}.
-
-\rSec3[diff.header.assert.h]{Header \tcode{<assert.h>}}
-\indexhdr{assert.h}%
-
-\pnum
-The token \keyword{static_assert} is a keyword in \Cpp{}.
-It does not appear as a macro name defined
-in \libheaderref{cassert}.
 
 \rSec3[diff.header.iso646.h]{Header \tcode{<iso646.h>}}
 
@@ -3690,21 +3898,6 @@ and
 are keywords in \Cpp{}\iref{lex.key},
 and are not introduced as macros
 by \libheaderref{iso646.h}.
-
-\rSec3[diff.header.stdalign.h]{Header \tcode{<stdalign.h>}}
-
-\pnum
-The token \keyword{alignas} is a keyword in \Cpp{}\iref{lex.key},
-and is not introduced as a macro
-by \libheaderref{stdalign.h}.
-
-\rSec3[diff.header.stdbool.h]{Header \tcode{<stdbool.h>}}
-
-\pnum
-The tokens \keyword{bool}, \keyword{true}, and \keyword{false}
-are keywords in \Cpp{}\iref{lex.key},
-and are not introduced as macros
-by \libheaderref{stdbool.h}.
 
 \rSec3[diff.null]{Macro \tcode{NULL}}
 
@@ -3755,7 +3948,7 @@ Subclause \ref{cwchar.syn} describes the changes.
 \pnum
 Header \libheaderref{cstddef}
 declares the names \tcode{nullptr_t}, \tcode{byte}, and \tcode{to_integer},
-and the operators and operator templates in \iref{support.types.byteops},
+and the operators and operator templates in~\ref{support.types.byteops},
 in addition to the names declared in
 \libheaderrefx{stddef.h}{support.c.headers} in the C standard library.
 

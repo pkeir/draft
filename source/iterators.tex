@@ -33,6 +33,7 @@ as summarized in \tref{iterators.summary}.
 \begin{codeblock}
 #include <compare>              // see \ref{compare.syn}
 #include <concepts>             // see \ref{concepts.syn}
+#include <initializer_list>     // see \ref{initializer.list.syn}
 
 namespace std {
   template<class T> using @\exposid{with-reference}@ = T&;  // \expos
@@ -464,53 +465,64 @@ namespace std {
     class ostreambuf_iterator;
 
   // \ref{iterator.range}, range access
-  template<class C> constexpr auto begin(C& c) -> decltype(c.begin());              // freestanding
-  template<class C> constexpr auto begin(const C& c) -> decltype(c.begin());        // freestanding
-  template<class C> constexpr auto end(C& c) -> decltype(c.end());                  // freestanding
-  template<class C> constexpr auto end(const C& c) -> decltype(c.end());            // freestanding
+  template<class C> constexpr auto
+    begin(C& c) noexcept(noexcept(c.begin())) -> decltype(c.begin());               // freestanding
+  template<class C> constexpr auto
+    begin(const C& c) noexcept(noexcept(c.begin())) -> decltype(c.begin());         // freestanding
+  template<class C> constexpr auto
+    end(C& c) noexcept(noexcept(c.end())) -> decltype(c.end());                     // freestanding
+  template<class C> constexpr auto
+    end(const C& c) noexcept(noexcept(c.end())) -> decltype(c.end());               // freestanding
   template<class T, size_t N> constexpr T* begin(T (&array)[N]) noexcept;           // freestanding
   template<class T, size_t N> constexpr T* end(T (&array)[N]) noexcept;             // freestanding
-  template<class C> constexpr auto cbegin(const C& c)                               // freestanding
-    noexcept(noexcept(std::begin(c))) -> decltype(std::begin(c));
-  template<class C> constexpr auto cend(const C& c)                                 // freestanding
-    noexcept(noexcept(std::end(c))) -> decltype(std::end(c));
-  template<class C> constexpr auto rbegin(C& c) -> decltype(c.rbegin());            // freestanding
-  template<class C> constexpr auto rbegin(const C& c) -> decltype(c.rbegin());      // freestanding
-  template<class C> constexpr auto rend(C& c) -> decltype(c.rend());                // freestanding
-  template<class C> constexpr auto rend(const C& c) -> decltype(c.rend());          // freestanding
-  template<class T, size_t N> constexpr reverse_iterator<T*> rbegin(T (&array)[N])  // freestanding
-  template<class T, size_t N> constexpr reverse_iterator<T*> rend(T (&array)[N]);   // freestanding
-  template<class E> constexpr reverse_iterator<const E*>
-    rbegin(initializer_list<E> il);                                                 // freestanding
-  template<class E> constexpr reverse_iterator<const E*>
-    rend(initializer_list<E> il);                                                   // freestanding
   template<class C> constexpr auto
-    crbegin(const C& c) -> decltype(std::rbegin(c));                                // freestanding
+    cbegin(const C& c) noexcept(noexcept(std::begin(c)))
+      -> decltype(std::begin(c));                                                   // freestanding
   template<class C> constexpr auto
-    crend(const C& c) -> decltype(std::rend(c));                                    // freestanding
+    cend(const C& c) noexcept(noexcept(std::end(c))) -> decltype(std::end(c));      // freestanding
+  template<class C> constexpr auto
+    rbegin(C& c) noexcept(noexcept(c.rbegin())) -> decltype(c.rbegin());            // freestanding
+  template<class C> constexpr auto
+    rbegin(const C& c) noexcept(noexcept(c.rbegin())) -> decltype(c.rbegin());      // freestanding
+  template<class C> constexpr auto
+    rend(C& c) noexcept(noexcept(c.rend())) -> decltype(c.rend());                  // freestanding
+  template<class C> constexpr auto
+    rend(const C& c) noexcept(noexcept(c.rend())) -> decltype(c.rend());            // freestanding
+  template<class T, size_t N> constexpr reverse_iterator<T*>
+    rbegin(T (&array)[N]) noexcept;                                                 // freestanding
+  template<class T, size_t N> constexpr reverse_iterator<T*>
+    rend(T (&array)[N]) noexcept;                                                   // freestanding
+  template<class E> constexpr reverse_iterator<const E*>
+    rbegin(initializer_list<E> il) noexcept;                                        // freestanding
+  template<class E> constexpr reverse_iterator<const E*>
+    rend(initializer_list<E> il) noexcept;                                          // freestanding
+  template<class C> constexpr auto
+    crbegin(const C& c) noexcept(noexcept(std::rbegin(c)))
+      -> decltype(std::rbegin(c));                                                  // freestanding
+  template<class C> constexpr auto
+    crend(const C& c) noexcept(noexcept(std::rend(c))) -> decltype(std::rend(c));   // freestanding
 
   template<class C> constexpr auto
-    size(const C& c) -> decltype(c.size());                                         // freestanding
+    size(const C& c) noexcept(noexcept(c.size())) -> decltype(c.size());            // freestanding
   template<class T, size_t N> constexpr size_t
     size(const T (&array)[N]) noexcept;                                             // freestanding
 
   template<class C> constexpr auto
-    ssize(const C& c)
+    ssize(const C& c) noexcept(noexcept(c.size()))
       -> common_type_t<ptrdiff_t, make_signed_t<decltype(c.size())>>;               // freestanding
   template<class T, ptrdiff_t N> constexpr ptrdiff_t
     ssize(const T (&array)[N]) noexcept;                                            // freestanding
 
   template<class C> constexpr auto
-    empty(const C& c) -> decltype(c.empty());                                       // freestanding
+    empty(const C& c) noexcept(noexcept(c.empty())) -> decltype(c.empty());         // freestanding
   template<class T, size_t N> constexpr bool
     empty(const T (&array)[N]) noexcept;                                            // freestanding
-  template<class E> constexpr bool
-    empty(initializer_list<E> il) noexcept;                                         // freestanding
 
-  template<class C> constexpr auto data(C& c) -> decltype(c.data());                // freestanding
-  template<class C> constexpr auto data(const C& c) -> decltype(c.data());          // freestanding
+  template<class C> constexpr auto
+    data(C& c) noexcept(noexcept(c.data())) -> decltype(c.data());                  // freestanding
+  template<class C> constexpr auto
+    data(const C& c) noexcept(noexcept(c.data())) -> decltype(c.data());            // freestanding
   template<class T, size_t N> constexpr T* data(T (&array)[N]) noexcept;            // freestanding
-  template<class E> constexpr const E* data(initializer_list<E> il) noexcept;       // freestanding
 }
 \end{codeblock}
 
@@ -771,7 +783,7 @@ namespace std {
   template<class T>
     requires requires { typename T::difference_type; }
   struct incrementable_traits<T> {
-    using difference_type = typename T::difference_type;
+    using difference_type = T::difference_type;
   };
 
   template<class T>
@@ -890,7 +902,7 @@ on program-defined types.
 
 \pnum
 \begin{note}
-Some legacy output iterators define a nested type named \tcode{value_type}
+Some legacy output iterators declare a nested type named \tcode{value_type}
 that is an alias for \keyword{void}.
 These types are not \libconcept{indirectly_readable}
 and have no associated value types.
@@ -917,7 +929,7 @@ the type
 \begin{codeblock}
 iterator_traits<I>::iterator_category
 \end{codeblock}
-be defined as the iterator's iterator category.
+be declared as the iterator's iterator category.
 In addition, the types
 \indexlibrarymember{pointer}{iterator_traits}%
 \indexlibrarymember{reference}{iterator_traits}%
@@ -925,7 +937,7 @@ In addition, the types
 iterator_traits<I>::pointer
 iterator_traits<I>::reference
 \end{codeblock}
-shall be defined as the iterator's pointer and reference types;
+shall be declared as the iterator's pointer and reference types;
 that is, for an
 iterator object \tcode{a} of class type,
 the same type as
@@ -938,12 +950,15 @@ shall be \keyword{void}
 for an iterator of class type \tcode{I}
 that does not support \tcode{operator->}.
 Additionally, in the case of an output iterator, the types
+\indexlibrarymember{value_type}{iterator_traits}%
+\indexlibrarymember{difference_type}{iterator_traits}%
+\indexlibrarymember{reference}{iterator_traits}%
 \begin{codeblock}
 iterator_traits<I>::value_type
 iterator_traits<I>::difference_type
 iterator_traits<I>::reference
 \end{codeblock}
-may be defined as \keyword{void}.
+may be declared as \keyword{void}.
 
 \pnum
 The definitions in this subclause make use of the following
@@ -1016,11 +1031,11 @@ then
 \tcode{iterator_traits<I>}
 has the following publicly accessible members:
 \begin{codeblock}
-using iterator_category = typename I::iterator_category;
-using value_type        = typename I::value_type;
-using difference_type   = typename I::difference_type;
-using pointer           = @\seebelow@;
-using reference         = typename I::reference;
+using @\libmember{iterator_category}{iterator_traits}@ = I::iterator_category;
+using @\libmember{value_type}{iterator_traits}@        = I::value_type;
+using @\libmember{difference_type}{iterator_traits}@   = I::difference_type;
+using @\libmember{pointer}{iterator_traits}@           = @\seebelow@;
+using @\libmember{reference}{iterator_traits}@         = I::reference;
 \end{codeblock}
 If the \grammarterm{qualified-id} \tcode{I::pointer} is valid and
 denotes a type, then \tcode{iterator_traits<I>::pointer} names that type;
@@ -1034,8 +1049,8 @@ Otherwise, if \tcode{I} satisfies the exposition-only concept
 publicly accessible members:
 \begin{codeblock}
 using iterator_category = @\seebelow@;
-using value_type        = typename indirectly_readable_traits<I>::value_type;
-using difference_type   = typename incrementable_traits<I>::difference_type;
+using value_type        = indirectly_readable_traits<I>::value_type;
+using difference_type   = incrementable_traits<I>::difference_type;
 using pointer           = @\seebelow@;
 using reference         = @\seebelow@;
 \end{codeblock}
@@ -1095,7 +1110,7 @@ has no members by any of the above names.
 
 \pnum
 Explicit or partial specializations of \tcode{iterator_traits} may
-have a member type \tcode{iterator_concept} that is used to indicate
+have a member type \tcode{\libmember{iterator_concept}{iterator_traits}} that is used to indicate
 conformance to the iterator concepts\iref{iterator.concepts}.
 \begin{example}
 To indicate conformance to the \libconcept{input_iterator} concept
@@ -1103,7 +1118,7 @@ but a lack of conformance to
 the \oldconcept{InputIter\-ator} requirements\iref{input.iterators},
 an \tcode{iterator_traits} specialization might have
 \tcode{iterator_concept} denote \tcode{input_iterator_tag}
-but not define \tcode{iterator_category}.
+but not declare \tcode{iterator_category}.
 \end{example}
 
 \pnum
@@ -1131,12 +1146,10 @@ function, a \Cpp{} program can do the following:
 \begin{codeblock}
 template<class BI>
 void reverse(BI first, BI last) {
-  typename iterator_traits<BI>::difference_type n =
-    distance(first, last);
+  typename iterator_traits<BI>::difference_type n = distance(first, last);
   --n;
-  while(n > 0) {
-    typename iterator_traits<BI>::value_type
-     tmp = *first;
+  while (n > 0) {
+    typename iterator_traits<BI>::value_type tmp = *first;
     *first++ = *--last;
     *last = tmp;
     n -= 2;
@@ -1590,7 +1603,8 @@ The \libconcept{incrementable} concept specifies requirements on types that can 
 and post-increment operators. The increment operations are required to be equality-preserving,
 and the type is required to be \libconcept{equality_comparable}.
 \begin{note}
-This supersedes the annotations on the increment expressions
+This supersedes the ``not required to be equality-preserving'' comments
+on the increment expressions
 in the definition of \libconcept{weakly_incrementable}.
 \end{note}
 
@@ -1661,6 +1675,7 @@ whose values denote a range.
 template<class S, class I>
   concept @\deflibconcept{sentinel_for}@ =
     @\libconcept{semiregular}@<S> &&
+    !@\exposid{is-integer-like}@<S> &&
     @\libconcept{input_or_output_iterator}@<I> &&
     @\exposconcept{weakly-equality-comparable-with}@<S, I>;      // see \ref{concept.equalitycomparable}
 \end{itemdecl}
@@ -1677,6 +1692,9 @@ Let \tcode{s} and \tcode{i} be values of type \tcode{S} and
       \range{++i}{s} denotes a range.
 
 \item \tcode{\libconcept{assignable_from}<I\&, S>} is either modeled or not satisfied.
+
+\item If \tcode{I} and \tcode{S} are the same type, then
+      \tcode{i == i} is \tcode{true}.
 \end{itemize}
 \end{itemdescr}
 
@@ -1738,7 +1756,7 @@ users may specialize \tcode{disable_sized_sentinel_for}
 for cv-unqualified non-array object types \tcode{S} and \tcode{I}
 if \tcode{S} and/or \tcode{I} is a program-defined type.
 Such specializations shall
-be usable in constant expressions\iref{expr.const} and
+be usable in constant expressions\iref{expr.const.init} and
 have type \tcode{const bool}.
 
 \pnum
@@ -2163,8 +2181,6 @@ The implementation of an algorithm on input iterators
 should never attempt to pass through the same iterator twice;
 such an algorithm should be a single pass algorithm.
 
-\newpage
-
 \begin{note}
 For input iterators, \tcode{a == b} does not imply \tcode{++a == ++b}.
 (Equality does not guarantee the substitution property or referential transparency.)
@@ -2515,10 +2531,10 @@ namespace std {
 }
 \end{codeblock}
 
-\rSec3[projected]{Class template \tcode{projected}}
+\rSec3[projected]{Alias template \tcode{projected}}
 
 \pnum
-Class template \tcode{projected} is used to constrain algorithms
+Alias template \tcode{projected} is used to constrain algorithms
 that accept callable objects and projections\iref{defns.projection}.
 It combines an \libconcept{indirectly_readable} type \tcode{I} and
 a callable object type \tcode{Proj} into a new \libconcept{indirectly_readable} type
@@ -2772,7 +2788,7 @@ and
 For every iterator of type
 \tcode{I},
 \tcode{iterator_traits<I>::it\-er\-a\-tor_ca\-te\-go\-ry}
-shall be defined to be a category tag that describes the
+shall be declared to be a category tag that describes the
 iterator's behavior.
 Additionally,
 \tcode{iterator_traits<I>::it\-er\-a\-tor_con\-cept}
@@ -3068,7 +3084,13 @@ template<class I, @\libconcept{sized_sentinel_for}@<decay_t<I>> S>
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return last - static_cast<const decay_t<I>\&>(first);}
+Equivalent to:
+\begin{codeblock}
+if constexpr (!is_array_v<remove_reference_t<I>>)
+  return last - first;
+else
+  return last - static_cast<decay_t<I>>(first);
+\end{codeblock}
 \end{itemdescr}
 
 \indexlibraryglobal{distance}%
@@ -3199,7 +3221,7 @@ namespace std {
     using iterator_category = @\seebelow@;
     using value_type        = iter_value_t<Iterator>;
     using difference_type   = iter_difference_t<Iterator>;
-    using pointer           = typename iterator_traits<Iterator>::pointer;
+    using pointer           = iterator_traits<Iterator>::pointer;
     using reference         = iter_reference_t<Iterator>;
 
     constexpr reverse_iterator();
@@ -4243,6 +4265,7 @@ namespace std {
       @\exposid{iter-const-rvalue-reference-t}@<Iterator>;
 
   public:
+    using iterator_type = Iterator;
     using iterator_concept = @\seebelow@;
     using iterator_category = @\seebelow@;  // not always present
     using value_type = iter_value_t<Iterator>;
@@ -4266,10 +4289,10 @@ namespace std {
 
     constexpr basic_const_iterator& operator++();
     constexpr void operator++(int);
-    constexpr basic_const_iterator operator++(int) requires @\libconcept{forward_iterator}@<Iterator>;
+    basic_const_iterator operator++(int) requires @\libconcept{forward_iterator}@<Iterator> = default;
 
     constexpr basic_const_iterator& operator--() requires @\libconcept{bidirectional_iterator}@<Iterator>;
-    constexpr basic_const_iterator operator--(int) requires @\libconcept{bidirectional_iterator}@<Iterator>;
+    basic_const_iterator operator--(int) = default;
 
     constexpr basic_const_iterator& operator+=(difference_type n)
       requires @\libconcept{random_access_iterator}@<Iterator>;
@@ -4316,17 +4339,17 @@ namespace std {
       constexpr auto operator<=>(const I& y) const
         requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I> &&
                  @\libconcept{three_way_comparable_with}@<Iterator, I>;
-    template<@\exposconcept{not-a-const-iterator}@ I>
-      friend constexpr bool operator<(const I& x, const basic_const_iterator& y)
+    template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+      friend constexpr bool operator<(const I& x, const basic_const_iterator<J>& y)
         requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
-    template<@\exposconcept{not-a-const-iterator}@ I>
-      friend constexpr bool operator>(const I& x, const basic_const_iterator& y)
+    template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+      friend constexpr bool operator>(const I& x, const basic_const_iterator<J>& y)
         requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
-    template<@\exposconcept{not-a-const-iterator}@ I>
-      friend constexpr bool operator<=(const I& x, const basic_const_iterator& y)
+    template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+      friend constexpr bool operator<=(const I& x, const basic_const_iterator<J>& y)
         requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
-    template<@\exposconcept{not-a-const-iterator}@ I>
-      friend constexpr bool operator>=(const I& x, const basic_const_iterator& y)
+    template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+      friend constexpr bool operator>=(const I& x, const basic_const_iterator<J>& y)
         requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
 
     friend constexpr basic_const_iterator operator+(const basic_const_iterator& i,
@@ -4380,7 +4403,7 @@ Otherwise, \tcode{iterator_concept} denotes \tcode{input_iterator_tag}.
 \end{itemize}
 
 \pnum
-The member \grammarterm{typedef-name} \tcode{iterator_category} is defined
+The member \grammarterm{typedef-name} \tcode{iterator_category} is declared
 if and only if \tcode{Iterator} models \libconcept{forward_iterator}.
 In that case,
 \tcode{basic_const_iterator<Iterator>::iterator_category} denotes
@@ -4499,22 +4522,6 @@ constexpr void operator++(int);
 Equivalent to: \tcode{++\exposid{current_};}
 \end{itemdescr}
 
-\indexlibrarymember{operator++}{basic_const_iterator}%
-\begin{itemdecl}
-constexpr basic_const_iterator operator++(int) requires @\libconcept{forward_iterator}@<Iterator>;
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\effects
-Equivalent to:
-\begin{codeblock}
-auto tmp = *this;
-++*this;
-return tmp;
-\end{codeblock}
-\end{itemdescr}
-
 \indexlibrarymember{operator--}{basic_const_iterator}%
 \begin{itemdecl}
 constexpr basic_const_iterator& operator--() requires @\libconcept{bidirectional_iterator}@<Iterator>;
@@ -4527,22 +4534,6 @@ Equivalent to:
 \begin{codeblock}
 --@\exposid{current_}@;
 return *this;
-\end{codeblock}
-\end{itemdescr}
-
-\indexlibrarymember{operator--}{basic_const_iterator}%
-\begin{itemdecl}
-constexpr basic_const_iterator operator--(int) requires @\libconcept{bidirectional_iterator}@<Iterator>;
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\effects
-Equivalent to:
-\begin{codeblock}
-auto tmp = *this;
---*this;
-return tmp;
 \end{codeblock}
 \end{itemdescr}
 
@@ -4681,17 +4672,17 @@ Equivalent to: \tcode{return \exposid{current_} \placeholder{op} y;}
 \indexlibrarymember{operator<=}{basic_const_iterator}%
 \indexlibrarymember{operator>=}{basic_const_iterator}%
 \begin{itemdecl}
-template<@\exposconcept{not-a-const-iterator}@ I>
-  friend constexpr bool operator<(const I& x, const basic_const_iterator& y)
+template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+  friend constexpr bool operator<(const I& x, const basic_const_iterator<J>& y)
     requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
-template<@\exposconcept{not-a-const-iterator}@ I>
-  friend constexpr bool operator>(const I& x, const basic_const_iterator& y)
+template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+  friend constexpr bool operator>(const I& x, const basic_const_iterator<J>& y)
     requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
-template<@\exposconcept{not-a-const-iterator}@ I>
-  friend constexpr bool operator<=(const I& x, const basic_const_iterator& y)
+template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+  friend constexpr bool operator<=(const I& x, const basic_const_iterator<J>& y)
     requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
-template<@\exposconcept{not-a-const-iterator}@ I>
-  friend constexpr bool operator>=(const I& x, const basic_const_iterator& y)
+template<@\exposconcept{not-a-const-iterator}@ I, @\libconcept{same_as}@<Iterator> J>
+  friend constexpr bool operator>=(const I& x, const basic_const_iterator<J>& y)
     requires @\libconcept{random_access_iterator}@<Iterator> && @\libconcept{totally_ordered_with}@<Iterator, I>;
 \end{itemdecl}
 
@@ -4795,7 +4786,7 @@ namespace std {
     using pointer           = Iterator;
     using reference         = iter_rvalue_reference_t<Iterator>;
 
-    constexpr move_iterator();
+    constexpr move_iterator() requires @\libconcept{default_initializable}@<Iterator> = default;
     constexpr explicit move_iterator(Iterator i);
     template<class U> constexpr move_iterator(const move_iterator<U>& u);
     template<class U> constexpr move_iterator& operator=(const move_iterator<U>& u);
@@ -4805,9 +4796,10 @@ namespace std {
     constexpr reference operator*() const;
 
     constexpr move_iterator& operator++();
-    constexpr auto operator++(int);
+    constexpr void operator++(int);
+    move_iterator operator++(int) requires @\libconcept{forward_iterator}@<Iterator> = default;
     constexpr move_iterator& operator--();
-    constexpr move_iterator operator--(int);
+    move_iterator operator--(int) = default;
 
     constexpr move_iterator operator+(difference_type n) const;
     constexpr move_iterator& operator+=(difference_type n);
@@ -4833,7 +4825,7 @@ namespace std {
           noexcept(noexcept(ranges::iter_swap(x.current, y.current)));
 
   private:
-    Iterator current;   // \expos
+    Iterator current = Iterator();      // \expos
   };
 }
 \end{codeblock}
@@ -4856,7 +4848,7 @@ Otherwise, \tcode{iterator_concept} denotes \tcode{input_iterator_tag}.
 \end{itemize}
 
 \pnum
-The member \grammarterm{typedef-name} \tcode{iterator_category} is defined
+The member \grammarterm{typedef-name} \tcode{iterator_category} is declared
 if and only if the \grammarterm{qualified-id}
 \tcode{iterator_traits<It\-erator>::iterator_category}
 is valid and denotes a type.
@@ -4888,18 +4880,6 @@ or model
 \libconcept{random_access_iterator}\iref{iterator.concept.random.access}.
 
 \rSec3[move.iter.cons]{Construction and assignment}
-
-\indexlibraryctor{move_iterator}%
-\begin{itemdecl}
-constexpr move_iterator();
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\effects
-Value-initializes \tcode{current}.
-\end{itemdescr}
-
 
 \indexlibraryctor{move_iterator}%
 \begin{itemdecl}
@@ -5018,19 +4998,13 @@ As if by \tcode{++current}.
 
 \indexlibrarymember{operator++}{move_iterator}%
 \begin{itemdecl}
-constexpr auto operator++(int);
+constexpr void operator++(int);
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \effects
-If \tcode{Iterator} models \libconcept{forward_iterator}, equivalent to:
-\begin{codeblock}
-move_iterator tmp = *this;
-++current;
-return tmp;
-\end{codeblock}
-Otherwise, equivalent to \tcode{++current}.
+Equivalent to \tcode{++current}.
 \end{itemdescr}
 
 \indexlibrarymember{operator--}{move_iterator}%
@@ -5046,22 +5020,6 @@ As if by \tcode{--current}.
 \pnum
 \returns
 \tcode{*this}.
-\end{itemdescr}
-
-\indexlibrarymember{operator--}{move_iterator}%
-\begin{itemdecl}
-constexpr move_iterator operator--(int);
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\effects
-As if by:
-\begin{codeblock}
-move_iterator tmp = *this;
---current;
-return tmp;
-\end{codeblock}
 \end{itemdescr}
 
 \indexlibrarymember{operator+}{move_iterator}%
@@ -5468,6 +5426,7 @@ namespace std {
 
     constexpr common_iterator& operator++();
     constexpr decltype(auto) operator++(int);
+    common_iterator operator++(int) requires @\libconcept{forward_iterator}@<I> = default;
 
     template<class I2, @\libconcept{sentinel_for}@<I> S2>
       requires @\libconcept{sentinel_for}@<S, I2>
@@ -5516,7 +5475,7 @@ namespace std {
 \pnum
 The nested \grammarterm{typedef-name} \tcode{iterator_category} of
 the specialization of \tcode{iterator_traits} for \tcode{common_iterator<I, S>}
-is defined if and only if \tcode{iter_difference_t<I>} is an integral type.
+is declared if and only if \tcode{iter_difference_t<I>} is an integral type.
 In that case,
 \tcode{iterator_category} denotes \tcode{forward_iterator_tag} if
 the \grammarterm{qualified-id} \tcode{iterator_traits<I>::iterator_category}
@@ -5574,7 +5533,7 @@ template<class I2, class S2>
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{x.v_.valueless_by_exception()} is \tcode{false}.
 
 \pnum
@@ -5594,7 +5553,7 @@ template<class I2, class S2>
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{x.v_.valueless_by_exception()} is \tcode{false}.
 
 \pnum
@@ -5624,7 +5583,7 @@ constexpr decltype(auto) operator*() const
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{holds_alternative<I>(v_)} is \tcode{true}.
 
 \pnum
@@ -5649,7 +5608,7 @@ The expression in the \grammarterm{requires-clause} is equivalent to:
 \end{codeblock}
 
 \pnum
-\expects
+\hardexpects
 \tcode{holds_alternative<I>(v_)} is \tcode{true}.
 
 \pnum
@@ -5694,7 +5653,7 @@ constexpr common_iterator& operator++();
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{holds_alternative<I>(v_)} is \tcode{true}.
 
 \pnum
@@ -5713,19 +5672,12 @@ constexpr decltype(auto) operator++(int);
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{holds_alternative<I>(v_)} is \tcode{true}.
 
 \pnum
 \effects
-If \tcode{I} models \libconcept{forward_iterator}, equivalent to:
-\begin{codeblock}
-common_iterator tmp = *this;
-++*this;
-return tmp;
-\end{codeblock}
-Otherwise, if
-\tcode{requires(I\& i) \{ \{ *i++ \} -> \exposconceptnc{can-reference}; \}}
+If \tcode{requires(I\& i) \{ \{ *i++ \} -> \exposconceptnc{can-reference}; \}}
 is \tcode{true} or
 \begin{codeblock}
 @\libconcept{indirectly_readable}@<I> && @\libconcept{constructible_from}@<iter_value_t<I>, iter_reference_t<I>> &&
@@ -5768,7 +5720,7 @@ friend constexpr bool operator==(
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{x.v_.valueless_by_exception()} and \tcode{y.v_.valueless_by_exception()}
 are each \tcode{false}.
 
@@ -5789,7 +5741,7 @@ friend constexpr bool operator==(
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{x.v_.valueless_by_exception()} and \tcode{y.v_.valueless_by_exception()}
 are each \tcode{false}.
 
@@ -5810,7 +5762,7 @@ friend constexpr iter_difference_t<I2> operator-(
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{x.v_.valueless_by_exception()} and \tcode{y.v_.valueless_by_exception()}
 are each \tcode{false}.
 
@@ -5832,7 +5784,7 @@ friend constexpr decltype(auto) iter_move(const common_iterator& i)
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{holds_alternative<I>(i.v_)} is \tcode{true}.
 
 \pnum
@@ -5849,7 +5801,7 @@ template<@\libconcept{indirectly_swappable}@<I> I2, class S2>
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{holds_alternative<I>(x.v_)} and \tcode{holds_alternative<I2>(y.v_)}
 are each \tcode{true}.
 
@@ -5918,9 +5870,9 @@ namespace std {
     using value_type = iter_value_t<I>;                         // present only
                         // if \tcode{I} models \libconcept{indirectly_readable}
     using difference_type = iter_difference_t<I>;
-    using iterator_concept = typename I::iterator_concept;      // present only
+    using iterator_concept = I::iterator_concept;               // present only
                         // if the \grammarterm{qualified-id} \tcode{I::iterator_concept} is valid and denotes a type
-    using iterator_category = typename I::iterator_category;    // present only
+    using iterator_category = I::iterator_category;             // present only
                         // if the \grammarterm{qualified-id} \tcode{I::iterator_category} is valid and denotes a type
     constexpr counted_iterator() requires @\libconcept{default_initializable}@<I> = default;
     constexpr counted_iterator(I x, iter_difference_t<I> n);
@@ -5944,12 +5896,11 @@ namespace std {
 
     constexpr counted_iterator& operator++();
     constexpr decltype(auto) operator++(int);
-    constexpr counted_iterator operator++(int)
-      requires @\libconcept{forward_iterator}@<I>;
+    counted_iterator operator++(int)
+      requires @\libconcept{forward_iterator}@<I> = default;
     constexpr counted_iterator& operator--()
       requires @\libconcept{bidirectional_iterator}@<I>;
-    constexpr counted_iterator operator--(int)
-      requires @\libconcept{bidirectional_iterator}@<I>;
+    counted_iterator operator--(int) = default;
 
     constexpr counted_iterator operator+(iter_difference_t<I> n) const
       requires @\libconcept{random_access_iterator}@<I>;
@@ -5965,9 +5916,9 @@ namespace std {
       friend constexpr iter_difference_t<I2> operator-(
         const counted_iterator& x, const counted_iterator<I2>& y);
     friend constexpr iter_difference_t<I> operator-(
-      const counted_iterator& x, default_sentinel_t);
+      const counted_iterator& x, default_sentinel_t) noexcept;
     friend constexpr iter_difference_t<I> operator-(
-      default_sentinel_t, const counted_iterator& y);
+      default_sentinel_t, const counted_iterator& y) noexcept;
     constexpr counted_iterator& operator-=(iter_difference_t<I> n)
       requires @\libconcept{random_access_iterator}@<I>;
 
@@ -5978,7 +5929,7 @@ namespace std {
       friend constexpr bool operator==(
         const counted_iterator& x, const counted_iterator<I2>& y);
     friend constexpr bool operator==(
-      const counted_iterator& x, default_sentinel_t);
+      const counted_iterator& x, default_sentinel_t) noexcept;
 
     template<@\libconcept{common_with}@<I> I2>
       friend constexpr strong_ordering operator<=>(
@@ -6014,8 +5965,8 @@ constexpr counted_iterator(I i, iter_difference_t<I> n);
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{n >= 0}.
+\hardexpects
+\tcode{n >= 0} is \tcode{true}.
 
 \pnum
 \effects
@@ -6101,7 +6052,7 @@ constexpr decltype(auto) operator*() const
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{length > 0} is \tcode{true}.
 
 \pnum
@@ -6129,8 +6080,8 @@ constexpr decltype(auto) operator[](iter_difference_t<I> n) const
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{n < length}.
+\hardexpects
+\tcode{n < length} is \tcode{true}.
 
 \pnum
 \effects
@@ -6146,8 +6097,8 @@ constexpr counted_iterator& operator++();
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{length > 0}.
+\hardexpects
+\tcode{length > 0} is \tcode{true}.
 
 \pnum
 \effects
@@ -6166,8 +6117,8 @@ constexpr decltype(auto) operator++(int);
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{length > 0}.
+\hardexpects
+\tcode{length > 0} is \tcode{true}.
 
 \pnum
 \effects
@@ -6176,23 +6127,6 @@ Equivalent to:
 --length;
 try { return current++; }
 catch(...) { ++length; throw; }
-\end{codeblock}
-\end{itemdescr}
-
-\indexlibrarymember{operator++}{counted_iterator}%
-\begin{itemdecl}
-constexpr counted_iterator operator++(int)
-  requires @\libconcept{forward_iterator}@<I>;
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\effects
-Equivalent to:
-\begin{codeblock}
-counted_iterator tmp = *this;
-++*this;
-return tmp;
 \end{codeblock}
 \end{itemdescr}
 
@@ -6210,23 +6144,6 @@ Equivalent to:
 --current;
 ++length;
 return *this;
-\end{codeblock}
-\end{itemdescr}
-
-\indexlibrarymember{operator--}{counted_iterator}%
-\begin{itemdecl}
-constexpr counted_iterator operator--(int)
-  requires @\libconcept{bidirectional_iterator}@<I>;
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\effects
-Equivalent to:
-\begin{codeblock}
-counted_iterator tmp = *this;
---*this;
-return tmp;
 \end{codeblock}
 \end{itemdescr}
 
@@ -6263,8 +6180,8 @@ constexpr counted_iterator& operator+=(iter_difference_t<I> n)
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{n <= length}.
+\hardexpects
+\tcode{n <= length} is \tcode{true}.
 
 \pnum
 \effects
@@ -6309,7 +6226,7 @@ Equivalent to: \tcode{return y.length - x.length;}
 \indexlibrarymember{operator-}{counted_iterator}%
 \begin{itemdecl}
 friend constexpr iter_difference_t<I> operator-(
-  const counted_iterator& x, default_sentinel_t);
+  const counted_iterator& x, default_sentinel_t) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6322,7 +6239,7 @@ Equivalent to:
 \indexlibrarymember{operator-}{counted_iterator}%
 \begin{itemdecl}
 friend constexpr iter_difference_t<I> operator-(
-  default_sentinel_t, const counted_iterator& y);
+  default_sentinel_t, const counted_iterator& y) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6339,8 +6256,8 @@ constexpr counted_iterator& operator-=(iter_difference_t<I> n)
 
 \begin{itemdescr}
 \pnum
-\expects
-\tcode{-n <= length}.
+\hardexpects
+\tcode{-n <= length} is \tcode{true}.
 
 \pnum
 \effects
@@ -6375,7 +6292,7 @@ Equivalent to: \tcode{return x.length == y.length;}
 \indexlibrarymember{operator==}{counted_iterator}%
 \begin{itemdecl}
 friend constexpr bool operator==(
-  const counted_iterator& x, default_sentinel_t);
+  const counted_iterator& x, default_sentinel_t) noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6420,7 +6337,7 @@ friend constexpr decltype(auto)
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 \tcode{i.length > 0} is \tcode{true}.
 
 \pnum
@@ -6438,7 +6355,7 @@ template<@\libconcept{indirectly_swappable}@<I> I2>
 
 \begin{itemdescr}
 \pnum
-\expects
+\hardexpects
 Both \tcode{x.length > 0} and \tcode{y.length > 0} are \tcode{true}.
 
 \pnum
@@ -6537,7 +6454,7 @@ namespace std {
     const T& operator*() const;
     const T* operator->() const;
     istream_iterator& operator++();
-    istream_iterator  operator++(int);
+    istream_iterator  operator++(int) = default;
 
     friend bool operator==(const istream_iterator& i, default_sentinel_t);
 
@@ -6572,7 +6489,7 @@ Constructs the end-of-stream iterator, value-initializing \tcode{value}.
 \pnum
 \remarks
 If the initializer \tcode{T()} in the declaration \tcode{auto x = T();}
-is a constant initializer\iref{expr.const},
+is a constant initializer\iref{expr.const.init},
 then these constructors are \keyword{constexpr} constructors.
 \end{itemdescr}
 
@@ -6676,26 +6593,6 @@ if (!(*in_stream >> value))
 \pnum
 \returns
 \tcode{*this}.
-\end{itemdescr}
-
-\indexlibrarymember{operator++}{istream_iterator}%
-\begin{itemdecl}
-istream_iterator operator++(int);
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\expects
-\tcode{in_stream != nullptr} is \tcode{true}.
-
-\pnum
-\effects
-Equivalent to:
-\begin{codeblock}
-istream_iterator tmp = *this;
-++*this;
-return tmp;
-\end{codeblock}
 \end{itemdescr}
 
 \indexlibrarymember{operator==}{istream_iterator}%
@@ -6890,12 +6787,12 @@ namespace std {
   public:
     using iterator_category = input_iterator_tag;
     using value_type        = charT;
-    using difference_type   = typename traits::off_type;
+    using difference_type   = traits::off_type;
     using pointer           = @\unspec@;
     using reference         = charT;
     using char_type         = charT;
     using traits_type       = traits;
-    using int_type          = typename traits::int_type;
+    using int_type          = traits::int_type;
     using streambuf_type    = basic_streambuf<charT,traits>;
     using istream_type      = basic_istream<charT,traits>;
 
@@ -7238,27 +7135,36 @@ otherwise.
 In addition to being available via inclusion of the \libheader{iterator} header,
 the function templates in \ref{iterator.range} are available when any of the following
 headers are included:
-\libheaderref{array},
-\libheaderref{deque},
-\libheaderrefx{flat_map}{flat.map.syn},
-\libheaderrefx{flat_set}{flat.set.syn},
-\libheaderrefx{forward_list}{forward.list.syn},
-\libheaderrefx{inplace_vector}{inplace.vector.syn},
-\libheaderref{list},
-\libheaderrefx{map}{associative.map.syn},
-\libheaderrefx{regex}{re.syn},
-\libheaderrefx{set}{associative.set.syn},
-\libheaderref{span},
-\libheaderref{string},
-\libheaderrefx{string_view}{string.view.synop},
-\libheaderrefx{unordered_map}{unord.map.syn},
-\libheaderrefx{unordered_set}{unord.set.syn}, and
-\libheaderref{vector}.
+\begin{itemize}
+\item \libheaderref{array}
+\item \libheaderref{deque}
+\item \libheaderrefx{flat_map}{flat.map.syn}
+\item \libheaderrefx{flat_set}{flat.set.syn}
+\item \libheaderrefx{forward_list}{forward.list.syn}
+\item \libheaderref{hive}
+\item \libheaderrefx{inplace_vector}{inplace.vector.syn}
+\item \libheaderref{list}
+\item \libheaderrefx{map}{associative.map.syn}
+\item \libheaderref{optional}
+\item \libheaderrefx{regex}{re.syn}
+\item \libheaderrefx{set}{associative.set.syn}
+\item \libheaderref{simd}
+\item \libheaderref{span}
+\item \libheaderref{stacktrace}
+\item \libheaderref{string}
+\item \libheaderrefx{string_view}{string.view.synop}
+\item \libheaderrefx{unordered_map}{unord.map.syn}
+\item \libheaderrefx{unordered_set}{unord.set.syn}
+\item \libheaderref{valarray}
+\item \libheaderref{vector}
+\end{itemize}
 
 \indexlibrary{\idxcode{begin(C\&)}}%
 \begin{itemdecl}
-template<class C> constexpr auto begin(C& c) -> decltype(c.begin());
-template<class C> constexpr auto begin(const C& c) -> decltype(c.begin());
+template<class C> constexpr auto begin(C& c) noexcept(noexcept(c.begin()))
+  -> decltype(c.begin());
+template<class C> constexpr auto begin(const C& c) noexcept(noexcept(c.begin()))
+  -> decltype(c.begin());
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -7269,8 +7175,8 @@ template<class C> constexpr auto begin(const C& c) -> decltype(c.begin());
 
 \indexlibrary{\idxcode{end(C\&)}}%
 \begin{itemdecl}
-template<class C> constexpr auto end(C& c) -> decltype(c.end());
-template<class C> constexpr auto end(const C& c) -> decltype(c.end());
+template<class C> constexpr auto end(C& c) noexcept(noexcept(c.end())) -> decltype(c.end());
+template<class C> constexpr auto end(const C& c) noexcept(noexcept(c.end())) -> decltype(c.end());
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -7325,8 +7231,10 @@ template<class C> constexpr auto cend(const C& c) noexcept(noexcept(std::end(c))
 
 \indexlibrary{\idxcode{rbegin(C\&)}}%
 \begin{itemdecl}
-template<class C> constexpr auto rbegin(C& c) -> decltype(c.rbegin());
-template<class C> constexpr auto rbegin(const C& c) -> decltype(c.rbegin());
+template<class C> constexpr auto rbegin(C& c) noexcept(noexcept(c.rbegin()))
+  -> decltype(c.rbegin());
+template<class C> constexpr auto rbegin(const C& c) noexcept(noexcept(c.rbegin()))
+  -> decltype(c.rbegin());
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7336,8 +7244,9 @@ template<class C> constexpr auto rbegin(const C& c) -> decltype(c.rbegin());
 
 \indexlibrary{\idxcode{rend(C\&)}}%
 \begin{itemdecl}
-template<class C> constexpr auto rend(C& c) -> decltype(c.rend());
-template<class C> constexpr auto rend(const C& c) -> decltype(c.rend());
+template<class C> constexpr auto rend(C& c) noexcept(noexcept(c.rend())) -> decltype(c.rend());
+template<class C> constexpr auto rend(const C& c) noexcept(noexcept(c.rend()))
+  -> decltype(c.rend());
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7347,7 +7256,7 @@ template<class C> constexpr auto rend(const C& c) -> decltype(c.rend());
 
 \indexlibrary{\idxcode{rbegin(T (\&array)[N])}}%
 \begin{itemdecl}
-template<class T, size_t N> constexpr reverse_iterator<T*> rbegin(T (&array)[N]);
+template<class T, size_t N> constexpr reverse_iterator<T*> rbegin(T (&array)[N]) noexcept;
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7357,7 +7266,7 @@ template<class T, size_t N> constexpr reverse_iterator<T*> rbegin(T (&array)[N])
 
 \indexlibrary{\idxcode{rend(T (\&array)[N])}}%
 \begin{itemdecl}
-template<class T, size_t N> constexpr reverse_iterator<T*> rend(T (&array)[N]);
+template<class T, size_t N> constexpr reverse_iterator<T*> rend(T (&array)[N]) noexcept;
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7367,7 +7276,7 @@ template<class T, size_t N> constexpr reverse_iterator<T*> rend(T (&array)[N]);
 
 \indexlibrary{\idxcode{rbegin(initializer_list<E>)}}%
 \begin{itemdecl}
-template<class E> constexpr reverse_iterator<const E*> rbegin(initializer_list<E> il);
+template<class E> constexpr reverse_iterator<const E*> rbegin(initializer_list<E> il) noexcept;
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7377,7 +7286,7 @@ template<class E> constexpr reverse_iterator<const E*> rbegin(initializer_list<E
 
 \indexlibrary{\idxcode{rend(initializer_list<E>)}}%
 \begin{itemdecl}
-template<class E> constexpr reverse_iterator<const E*> rend(initializer_list<E> il);
+template<class E> constexpr reverse_iterator<const E*> rend(initializer_list<E> il) noexcept;
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7387,7 +7296,8 @@ template<class E> constexpr reverse_iterator<const E*> rend(initializer_list<E> 
 
 \indexlibrary{\idxcode{crbegin(const C\& c)}}%
 \begin{itemdecl}
-template<class C> constexpr auto crbegin(const C& c) -> decltype(std::rbegin(c));
+template<class C> constexpr auto crbegin(const C& c) noexcept(noexcept(std::rbegin(c)))
+  -> decltype(std::rbegin(c));
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7397,7 +7307,8 @@ template<class C> constexpr auto crbegin(const C& c) -> decltype(std::rbegin(c))
 
 \indexlibrary{\idxcode{crend(const C\& c)}}%
 \begin{itemdecl}
-template<class C> constexpr auto crend(const C& c) -> decltype(std::rend(c));
+template<class C> constexpr auto crend(const C& c) noexcept(noexcept(c.crend()))
+  -> decltype(std::rend(c));
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7407,7 +7318,8 @@ template<class C> constexpr auto crend(const C& c) -> decltype(std::rend(c));
 
 \indexlibrary{\idxcode{size(C\& c)}}%
 \begin{itemdecl}
-template<class C> constexpr auto size(const C& c) -> decltype(c.size());
+template<class C> constexpr auto size(const C& c) noexcept(noexcept(c.size()))
+  -> decltype(c.size());
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7427,7 +7339,7 @@ template<class T, size_t N> constexpr size_t size(const T (&array)[N]) noexcept;
 
 \indexlibrary{\idxcode{ssize(C\& c)}}%
 \begin{itemdecl}
-template<class C> constexpr auto ssize(const C& c)
+template<class C> constexpr auto ssize(const C& c) noexcept(noexcept(c.size()))
   -> common_type_t<ptrdiff_t, make_signed_t<decltype(c.size())>>;
 \end{itemdecl}
 \begin{itemdescr}
@@ -7451,7 +7363,8 @@ template<class T, ptrdiff_t N> constexpr ptrdiff_t ssize(const T (&array)[N]) no
 
 \indexlibrary{\idxcode{empty(C\& c)}}%
 \begin{itemdecl}
-template<class C> constexpr auto empty(const C& c) -> decltype(c.empty());
+template<class C> constexpr auto empty(const C& c) noexcept(noexcept(c.empty()))
+  -> decltype(c.empty());
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7469,20 +7382,11 @@ template<class T, size_t N> constexpr bool empty(const T (&array)[N]) noexcept;
 \tcode{false}.
 \end{itemdescr}
 
-\indexlibrary{\idxcode{empty(initializer_list<E>)}}%
-\begin{itemdecl}
-template<class E> constexpr bool empty(initializer_list<E> il) noexcept;
-\end{itemdecl}
-\begin{itemdescr}
-\pnum
-\returns
-\tcode{il.size() == 0}.
-\end{itemdescr}
-
 \indexlibrary{\idxcode{data(C\& c)}}%
 \begin{itemdecl}
-template<class C> constexpr auto data(C& c) -> decltype(c.data());
-template<class C> constexpr auto data(const C& c) -> decltype(c.data());
+template<class C> constexpr auto data(C& c) noexcept(noexcept(c.data())) -> decltype(c.data());
+template<class C> constexpr auto data(const C& c) noexcept(noexcept(c.data()))
+  -> decltype(c.data());
 \end{itemdecl}
 \begin{itemdescr}
 \pnum
@@ -7498,14 +7402,4 @@ template<class T, size_t N> constexpr T* data(T (&array)[N]) noexcept;
 \pnum
 \returns
 \tcode{array}.
-\end{itemdescr}
-
-\indexlibrary{\idxcode{data(initializer_list<E>)}}%
-\begin{itemdecl}
-template<class E> constexpr const E* data(initializer_list<E> il) noexcept;
-\end{itemdecl}
-\begin{itemdescr}
-\pnum
-\returns
-\tcode{il.begin()}.
 \end{itemdescr}

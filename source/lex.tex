@@ -39,19 +39,15 @@ if any, is
 called a \defnadj{preprocessing}{translation unit}.
 \begin{note}
 A \Cpp{} program need not all be translated at the same time.
+Translation units can be separately translated and then later linked
+to produce an executable program\iref{basic.link}.
 \end{note}
-
-\pnum
 \begin{note}
-Previously translated translation units and instantiation
-units can be preserved individually or in libraries. The separate
-translation units of a program communicate\iref{basic.link} by (for
-example)
-calls to functions whose identifiers have external or module linkage,
-manipulation of objects whose identifiers have external or module linkage, or
-manipulation of data files. Translation units can be separately
-translated and then later linked to produce an executable
-program\iref{basic.link}.
+Source files, translation units, and translated translation units
+need not necessarily be stored as files, nor need there be any one-to-one
+correspondence between these entities and any external representation.
+The description is conceptual only,
+and does not specify any particular implementation.
 \end{note}
 \indextext{compilation!separate|)}
 
@@ -110,12 +106,12 @@ representing end-of-line indicators as new-line characters.
 \indextext{line splicing}%
 If the first translation character is \unicode{feff}{byte order mark},
 it is deleted.
-Each sequence of a backslash character (\textbackslash)
+Each sequence comprising a backslash character (\textbackslash)
 immediately followed by
 zero or more whitespace characters other than new-line followed by
 a new-line character is deleted, splicing
 physical source lines to form \defnx{logical source lines}{source line!logical}. Only the last
-backslash on any physical source line shall be eligible for being part
+backslash on any physical source line is eligible for being part
 of such a splice.
 \begin{note}
 Line splicing can form
@@ -123,7 +119,7 @@ a \grammarterm{universal-character-name}\iref{lex.charset}.
 \end{note}
 A source file that is not empty and that (after splicing)
 does not end in a new-line character
-shall be processed as if an additional new-line character were appended
+is processed as if an additional new-line character were appended
 to the file.
 
 \item The source file is decomposed into preprocessing
@@ -140,9 +136,9 @@ or \tcode{>}. A partial comment
 would arise from a source file ending with an unclosed \tcode{/*}
 comment.
 \end{footnote}
-Each comment\iref{lex.comment} is replaced by one space character. New-line characters are
+Each comment\iref{lex.comment} is replaced by one \unicode{0020}{space} character. New-line characters are
 retained. Whether each nonempty sequence of whitespace characters other
-than new-line is retained or replaced by one space character is
+than new-line is retained or replaced by one \unicode{0020}{space} character is
 unspecified.
 As characters from the source file are consumed
 to form the next preprocessing token
@@ -168,6 +164,7 @@ expanded\iref{cpp.replace}, and \tcode{_Pragma} unary operator expressions are e
 A \tcode{\#include} preprocessing directive\iref{cpp.include} causes the named header or
 source file to be processed from phase 1 through phase 4, recursively.
 All preprocessing directives are then deleted.
+Whitespace characters separating preprocessing tokens are no longer significant.
 
 \item
 For a sequence of two or more adjacent \grammarterm{string-literal} preprocessing tokens,
@@ -175,15 +172,14 @@ a common \grammarterm{encoding-prefix} is determined
 as specified in \ref{lex.string}.
 Each such \grammarterm{string-literal} preprocessing token is then considered to have
 that common \grammarterm{encoding-prefix}.
-
-\item
 \indextext{concatenation!string}%
-Adjacent \grammarterm{string-literal} preprocessing tokens are concatenated\iref{lex.string}.
+Then, adjacent \grammarterm{string-literal} preprocessing tokens are concatenated\iref{lex.string}.
 
 \item
 Each preprocessing token is converted into a token\iref{lex.token}.
-Whitespace characters separating tokens are no longer significant.
-The resulting tokens constitute a \defn{translation unit} and
+
+\item
+The tokens constitute a \defn{translation unit} and
 are syntactically and
 semantically analyzed as a \grammarterm{translation-unit}\iref{basic.link} and
 translated.
@@ -203,50 +199,94 @@ on which the current translation unit has an interface
 dependency\iref{module.unit,module.import}
 are required to be available.
 \begin{note}
-Source files, translation
-units and translated translation units need not necessarily be stored as
-files, nor need there be any one-to-one correspondence between these
-entities and any external representation. The description is conceptual
-only, and does not specify any particular implementation.
+Previously translated translation units can be preserved individually or in libraries.
+The separate translation units of a program communicate\iref{basic.link} by (for example)
+calls to functions whose names have external or module linkage,
+manipulation of variables whose names have external or module linkage, or
+manipulation of data files.
 \end{note}
 
-\item Translated translation units and instantiation units are combined
-as follows:
-\begin{note}
-Some or all of these can be supplied from a
-library.
-\end{note}
-Each translated translation unit is examined to
-produce a list of required instantiations.
+While the tokens constituting translation units
+are being analyzed and translated,
+required instantiations are performed.
 \begin{note}
 This can include
 instantiations which have been explicitly
 requested\iref{temp.explicit}.
 \end{note}
-The definitions of the
-required templates are located. It is \impldef{whether source of translation units must
-be available to locate template definitions} whether the
-source of the translation units containing these definitions is required
-to be available.
+
+The contexts from which instantiations may be performed
+are determined by their respective points of instantiation\iref{temp.point}.
+
 \begin{note}
-An implementation can choose to encode sufficient
-information into the translated translation unit so as to ensure the
-source is not required here.
+Other requirements in this document can further constrain
+the context from which an instantiation can be performed.
+For example, a constexpr function template specialization
+might have a point of instantiation at the end of a translation unit,
+but its use in certain constant expressions could require
+that it be instantiated at an earlier point\iref{temp.inst}.
 \end{note}
-All the required instantiations
-are performed to produce
-\defn{instantiation units}.
-\begin{note}
-These are similar
-to translated translation units, but contain no references to
-uninstantiated templates and no template definitions.
-\end{note}
-The
-program is ill-formed if any instantiation fails.
+
+The program is ill-formed if any instantiation fails.
+
+During the analysis and translation of tokens,
+each manifestly constant-evaluated expression is evaluated\iref{expr.const.defns}.
+The values of these expressions affect
+the types named and reflection values used in the program and
+thus the syntactic analysis.
+Their evaluation also can produce side effects that affect that analysis.
+Constructs appearing at a program point $P$ are analyzed
+in a context where each side effect of evaluating an expression $E$
+as a full-expression is complete if and only if
+\begin{itemize}
+\item
+$E$ is the expression corresponding to
+a \grammarterm{consteval-block-declaration}\iref{dcl.pre}, and
+\item
+either that \grammarterm{consteval-block-declaration} or
+the template definition from which it is instantiated
+is reachable from\iref{module.reach}
+\begin{itemize}
+\item
+$P$, or
+\item
+the point immediately following
+the \grammarterm{class-specifier} of the outermost class
+for which $P$ is in a complete-class context\iref{class.mem.general}.
+\end{itemize}
+\end{itemize}
+\begin{example}
+\begin{codeblock}
+class S {
+  class Incomplete;
+
+  class Inner {
+    void fn() {
+      /* @$p_1$@ */ Incomplete i;    // OK
+    }
+  } /* @$p_2$@ */ ;
+
+  consteval {
+    define_aggregate(^^Incomplete, {});
+  }
+} /* @$p_3$@ */ ;
+\end{codeblock}
+Constructs at $p_1$ are analyzed in a context
+where the side effect of the call to \tcode{define_aggregate} is complete
+because
+\begin{itemize}
+\item
+the call appears in a consteval block, and
+\item
+$p_1$ is in a complete-class context of \tcode{S} and
+the consteval block is reachable from $p_3$.
+\end{itemize}
+\end{example}
 
 \item
 \indextext{linking}%
-All external entity references are resolved. Library
+Translated translation units are combined, and
+all external entity references are resolved\iref{basic.link}. Library
 components are linked to satisfy external references to
 entities not defined in the current translation. All such translator
 output is collected into a program image which contains information
@@ -280,6 +320,9 @@ A Unicode scalar value is any code point that is not a surrogate code point.
 \pnum
 The \defnadj{basic}{character set} is a subset of the translation character set,
 consisting of 99 characters as specified in \tref{lex.charset.basic}.
+In this document,
+glyphs are often used to identify
+elements of the basic character set.
 \begin{note}
 Unicode short names are given only as a means to identifying the character;
 the numerical value has no other meaning in this context.
@@ -378,7 +421,7 @@ The \unicode{0000}{null} character is encoded as the value \tcode{0}.
 No other element of the translation character set
 is encoded with a code unit of value \tcode{0}.
 The code unit value of each decimal digit character after the digit \tcode{0} (\ucode{0030})
-shall be one greater than the value of the previous.
+is one greater than the value of the previous.
 The ordinary and wide literal encodings are otherwise
 \impldef{ordinary and wide literal encodings}.
 \indextext{UTF-8}%
@@ -431,9 +474,8 @@ for the respective Unicode encoding form.
 The \grammarterm{universal-character-name} construct provides a way to name any
 element in the translation character set using just the basic character set.
 If a \grammarterm{universal-character-name} outside
-the \grammarterm{c-char-sequence}, \grammarterm{s-char-sequence}, or
-\grammarterm{r-char-sequence} of a \grammarterm{character-literal} or
-\grammarterm{string-literal}
+the \grammarterm{c-char-sequence} or \grammarterm{s-char-sequence}
+of a \grammarterm{character-literal} or \grammarterm{string-literal}
 (in either case, including within a \grammarterm{user-defined-literal})
 corresponds to a control character or to a character in the basic character set,
 the program is ill-formed.
@@ -461,8 +503,7 @@ designates the corresponding character
 in the Unicode Standard (chapter 4.8 Name)
 if the \grammarterm{n-char-sequence} is equal
 to its character name or
-to one of its character name aliases of
-type ``control'', ``correction'', or ``alternate'';
+to one of its character name aliases;
 otherwise, the program is ill-formed.
 \begin{note}
 These aliases are listed in
@@ -480,10 +521,7 @@ The characters \tcode{/*} start a comment, which terminates with the
 characters \tcode{*/}. These comments do not nest.
 \indextext{comment!\tcode{//}}%
 The characters \tcode{//} start a comment, which terminates immediately before the
-next new-line character. If there is a form-feed or a vertical-tab
-character in such a comment, only whitespace characters shall appear
-between it and the new-line that terminates the comment; no diagnostic
-is required.
+next new-line character.
 \begin{note}
 The comment characters \tcode{//}, \tcode{/*},
 and \tcode{*/} have no special meaning within a \tcode{//} comment and
@@ -514,10 +552,7 @@ characters \tcode{//} and \tcode{/*} have no special meaning within a
 
 \pnum
 A preprocessing token is the minimal lexical element of the language in translation
-phases 3 through 6.
-In this document,
-glyphs are used to identify
-elements of the basic character set\iref{lex.charset}.
+phases 3 through 5.
 The categories of preprocessing token are: header names,
 placeholder tokens produced by preprocessing \tcode{import} and \tcode{module} directives
 (\grammarterm{import-keyword}, \grammarterm{module-keyword}, and \grammarterm{export-keyword}),
@@ -525,10 +560,11 @@ identifiers, preprocessing numbers, character literals (including user-defined c
 literals), string literals (including user-defined string literals), preprocessing
 operators and punctuators, and single non-whitespace characters that do not lexically
 match the other preprocessing token categories.
-If a \unicode{0027}{apostrophe} or a \unicode{0022}{quotation mark} character
+If a \unicode{0027}{apostrophe}, a \unicode{0022}{quotation mark},
+or any character not in the basic character set
 matches the last category, the program is ill-formed.
-If any character not in the basic character set matches the last category,
-the program is ill-formed.
+
+\pnum
 Preprocessing tokens can be separated by
 \indextext{whitespace}%
 whitespace;
@@ -539,19 +575,25 @@ this consists of comments\iref{lex.comment}, or whitespace characters
 new-line,
 \unicode{000b}{line tabulation}, and
 \unicode{000c}{form feed}), or both.
+\begin{note}
 As described in \ref{cpp}, in certain
 circumstances during translation phase 4, whitespace (or the absence
 thereof) serves as more than preprocessing token separation. Whitespace
 can appear within a preprocessing token only as part of a header name or
 between the quotation characters in a character literal or
 string literal.
+\end{note}
 
 \pnum
 Each preprocessing token that is converted to a token\iref{lex.token}
 shall have the lexical form of a keyword, an identifier, a literal,
+a header name,
 or an operator or punctuator.
 
 \pnum
+\indexgrammar{\idxgram{import-keyword}}%
+\indexgrammar{\idxgram{module-keyword}}%
+\indexgrammar{\idxgram{export-keyword}}%
 The \grammarterm{import-keyword} is produced
 by processing an \keyword{import} directive\iref{cpp.import},
 the \grammarterm{module-keyword} is produced
@@ -573,7 +615,7 @@ and initial double quote of a raw string literal, such as \tcode{R"}, the next p
 token shall be a raw string literal. Between the initial and final
 double quote characters of the raw string, any transformations performed in phase
 2 (line splicing) are reverted; this reversion
-shall apply before any \grammarterm{d-char}, \grammarterm{r-char}, or delimiting
+is applied before any \grammarterm{d-char}, \grammarterm{r-char}, or delimiting
 parenthesis is identified. The raw string literal is defined as the shortest sequence
 of characters that matches the raw-string pattern
 \begin{ncbnf}
@@ -584,20 +626,45 @@ of characters that matches the raw-string pattern
 is neither \tcode{:} nor \tcode{>}, the \tcode{<} is treated as a preprocessing token by
 itself and not as the first character of the alternative token \tcode{<:}.
 
+\item
+Otherwise, if the next three characters are \tcode{[::} and
+the subsequent character is not \tcode{:}, or
+if the next three characters are \tcode{[:>},
+the \tcode{[} is treated as a preprocessing token by itself and
+not as the first character of the preprocessing token \tcode{[:}.
+\begin{note}
+The tokens \tcode{[:} and \tcode{:]} cannot be composed from digraphs.
+\end{note}
+
 \item Otherwise,
 the next preprocessing token is the longest sequence of
 characters that could constitute a preprocessing token, even if that
 would cause further lexical analysis to fail,
-except that a \grammarterm{header-name}\iref{lex.header} is only formed
+except that
 \begin{itemize}
 \item
-after the \tcode{include} or \tcode{import} preprocessing token in a
-\tcode{\#include}\iref{cpp.include} or
-\tcode{import}\iref{cpp.import} directive, or
-
+a \grammarterm{string-literal} token is never formed
+when a \grammarterm{header-name} token can be formed, and
 \item
-within a \grammarterm{has-include-expression}.
-
+a \grammarterm{header-name}\iref{lex.header} is only formed
+\begin{itemize}
+\item
+immediately after the \tcode{include} or \tcode{embed} preprocessing token in a
+\tcode{\#include}\iref{cpp.include} or \tcode{\#embed}\iref{cpp.embed}
+directive, respectively, or
+\item
+immediately after an \tcode{import} preprocessing token that
+is at the start of a logical source line, or
+\item
+immediately after a preprocessing token sequence of \xname{has_include}
+or \xname{has_embed} immediately followed by \tcode{(}
+in a \tcode{\#if}, \tcode{\#elif}, or \tcode{\#embed} directive\iref{cpp.cond,cpp.embed}.
+\end{itemize}
+A preprocessing token is considered to be
+\defnx{immediately after}{token!immediately after}
+another preprocessing token if
+the preprocessing tokens are on the same logical source line and
+there are no intervening preprocessing tokens.
 \end{itemize}
 \end{itemize}
 
@@ -743,9 +810,9 @@ are converted into tokens for operators and punctuators:
 \begin{bnf}
 \microtypesetup{protrusion=false}
 \nontermdef{operator-or-punctuator} \textnormal{one of}\br
-    \terminal{\{ \ \ \ \ \ \ \ \} \ \ \ \ \ \ \ [ \ \ \ \ \ \ \ ] \ \ \ \ \ \ \ ( \ \ \ \ \ \ \ )}\br
+    \terminal{\{ \ \ \ \ \ \ \ \} \ \ \ \ \ \ \ [ \ \ \ \ \ \ \ ] \ \ \ \ \ \ \ ( \ \ \ \ \ \ \ ) \ \ \ \ \ \ \ [: \ \ \ \ \ \ :]}\br
     \terminal{<\% \ \ \ \ \ \ \%> \ \ \ \ \ \ <: \ \ \ \ \ \ :> \ \ \ \ \ \ ; \ \ \ \ \ \ \ : \ \ \ \ \ \ \ ...}\br
-    \terminal{? \ \ \ \ \ \ \ :: \ \ \ \ \ \ . \ \ \ \ \ \ \ .* \ \ \ \ \ \ -> \ \ \ \ \ \ ->* \ \ \ \ \ \~}\br
+    \terminal{? \ \ \ \ \ \ \ :: \ \ \ \ \ \ . \ \ \ \ \ \ \ .* \ \ \ \ \ \ -> \ \ \ \ \ \ ->* \ \ \ \ \ \caret{}\caret{} \ \ \ \ \ \ \~}\br
     \terminal{! \ \ \ \ \ \ \ + \ \ \ \ \ \ \ - \ \ \ \ \ \ \ * \ \ \ \ \ \ \ / \ \ \ \ \ \ \ \% \ \ \ \ \ \ \ \caret{} \ \ \ \ \ \ \ \& \ \ \ \ \ \ \ |}\br
     \terminal{= \ \ \ \ \ \ \ += \ \ \ \ \ \ -= \ \ \ \ \ \ *= \ \ \ \ \ \ /= \ \ \ \ \ \ \%= \ \ \ \ \ \ \caret{}= \ \ \ \ \ \ \&= \ \ \ \ \ \ |=}\br
     \terminal{== \ \ \ \ \ \ != \ \ \ \ \ \ < \ \ \ \ \ \ \ > \ \ \ \ \ \ \ <= \ \ \ \ \ \ >= \ \ \ \ \ \ <=> \ \ \ \ \ \&\& \ \ \ \ \ \ ||}\br
@@ -755,7 +822,7 @@ are converted into tokens for operators and punctuators:
 \end{bnf}
 
 Each \grammarterm{operator-or-punctuator} is converted to a single token
-in translation phase 7\iref{lex.phases}.%
+in translation phase 6\iref{lex.phases}.%
 \indextext{punctuator|)}%
 \indextext{operator|)}
 
@@ -778,11 +845,11 @@ keywords are colloquially known as ``digraphs''.
 \pnum
 In all respects of the language, each alternative token behaves the
 same, respectively, as its primary token, except for its spelling.
-\begin{footnote}
-Thus the ``stringized'' values\iref{cpp.stringize} of
-\tcode{[} and \tcode{<:} will be different, maintaining the source
-spelling, but the tokens can otherwise be freely interchanged.
-\end{footnote}
+\begin{note}
+The ``stringized'' values\iref{cpp.stringize} of
+\tcode{[} and \tcode{<:} are different,
+maintaining the source spelling.
+\end{note}
 The set of alternative tokens is defined in
 \tref{lex.digraph}.
 
@@ -816,24 +883,15 @@ The set of alternative tokens is defined in
     identifier\br
     keyword\br
     literal\br
+    header-name\br
     operator-or-punctuator
 \end{bnf}
 
 \pnum
 \indextext{\idxgram{token}}%
-There are five kinds of tokens: identifiers, keywords, literals,%
-\begin{footnote}
-Literals include strings and character and numeric literals.
-\end{footnote}
+There are six kinds of tokens: identifiers, keywords, literals,
+header names,
 operators, and other separators.
-\indextext{whitespace}%
-Blanks, horizontal and vertical tabs, newlines, formfeeds, and comments
-(collectively, ``whitespace''), as described below, are ignored except
-as they serve to separate tokens.
-\begin{note}
-Whitespace can separate otherwise adjacent identifiers, keywords, numeric
-literals, and alternative tokens containing alphabetic characters.
-\end{note}
 \indextext{token|)}
 
 \rSec1[lex.name]{Identifiers}
@@ -850,14 +908,16 @@ literals, and alternative tokens containing alphabetic characters.
 \begin{bnf}
 \nontermdef{identifier-start}\br
     nondigit\br
-    \textnormal{an element of the translation character set with the Unicode property XID_Start}
+    \textnormal%
+	{an element of the translation character set with the Unicode property XID_Start or the Unicode property ID_Compat_Math_Start}
 \end{bnf}
 
 \begin{bnf}
 \nontermdef{identifier-continue}\br
     digit\br
     nondigit\br
-    \textnormal{an element of the translation character set with the Unicode property XID_Continue}
+    \textnormal%
+	{an element of the translation character set with the Unicode property XID_Continue or the Unicode property ID_Compat_Math_Continue}
 \end{bnf}
 
 \begin{bnf}
@@ -912,8 +972,6 @@ in the later translation phase 7\iref{lex.token}.
 \indextext{\idxcode{final}}%
 \indextext{\idxcode{module}}%
 \indextext{\idxcode{override}}%
-\indextext{\idxcode{replaceable_if_eligible}}%
-\indextext{\idxcode{trivially_relocatable_if_eligible}}%
 The identifiers in \tref{lex.name.special} have a special meaning when
 appearing in a certain context. When referred to in the grammar, these identifiers
 are used explicitly rather than using the \grammarterm{identifier} grammar production.
@@ -922,16 +980,25 @@ Unless otherwise specified, any ambiguity as to whether a given
 token as a regular \grammarterm{identifier}.
 
 \begin{multicolfloattable}{Identifiers with special meaning}{lex.name.special}
-{llll}
-\keyword{final}                                 \\
-\keyword{override}                              \\\columnbreak
-\keyword{import}                                \\
-\keyword{module}                                \\\columnbreak
-\keyword{post}                                  \\
-\keyword{pre}                                   \\\columnbreak
-\keyword{replaceable_if_eligible}               \\
-\keyword{trivially_relocatable_if_eligible}     \\
+{llllll}
+\keyword{final}           \\
+\columnbreak
+\keyword{import}          \\
+\columnbreak
+\keyword{module}          \\
+\columnbreak
+\keyword{override}        \\
+\columnbreak
+\keyword{post}            \\
+\columnbreak
+\keyword{pre}             \\
 \end{multicolfloattable}
+
+\pnum
+\begin{note}
+Identifiers with special meaning
+cannot be used as macro names\iref{cpp.replace.general}.
+\end{note}
 
 \pnum
 \indextext{\idxcode{_}|see{character, underscore}}%
@@ -941,7 +1008,7 @@ In addition, some identifiers
 appearing as a \grammarterm{token} or \grammarterm{preprocessing-token}
 are reserved for use by \Cpp{}
 implementations and shall
-not be used otherwise; no diagnostic is required.
+not be used otherwise; no diagnostic is required \ifndrdef{lex.name.reserved}.
 \begin{itemize}
 \item
 Each identifier that contains a double underscore
@@ -975,7 +1042,7 @@ reserved to the implementation for use as a name in the global namespace.%
 \indextext{keyword|(}%
 The identifiers shown in \tref{lex.key} are reserved for use
 as keywords (that is, they are unconditionally treated as keywords in
-phase 7) except in an \grammarterm{attribute-token}\iref{dcl.attr.grammar}.
+phases 6 and 7) except in an \grammarterm{attribute-token}\iref{dcl.attr.grammar}.
 \begin{note}
 The \keyword{register} keyword is unused but
 is reserved for future use.
@@ -1072,6 +1139,11 @@ is reserved for future use.
 \end{multicolfloattable}
 
 \pnum
+\begin{note}
+Keywords cannot be used as macro names\iref{cpp.replace.general}.
+\end{note}
+
+\pnum
 Furthermore, the alternative representations shown in
 \tref{lex.key.digraph} for certain operators and
 punctuators\iref{lex.digraph} are reserved and shall not be used
@@ -1095,10 +1167,6 @@ otherwise.
 \indextext{constant}%
 \indextext{literal!constant}%
 There are several kinds of literals.
-\begin{footnote}
-The term ``literal'' generally designates, in this
-document, those tokens that are called ``constants'' in C.
-\end{footnote}
 
 \begin{bnf}
 \nontermdef{literal}\br
@@ -1736,17 +1804,31 @@ If the scaled value is not in the range of representable
 values for its type, the program is ill-formed.
 Otherwise, the value of a \grammarterm{floating-point-literal}
 is the scaled value if representable,
-else the larger or smaller representable value nearest the scaled value,
+else the next greater or lesser value of the type,
 chosen in an \impldef{choice of larger or smaller value of
 \grammarterm{floating-point-literal}} manner.
+\begin{example}
+The following example assumes that
+\tcode{std::float32_t} is supported\iref{basic.extended.fp}.
+\begin{codeblock}
+std::float32_t x = 0.0f32;          // value \tcode{0} is exactly representable
+std::float32_t y = 0.1f32;          // rounded to one of two values nearest to \tcode{0.1}
+std::float32_t z = 1e1000000000f32; // either greatest finite value or positive infinity
+\end{codeblock}
+\end{example}
 
 \rSec2[lex.string]{String literals}
 
 \indextext{literal!string}%
 \begin{bnf}
 \nontermdef{string-literal}\br
-    \opt{encoding-prefix} \terminal{"} \opt{s-char-sequence} \terminal{"}\br
+    \opt{encoding-prefix} plain-string-literal\br
     \opt{encoding-prefix} \terminal{R} raw-string
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{plain-string-literal}\br
+    \terminal{"} \opt{s-char-sequence} \terminal{"}
 \end{bnf}
 
 \begin{bnf}
@@ -1797,7 +1879,6 @@ chosen in an \impldef{choice of larger or smaller value of
 
 \pnum
 \indextext{literal!string}%
-\indextext{character string}%
 \indextext{string!type of}%
 \indextext{type!\idxcode{wchar_t}}%
 \indextext{prefix!\idxcode{L}}%
@@ -1918,7 +1999,7 @@ no effect on the determination of the common \grammarterm{encoding-prefix}.
 \end{note}
 
 \pnum
-In translation phase 6\iref{lex.phases},
+In translation phase 5\iref{lex.phases},
 adjacent \grammarterm{string-literal}s are concatenated.
 The lexical structure and grouping of
 the contents of the individual \grammarterm{string-literal}s is retained.
@@ -2079,8 +2160,8 @@ its interpretation depends on the context in which it appears.
 \indextext{literal!boolean}%
 \begin{bnf}
 \nontermdef{boolean-literal}\br
-    \terminal{false}\br
-    \terminal{true}
+    \keyword{false}\br
+    \keyword{true}
 \end{bnf}
 
 \pnum
@@ -2093,7 +2174,7 @@ Such literals have type \tcode{bool}.
 \indextext{literal!pointer}%
 \begin{bnf}
 \nontermdef{pointer-literal}\br
-    \terminal{nullptr}
+    \keyword{nullptr}
 \end{bnf}
 
 \pnum
@@ -2208,7 +2289,7 @@ operator ""@\placeholder{X}@(@\placeholder{f}@L)
 Otherwise, \placeholder{S} shall contain a raw literal operator
 or a numeric literal operator template\iref{over.literal} but not both.
 If \placeholder{S} contains a raw literal operator,
-the \grammarterm{literal} \placeholder{L} is treated as a call of the form
+the literal \placeholder{L} is treated as a call of the form
 \begin{codeblock}
 operator ""@\placeholder{X}@("@\placeholder{f}@")
 \end{codeblock}
@@ -2267,11 +2348,11 @@ int main() {
 \end{example}
 
 \pnum
-In translation phase 6\iref{lex.phases}, adjacent \grammarterm{string-literal}s are concatenated and
+In translation phase 5\iref{lex.phases}, adjacent \grammarterm{string-literal}s are concatenated and
 \grammarterm{user-defined-string-literal}{s} are considered \grammarterm{string-literal}s for that
 purpose. During concatenation, \grammarterm{ud-suffix}{es} are removed and ignored and
 the concatenation process occurs as described in~\ref{lex.string}. At the end of phase
-6, if a \grammarterm{string-literal} is the result of a concatenation involving at least one
+5, if a \grammarterm{string-literal} is the result of a concatenation involving at least one
 \grammarterm{user-defined-string-literal}, all the participating
 \grammarterm{user-defined-string-literal}{s} shall have the same \grammarterm{ud-suffix}
 and that suffix is applied to the result of the concatenation.

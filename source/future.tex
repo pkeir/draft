@@ -220,17 +220,32 @@ static constexpr bool has_denorm_loss = false;
 \rSec1[depr.c.macros]{Deprecated C macros}
 
 \pnum
-The header \libheaderref{stdalign.h} has the following macros:
+The header \libheaderref{cfloat} has the following macros:
 \begin{codeblock}
-#define @\libxmacro{alignas_is_defined}@ 1
-#define @\libxmacro{alignof_is_defined}@ 1
+#define @\libmacro{FLT_HAS_SUBNORM}@ @\seebelow@
+#define @\libmacro{DBL_HAS_SUBNORM}@ @\seebelow@
+#define @\libmacro{LDBL_HAS_SUBNORM}@ @\seebelow@
+#define @\libmacro{DECIMAL_DIG}@ @\seebelow@
 \end{codeblock}
+The header defines these macros the same as
+the C standard library header \libheader{float.h}.
+
+\xrefc{5.3.5.3.3, 7.33.6}
+
+\pnum
+In addition to being available via inclusion of the \libheader{cfloat} header,
+the macros \tcode{INFINITY} and \tcode{NAN} are
+available when \libheaderref{cmath} is included.
+
+\xrefc{7.12}
 
 \pnum
 The header \libheaderref{stdbool.h} has the following macro:
 \begin{codeblock}
 #define @\libxmacro{bool_true_false_are_defined}@ 1
 \end{codeblock}
+
+\xrefc{7.19}
 
 \rSec1[depr.cerrno]{Deprecated error numbers}
 
@@ -278,11 +293,11 @@ namespace std {
   template<size_t Len, size_t Align = @\exposid{default-alignment}@> // \seebelow
     struct aligned_storage;
   template<size_t Len, size_t Align = @\exposid{default-alignment}@> // \seebelow
-    using @\libglobal{aligned_storage_t}@ = typename aligned_storage<Len, Align>::type;
+    using @\libglobal{aligned_storage_t}@ = aligned_storage<Len, Align>::type;
   template<size_t Len, class... Types>
     struct aligned_union;
   template<size_t Len, class... Types>
-    using @\libglobal{aligned_union_t}@ = typename aligned_union<Len, Types...>::type;
+    using @\libglobal{aligned_union_t}@ = aligned_union<Len, Types...>::type;
 }
 \end{codeblock}
 
@@ -561,8 +576,8 @@ Then specializations of each of the two templates meet
 the \oldconcept{TransformationTrait} requirements
 with a member typedef \tcode{type} that names the following type:
 \begin{itemize}
-\item for the first specialization, \tcode{add_volatile_t<TE>}, and
-\item for the second specialization, \tcode{add_cv_t<TE>}.
+\item for the first specialization, \tcode{volatile TE}, and
+\item for the second specialization, \tcode{const volatile TE}.
 \end{itemize}
 
 \pnum
@@ -616,9 +631,40 @@ Then specializations of each of the two templates meet
 the \oldconcept{TransformationTrait} requirements
 with a member typedef \tcode{type} that names the following type:
 \begin{itemize}
-\item for the first specialization, \tcode{add_volatile_t<VA::type>}, and
-\item for the second specialization, \tcode{add_cv_t<VA::type>}.
+\item for the first specialization, \tcode{volatile VA::type}, and
+\item for the second specialization, \tcode{const volatile VA::type}.
 \end{itemize}
+\end{itemdescr}
+
+\rSec1[depr.vector.bool.swap]{Deprecated \tcode{vector<bool, Allocator>} swap}
+
+\pnum
+The following member is declared in addition to those members specified in
+\ref{vector.bool}:
+
+\begin{codeblock}
+namespace std {
+  template<class Allocator> class vector<bool, Allocator> {
+  public:
+    static constexpr void swap(reference x, reference y) noexcept;
+  };
+}
+\end{codeblock}
+
+\indexlibrarymember{swap}{vector<bool>}%
+\begin{itemdecl}
+static constexpr void swap(reference x, reference y) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Exchanges the values denoted by \tcode{x} and \tcode{y} as if by:
+\begin{codeblock}
+bool b = x;
+x = y;
+y = b;
+\end{codeblock}
 \end{itemdescr}
 
 \rSec1[depr.iterator]{Deprecated \tcode{iterator} class template}
@@ -759,10 +805,27 @@ template<class Visitor, class Context>
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return visit(std::forward<Visitor>(vis), arg.value);}
+Equivalent to: \tcode{return visit(std::forward<Visitor>(vis), arg.\exposid{value_});}
 \end{itemdescr}
 
-\rSec1[depr.fs.path.factory]{Deprecated filesystem path factory functions}
+\rSec1[depr.ctime]{Deprecated time formatting}
+
+\pnum
+The header \libheaderref{ctime} has the following additions:
+\begin{codeblock}
+char* asctime(const tm* timeptr);
+char* ctime(const time_t* timer);
+\end{codeblock}
+
+\pnum
+The functions \tcode{asctime} and \tcode{ctime}
+are not required to avoid data races\iref{res.on.data.races}.
+
+\xrefc{7.29}
+
+\rSec1[depr.filesystems]{Deprecated file systems}
+
+\rSec2[depr.fs.path.factory]{Deprecated filesystem path factory functions}
 
 \pnum
 The header \libheaderrefx{filesystem}{fs.filesystem.syn} has the following additions:
@@ -841,6 +904,45 @@ as it is consistent with \tcode{path}'s handling of other encodings.
 \end{note}
 \end{itemdescr}
 
+\rSec2[depr.fs.path.obs]{Deprecated filesystem path format observers}
+
+\indexlibraryglobal{path}%
+\pnum
+The following members are declared in addition to those members
+specified in \ref{fs.path.member}:
+
+\begin{codeblock}
+namespace std::filesystem {
+  class path {
+  public:
+    std::string string() const;
+    std::string generic_string() const;
+  };
+}
+\end{codeblock}
+
+\indexlibrarymember{string}{path}%
+\begin{itemdecl}
+std::string string() const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{native_encoded_string()}.
+\end{itemdescr}
+
+\indexlibrarymember{generic_string}{path}%
+\begin{itemdecl}
+std::string generic_string() const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{generic_native_encoded_string()}.
+\end{itemdescr}
+
 \rSec1[depr.atomics]{Deprecated atomic operations}
 
 \rSec2[depr.atomics.general]{General}
@@ -885,6 +987,13 @@ bool compare_exchange_strong(T& expected, T desired,
 T fetch_@\placeholdernc{key}@(T operand, memory_order order = memory_order::seq_cst) volatile noexcept;
 T operator @\placeholdernc{op}@=(T operand) volatile noexcept;
 T* fetch_@\placeholdernc{key}@(ptrdiff_t operand, memory_order order = memory_order::seq_cst) volatile noexcept;
+value_type operator++(int) volatile noexcept;
+value_type operator--(int) volatile noexcept;
+value_type operator++() volatile noexcept;
+value_type operator--() volatile noexcept;
+void wait(T old, memory_order order = memory_order::seq_cst) const volatile noexcept;
+void notify_one() volatile noexcept;
+void notify_all() volatile noexcept;
 \end{codeblock}
 
 \rSec2[depr.atomics.nonmembers]{Non-member functions}
@@ -948,4 +1057,111 @@ template<class T> constexpr T kill_dependency(T y) noexcept;
 \pnum
 \returns
 \tcode{y}.
+\end{itemdescr}
+
+\rSec1[depr.istream.extractors]{Deprecated \tcode{signed char} and \tcode{unsigned char} extraction}
+\pnum
+The header \libheaderref{istream} has the following additions:
+
+\begin{itemdecl}
+template<class traits>
+  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, unsigned char& c);
+template<class traits>
+  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, signed char& c);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Behaves like a formatted input member
+(as described in \ref{istream.formatted.reqmts})
+of \tcode{in}.
+A character is extracted from \tcode{in},
+if one is available, and stored in \tcode{c}.
+Otherwise, \tcode{ios_base::failbit} is set
+in the input function's local error state
+before \tcode{setstate} is called.
+
+\pnum
+\returns
+\tcode{in}.
+\end{itemdescr}
+
+\pnum
+\begin{itemdecl}
+template<class traits, size_t N>
+  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, unsigned char (&s)[N]);
+template<class traits, size_t N>
+  basic_istream<char, traits>& operator>>(basic_istream<char, traits>& in, signed char (&s)[N]);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Behaves like a formatted input member
+(as described in \ref{istream.formatted.reqmts})
+of \tcode{in}.
+After a sentry object is constructed,
+\tcode{operator>>} extracts characters and stores them into \tcode{s}.
+If \tcode{width()} is greater than zero,
+\tcode{n} is \tcode{min(size_t(width()), N)}.
+Otherwise \tcode{n} is \tcode{N}.
+\tcode{n} is the maximum number of characters stored.
+
+\pnum
+Characters are extracted and stored until any of the following occurs:
+\begin{itemize}
+\item \tcode{n - 1} characters are stored;
+\item end of file occurs on the input sequence;
+\item letting \tcode{ct} be \tcode{use_facet<ctype<charT>>(in.getloc())}, \tcode{ct.is(ct.space, s)}
+      is \tcode{true}.
+\end{itemize}
+
+\pnum
+\tcode{operator>>} then stores a null byte (\tcode{charT()}) in the next position,
+which may be the first position if no characters were extracted.
+\tcode{operator>>} then calls \tcode{width(0)}.
+
+\pnum
+If the function extracted no characters,
+\tcode{ios_bit::failbit} is set in the input function's
+local error state before \tcode{setstate} is called.
+
+\pnum
+\returns
+\tcode{in}.
+\end{itemdescr}
+
+\rSec1[depr.ostream.inserters]{Deprecated \tcode{signed char} and \tcode{unsigned char} insertion}
+\pnum
+The header \libheaderref{ostream} has the following additions:
+
+\pnum
+\begin{itemdecl}
+template<class traits>
+  basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out, signed char c);
+template<class traits>
+  basic_ostream<char, traits>& operator<<(basic_ostream<char, traits>& out, unsigned char c);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to: \tcode{return out << static_cast<char>(c);}
+\end{itemdescr}
+
+\pnum
+\begin{itemdecl}
+template<class traits>
+  basic_ostream<char, traits>&
+    operator<<(basic_ostream<char, traits>& out, const signed char* s);
+template<class traits>
+  basic_ostream<char, traits>&
+    operator<<(basic_ostream<char, traits>& out, const unsigned char* s);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to: \tcode{return out << reinterpret_cast<const char*>(s);}
 \end{itemdescr}

@@ -519,13 +519,20 @@ returns
 \rSec2[string.view.general]{General}
 
 \pnum
-The class template \tcode{basic_string_view} describes an object that can refer to a constant contiguous sequence of char-like\iref{strings.general} objects with the first element of the sequence at position zero.
-In the rest of \ref{string.view}, the type of the char-like objects held in a \tcode{basic_string_view} object is designated by \tcode{charT}.
+The class template \tcode{basic_string_view} describes an object
+that can refer to a constant contiguous sequence of char-like\iref{strings.general} objects
+with the first element of the sequence at position zero.
+In the rest of \ref{string.view}, the type of the char-like objects
+held in a \tcode{basic_string_view} object is designated by \tcode{charT}.
 
 \pnum
 \begin{note}
-The library provides implicit conversions from \tcode{const charT*} and \tcode{std::basic_string<charT, ...>} to \tcode{std::basic_string_view<charT, ...>} so that user code can accept just \tcode{std::basic_string_view<charT>} as a non-templated parameter wherever a sequence of characters is expected.
-User-defined types can define their own implicit conversions to \tcode{std::basic_string_view<charT>} in order to interoperate with these functions.
+The library provides implicit conversions from \tcode{const charT*}
+and \tcode{std::basic_string<charT, ...>} to \tcode{std::basic_string_view<charT, ...>}
+so that user code can accept just \tcode{std::basic_string_view<charT>}
+as a non-templated parameter wherever a sequence of characters is expected.
+User-defined types can define their own implicit conversions
+to \tcode{std::basic_string_view<charT>} in order to interoperate with these functions.
 \end{note}
 
 \rSec2[string.view.synop]{Header \tcode{<string_view>} synopsis}
@@ -561,11 +568,11 @@ namespace std {
                  basic_string_view<charT, traits> str);                 // hosted
 
   // \tcode{basic_string_view} \grammarterm{typedef-name}s
-  using string_view    = basic_string_view<char>;
-  using u8string_view  = basic_string_view<char8_t>;
-  using u16string_view = basic_string_view<char16_t>;
-  using u32string_view = basic_string_view<char32_t>;
-  using wstring_view   = basic_string_view<wchar_t>;
+  using @\libglobal{string_view}@    = basic_string_view<char>;
+  using @\libglobal{u8string_view}@  = basic_string_view<char8_t>;
+  using @\libglobal{u16string_view}@ = basic_string_view<char16_t>;
+  using @\libglobal{u32string_view}@ = basic_string_view<char32_t>;
+  using @\libglobal{wstring_view}@   = basic_string_view<wchar_t>;
 
   // \ref{string.view.hash}, hash support
   template<class T> struct hash;
@@ -665,7 +672,7 @@ Because \tcode{basic_string_view} refers to a constant sequence, \tcode{iterator
     constexpr const_reference at(size_type pos) const;                  // freestanding-deleted
     constexpr const_reference front() const;
     constexpr const_reference back() const;
-    constexpr const_pointer data() const noexcept;
+    constexpr const charT* data() const noexcept;
 
     // \ref{string.view.modifiers}, modifiers
     constexpr void remove_prefix(size_type n);
@@ -678,6 +685,8 @@ Because \tcode{basic_string_view} refers to a constant sequence, \tcode{iterator
 
     constexpr basic_string_view substr(size_type pos = 0,
                                        size_type n = npos) const;       // freestanding-deleted
+    constexpr basic_string_view subview(size_type pos = 0,
+                                        size_type n = npos) const;      // freestanding-deleted
 
     constexpr int compare(basic_string_view s) const noexcept;
     constexpr int compare(size_type pos1, size_type n1,
@@ -732,8 +741,8 @@ Because \tcode{basic_string_view} refers to a constant sequence, \tcode{iterator
     constexpr size_type find_last_not_of(const charT* s, size_type pos = npos) const;
 
   private:
-    const_pointer data_;        // \expos
-    size_type size_;            // \expos
+    const charT* @\exposid{data_}@;         // \expos
+    size_type @\exposid{size_}@;            // \expos
   };
 
   // \ref{string.view.deduct}, deduction guides
@@ -778,7 +787,7 @@ constexpr basic_string_view() noexcept;
 \begin{itemdescr}
 \pnum
 \ensures
-\tcode{size_ == 0} and \tcode{data_ == nullptr}.
+\tcode{\exposid{size_} == 0} and \tcode{\exposid{data_} == nullptr}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_string_view}%
@@ -793,8 +802,8 @@ constexpr basic_string_view(const charT* str);
 
 \pnum
 \effects
-Constructs a \tcode{basic_string_view}, initializing \tcode{data_} with \tcode{str}
-and initializing \tcode{size_} with \tcode{traits::length(str)}.
+Constructs a \tcode{basic_string_view}, initializing \exposid{data_} with \tcode{str}
+and initializing \exposid{size_} with \tcode{traits::length(str)}.
 
 \pnum
 \complexity
@@ -813,8 +822,8 @@ constexpr basic_string_view(const charT* str, size_type len);
 
 \pnum
 \effects
-Constructs a \tcode{basic_string_view}, initializing \tcode{data_} with \tcode{str}
-and initializing \tcode{size_} with \tcode{len}.
+Constructs a \tcode{basic_string_view}, initializing \exposid{data_} with \tcode{str}
+and initializing \exposid{size_} with \tcode{len}.
 \end{itemdescr}
 
 \indexlibraryctor{basic_string_view}%
@@ -843,8 +852,8 @@ template<class It, class End>
 
 \pnum
 \effects
-Initializes \tcode{data_} with \tcode{to_address(begin)} and
-initializes \tcode{size_} with \tcode{end - begin}.
+Initializes \exposid{data_} with \tcode{to_address(begin)} and
+initializes \exposid{size_} with \tcode{end - begin}.
 
 \pnum
 \throws
@@ -880,8 +889,8 @@ is not a valid expression.
 
 \pnum
 \effects
-Initializes \tcode{data_} with \tcode{ranges::data(r)} and
-\tcode{size_} with \tcode{ranges::size(r)}.
+Initializes \exposid{data_} with \tcode{ranges::data(r)} and
+\exposid{size_} with \tcode{ranges::size(r)}.
 
 \pnum
 \throws
@@ -932,7 +941,8 @@ meets the constexpr iterator requirements\iref{iterator.requirements.general},
 whose \tcode{value_type} is the template parameter \tcode{charT}.
 
 \pnum
-All requirements on container iterators\iref{container.requirements} apply to \tcode{basic_string_view::const_iterator} as well.
+All requirements on container iterators\iref{container.requirements}
+apply to \tcode{basic_string_view::const_iterator} as well.
 \end{itemdescr}
 
 \indexlibrarymember{begin}{basic_string_view}%
@@ -947,7 +957,7 @@ constexpr const_iterator cbegin() const noexcept;
 \returns
 An iterator such that
 \begin{itemize}
-\item if \tcode{!empty()}, \tcode{addressof(*begin()) == data_},
+\item if \tcode{!empty()}, \tcode{addressof(*begin()) == \exposid{data_}},
 \item otherwise, an unspecified value such that \range{begin()}{end()} is a valid range.
 \end{itemize}
 \end{itemdescr}
@@ -1003,7 +1013,7 @@ constexpr size_type length() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{size_}.
+\exposid{size_}.
 \end{itemdescr}
 
 
@@ -1015,7 +1025,8 @@ constexpr size_type max_size() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-The largest possible number of char-like objects that can be referred to by a \tcode{basic_string_view}.
+The largest possible number of char-like objects
+that can be referred to by a \tcode{basic_string_view}.
 \end{itemdescr}
 
 \indexlibrarymember{empty}{basic_string_view}%
@@ -1026,7 +1037,7 @@ constexpr bool empty() const noexcept;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{size_ == 0}.
+\tcode{\exposid{size_} == 0}.
 \end{itemdescr}
 
 \rSec3[string.view.access]{Element access}
@@ -1046,7 +1057,7 @@ This precondition is stronger than the one on \tcode{basic_string::operator[]}.
 
 \pnum
 \returns
-\tcode{data_[pos]}.
+\tcode{\exposid{data_}[pos]}.
 
 \pnum
 \throws
@@ -1061,7 +1072,7 @@ constexpr const_reference at(size_type pos) const;
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{data_[pos]}.
+\tcode{\exposid{data_}[pos]}.
 
 \pnum
 \throws
@@ -1080,7 +1091,7 @@ constexpr const_reference front() const;
 
 \pnum
 \returns
-\tcode{data_[0]}.
+\tcode{\exposid{data_}[0]}.
 
 \pnum
 \throws
@@ -1099,7 +1110,7 @@ constexpr const_reference back() const;
 
 \pnum
 \returns
-\tcode{data_[size() - 1]}.
+\tcode{\exposid{data_}[size() - 1]}.
 
 \pnum
 \throws
@@ -1108,19 +1119,20 @@ Nothing.
 
 \indexlibrarymember{data}{basic_string_view}%
 \begin{itemdecl}
-constexpr const_pointer data() const noexcept;
+constexpr const charT* data() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-\tcode{data_}.
+\exposid{data_}.
 
 \pnum
 \begin{note}
 Unlike \tcode{basic_string::data()} and \grammarterm{string-literal}s,
 \tcode{data()} can return a pointer to a buffer that is not null-terminated.
-Therefore it is typically a mistake to pass \tcode{data()} to a function that takes just a \tcode{const charT*} and expects a null-terminated string.
+Therefore it is typically a mistake to pass \tcode{data()} to a function
+that takes just a \tcode{const charT*} and expects a null-terminated string.
 \end{note}
 \end{itemdescr}
 
@@ -1138,7 +1150,7 @@ constexpr void remove_prefix(size_type n);
 
 \pnum
 \effects
-Equivalent to: \tcode{data_ += n; size_ -= n;}
+Equivalent to: \tcode{\exposid{data_} += n; \exposid{size_} -= n;}
 \end{itemdescr}
 
 \indexlibrarymember{remove_suffix}{basic_string_view}%
@@ -1153,7 +1165,7 @@ constexpr void remove_suffix(size_type n);
 
 \pnum
 \effects
-Equivalent to: \tcode{size_ -= n;}
+Equivalent to: \tcode{\exposid{size_} -= n;}
 \end{itemdescr}
 
 \indexlibrarymember{swap}{basic_string_view}%
@@ -1200,8 +1212,10 @@ Equivalent to \tcode{traits::copy(s, data() + pos, rlen)}.
 \end{itemdescr}
 
 \indexlibrarymember{substr}{basic_string_view}%
+\indexlibrarymember{subview}{basic_string_view}%
 \begin{itemdecl}
 constexpr basic_string_view substr(size_type pos = 0, size_type n = npos) const;
+constexpr basic_string_view subview(size_type pos = 0, size_type n = npos) const;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -1446,7 +1460,7 @@ Let \tcode{xpos} be the lowest position, if possible, such that the following co
 \item
 \tcode{xpos + str.size() <= size()}
 \item
-\tcode{traits::eq(data_[xpos + I], str[I])} for all elements \tcode{I} of the string referenced by \tcode{str}.
+\tcode{traits::eq(\exposid{data_}[xpos + I], str[I])} for all elements \tcode{I} of the string referenced by \tcode{str}.
 \end{itemize}
 
 \pnum
@@ -1473,7 +1487,7 @@ Let \tcode{xpos} be the highest position, if possible, such that the following c
 \item
 \tcode{xpos + str.size() <= size()}
 \item
-\tcode{traits::eq(data_[xpos + I], str[I])} for all elements \tcode{I} of the string referenced by \tcode{str}.
+\tcode{traits::eq(\exposid{data_}[xpos + I], str[I])} for all elements \tcode{I} of the string referenced by \tcode{str}.
 \end{itemize}
 
 \pnum
@@ -1500,7 +1514,7 @@ Let \tcode{xpos} be the lowest position, if possible, such that the following co
 \item
 \tcode{xpos < size()}
 \item
-\tcode{traits::eq(data_[xpos], str[I])} for some element \tcode{I} of the string referenced by \tcode{str}.
+\tcode{traits::eq(\exposid{data_}[xpos], str[I])} for some element \tcode{I} of the string referenced by \tcode{str}.
 \end{itemize}
 
 \pnum
@@ -1527,7 +1541,7 @@ Let \tcode{xpos} be the highest position, if possible, such that the following c
 \item
 \tcode{xpos < size()}
 \item
-\tcode{traits::eq(data_[xpos], str[I])} for some element \tcode{I} of the string referenced by \tcode{str}.
+\tcode{traits::eq(\exposid{data_}[xpos], str[I])} for some element \tcode{I} of the string referenced by \tcode{str}.
 \end{itemize}
 
 \pnum
@@ -1554,7 +1568,7 @@ Let \tcode{xpos} be the lowest position, if possible, such that the following co
 \item
 \tcode{xpos < size()}
 \item
-\tcode{traits::eq(data_[xpos], str[I])} for no element \tcode{I} of the string referenced by \tcode{str}.
+\tcode{traits::eq(\exposid{data_}[xpos], str[I])} for no element \tcode{I} of the string referenced by \tcode{str}.
 \end{itemize}
 
 \pnum
@@ -1580,7 +1594,7 @@ Let \tcode{xpos} be the highest position, if possible, such that the following c
 \item
 \tcode{xpos < size()}
 \item
-\tcode{traits::eq(data_[xpos], str[I])} for no element \tcode{I} of the string referenced by \tcode{str}.
+\tcode{traits::eq(\exposid{data_}[xpos], str[I])} for no element \tcode{I} of the string referenced by \tcode{str}.
 \end{itemize}
 
 \pnum
@@ -1923,12 +1937,12 @@ namespace std {
   float stof(const string& str, size_t* idx = nullptr);
   double stod(const string& str, size_t* idx = nullptr);
   long double stold(const string& str, size_t* idx = nullptr);
-  string to_string(int val);
-  string to_string(unsigned val);
-  string to_string(long val);
-  string to_string(unsigned long val);
-  string to_string(long long val);
-  string to_string(unsigned long long val);
+  constexpr string to_string(int val);
+  constexpr string to_string(unsigned val);
+  constexpr string to_string(long val);
+  constexpr string to_string(unsigned long val);
+  constexpr string to_string(long long val);
+  constexpr string to_string(unsigned long long val);
   string to_string(float val);
   string to_string(double val);
   string to_string(long double val);
@@ -1941,12 +1955,12 @@ namespace std {
   float stof(const wstring& str, size_t* idx = nullptr);
   double stod(const wstring& str, size_t* idx = nullptr);
   long double stold(const wstring& str, size_t* idx = nullptr);
-  wstring to_wstring(int val);
-  wstring to_wstring(unsigned val);
-  wstring to_wstring(long val);
-  wstring to_wstring(unsigned long val);
-  wstring to_wstring(long long val);
-  wstring to_wstring(unsigned long long val);
+  constexpr wstring to_wstring(int val);
+  constexpr wstring to_wstring(unsigned val);
+  constexpr wstring to_wstring(long val);
+  constexpr wstring to_wstring(unsigned long val);
+  constexpr wstring to_wstring(long long val);
+  constexpr wstring to_wstring(unsigned long long val);
   wstring to_wstring(float val);
   wstring to_wstring(double val);
   wstring to_wstring(long double val);
@@ -2010,6 +2024,8 @@ In all cases,
 \tcode{data() + size()} points at an object with value \tcode{charT()}
 (a ``null terminator''\indextext{string!null terminator}),
 and \tcode{size() <= capacity()} is \tcode{true}.
+The program has undefined behavior if
+the null terminator is modified to any value other than \tcode{charT()}.
 
 
 \indexlibraryglobal{basic_string}%
@@ -2036,10 +2052,10 @@ namespace std {
     using traits_type            = traits;
     using value_type             = charT;
     using allocator_type         = Allocator;
-    using size_type              = typename allocator_traits<Allocator>::size_type;
-    using difference_type        = typename allocator_traits<Allocator>::difference_type;
-    using pointer                = typename allocator_traits<Allocator>::pointer;
-    using const_pointer          = typename allocator_traits<Allocator>::const_pointer;
+    using size_type              = allocator_traits<Allocator>::size_type;
+    using difference_type        = allocator_traits<Allocator>::difference_type;
+    using pointer                = allocator_traits<Allocator>::pointer;
+    using const_pointer          = allocator_traits<Allocator>::const_pointer;
     using reference              = value_type&;
     using const_reference        = const value_type&;
 
@@ -2127,10 +2143,10 @@ namespace std {
     constexpr const_reference at(size_type n) const;
     constexpr reference       at(size_type n);
 
-    constexpr const charT& front() const;
-    constexpr charT&       front();
-    constexpr const charT& back() const;
-    constexpr charT&       back();
+    constexpr const_reference front() const;
+    constexpr reference       front();
+    constexpr const_reference back() const;
+    constexpr reference       back();
 
     // \ref{string.modifiers}, modifiers
     constexpr basic_string& operator+=(const basic_string& str);
@@ -2147,6 +2163,7 @@ namespace std {
       constexpr basic_string& append(const T& t, size_type pos, size_type n = npos);
     constexpr basic_string& append(const charT* s, size_type n);
     constexpr basic_string& append(const charT* s);
+    constexpr basic_string& append(const charT* s, size_type pos, size_type n);
     constexpr basic_string& append(size_type n, charT c);
     template<class InputIterator>
       constexpr basic_string& append(InputIterator first, InputIterator last);
@@ -2167,6 +2184,7 @@ namespace std {
       constexpr basic_string& assign(const T& t, size_type pos, size_type n = npos);
     constexpr basic_string& assign(const charT* s, size_type n);
     constexpr basic_string& assign(const charT* s);
+    constexpr basic_string& assign(const charT* s, size_type pos, size_type n);
     constexpr basic_string& assign(size_type n, charT c);
     template<class InputIterator>
       constexpr basic_string& assign(InputIterator first, InputIterator last);
@@ -2234,7 +2252,7 @@ namespace std {
     // \ref{string.ops}, string operations
     constexpr const charT* c_str() const noexcept;
     constexpr const charT* data() const noexcept;
-    constexpr charT* data() noexcept;
+    constexpr       charT* data() noexcept;
     constexpr operator basic_string_view<charT, traits>() const noexcept;
     constexpr allocator_type get_allocator() const noexcept;
 
@@ -2285,6 +2303,8 @@ namespace std {
 
     constexpr basic_string substr(size_type pos = 0, size_type n = npos) const &;
     constexpr basic_string substr(size_type pos = 0, size_type n = npos) &&;
+    constexpr basic_string_view<charT, traits> subview(size_type pos = 0,
+                                                       size_type n = npos) const;
 
     template<class T>
       constexpr int compare(const T& t) const noexcept(@\seebelow@);
@@ -2789,7 +2809,7 @@ constexpr basic_string& operator=(initializer_list<charT> il);
 \effects
 Equivalent to:
 \begin{codeblock}
-return *this = basic_string_view<charT, traits>(il.begin(), il.size());
+return *this = basic_string_view<charT, traits>(il.data(), il.size());
 \end{codeblock}
 \end{itemdescr}
 
@@ -3095,10 +3115,7 @@ constexpr reference       operator[](size_type pos);
 
 \pnum
 \returns
-\tcode{*(begin() + pos)} if \tcode{pos < size()}. Otherwise,
-returns a reference to an object of type \tcode{charT} with value
-\tcode{charT()}, where modifying the object to any value other than
-\tcode{charT()} leads to undefined behavior.
+\tcode{data()[pos]}.
 
 \pnum
 \throws
@@ -3129,8 +3146,8 @@ if
 
 \indexlibrarymember{front}{basic_string}%
 \begin{itemdecl}
-constexpr const charT& front() const;
-constexpr charT& front();
+constexpr const_reference front() const;
+constexpr reference front();
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3145,8 +3162,8 @@ Equivalent to: \tcode{return operator[](0);}
 
 \indexlibrarymember{back}{basic_string}%
 \begin{itemdecl}
-constexpr const charT& back() const;
-constexpr charT& back();
+constexpr const_reference back() const;
+constexpr reference back();
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -3350,6 +3367,18 @@ Equivalent to: \tcode{return append(s, traits::length(s));}
 
 \indexlibrarymember{append}{basic_string}%
 \begin{itemdecl}
+constexpr basic_string& append(const charT* s, size_type pos, size_type n);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to:
+\tcode{return append(basic_string_view<charT, traits>(s).substr(pos, n));}
+\end{itemdescr}
+
+\indexlibrarymember{append}{basic_string}%
+\begin{itemdecl}
 constexpr basic_string& append(size_type n, charT c);
 \end{itemdecl}
 
@@ -3400,7 +3429,7 @@ constexpr basic_string& append(initializer_list<charT> il);
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return append(il.begin(), il.size());}
+Equivalent to: \tcode{return append(il.data(), il.size());}
 \end{itemdescr}
 
 \indexlibrarymember{push_back}{basic_string}%
@@ -3543,13 +3572,25 @@ Equivalent to: \tcode{return assign(s, traits::length(s));}
 
 \indexlibrarymember{assign}{basic_string}%
 \begin{itemdecl}
+constexpr basic_string& assign(const charT* s, size_type pos, size_type n);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to:
+\tcode{return assign(basic_string_view<charT, traits>(s).substr(pos, n));}
+\end{itemdescr}
+
+\indexlibrarymember{assign}{basic_string}%
+\begin{itemdecl}
 constexpr basic_string& assign(initializer_list<charT> il);
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return assign(il.begin(), il.size());}
+Equivalent to: \tcode{return assign(il.data(), il.size());}
 \end{itemdescr}
 
 \indexlibrarymember{assign}{basic_string}%
@@ -4099,7 +4140,7 @@ with \tcode{n2} copies of \tcode{c}.
 \begin{itemize}
 \item \tcode{out_of_range} if \tcode{pos1 > size()},
 \item \tcode{length_error} if the length of the resulting string
-would exceed\tcode{max_size()}, or
+would exceed \tcode{max_size()}, or
 \item any exceptions thrown by \tcode{allocator_traits<Allocator>::allocate.}
 \end{itemize}
 \end{itemdescr}
@@ -4224,7 +4265,7 @@ constexpr basic_string& replace(const_iterator i1, const_iterator i2, initialize
 \begin{itemdescr}
 \pnum
 \effects
-Equivalent to: \tcode{return replace(i1, i2, il.begin(), il.size());}
+Equivalent to: \tcode{return replace(i1, i2, il.data(), il.size());}
 \end{itemdescr}
 
 \rSec4[string.copy]{\tcode{basic_string::copy}}
@@ -4285,42 +4326,17 @@ Constant time.
 \begin{itemdecl}
 constexpr const charT* c_str() const noexcept;
 constexpr const charT* data() const noexcept;
-\end{itemdecl}
-
-\begin{itemdescr}
-\pnum
-\returns
-A pointer \tcode{p} such that \tcode{p + i == addressof(operator[](i))} for each
-\tcode{i} in \crange{0}{size()}.
-
-\pnum
-\complexity
-Constant time.
-
-\pnum
-\remarks
-The program shall not modify any of the values stored in the character array; otherwise, the behavior is undefined.
-\end{itemdescr}
-
-\indexlibrarymember{data}{basic_string}%
-\begin{itemdecl}
 constexpr charT* data() noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
 \pnum
 \returns
-A pointer \tcode{p} such that \tcode{p + i == addressof(operator[](i))} for each
-\tcode{i} in \crange{0}{size()}.
+\tcode{to_address(begin())}.
 
 \pnum
 \complexity
 Constant time.
-
-\pnum
-\remarks
-The program shall not modify the value stored at \tcode{p + size()}
-to any value other than \tcode{charT()}; otherwise, the behavior is undefined.
 \end{itemdescr}
 
 \indexlibrarymember{operator basic_string_view}{basic_string}%
@@ -4437,7 +4453,11 @@ Let \placeholder{G} be the name of the function.
 Equivalent to:
 \begin{codeblock}
 basic_string_view<charT, traits> s = *this, sv = t;
-return s.@\placeholder{G}@(sv, pos);
+if (auto result = s.@\placeholder{G}@(sv, pos); result == s.npos) {
+  return npos;
+} else {
+  return result;
+}
 \end{codeblock}
 
 \pnum
@@ -4468,6 +4488,17 @@ constexpr basic_string substr(size_type pos = 0, size_type n = npos) &&;
 \pnum
 \effects
 Equivalent to: \tcode{return basic_string(std::move(*this), pos, n);}
+\end{itemdescr}
+
+\indexlibrarymember{subview}{basic_string}%
+\begin{itemdecl}
+constexpr basic_string_view<charT, traits> subview(size_type pos = 0, size_type n = npos) const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to: \tcode{return basic_string_view<charT, traits>(*this).subview(pos, n);}
 \end{itemdescr}
 
 \rSec4[string.compare]{\tcode{basic_string::compare}}
@@ -5256,12 +5287,12 @@ values for the return type.
 
 \indexlibraryglobal{to_string}%
 \begin{itemdecl}
-string to_string(int val);
-string to_string(unsigned val);
-string to_string(long val);
-string to_string(unsigned long val);
-string to_string(long long val);
-string to_string(unsigned long long val);
+constexpr string to_string(int val);
+constexpr string to_string(unsigned val);
+constexpr string to_string(long val);
+constexpr string to_string(unsigned long val);
+constexpr string to_string(long long val);
+constexpr string to_string(unsigned long long val);
 string to_string(float val);
 string to_string(double val);
 string to_string(long double val);
@@ -5343,12 +5374,12 @@ conversion can be performed. Throws \tcode{out_of_range} if \tcode{wcstof}, \tco
 
 \indexlibraryglobal{to_wstring}%
 \begin{itemdecl}
-wstring to_wstring(int val);
-wstring to_wstring(unsigned val);
-wstring to_wstring(long val);
-wstring to_wstring(unsigned long val);
-wstring to_wstring(long long val);
-wstring to_wstring(unsigned long long val);
+constexpr wstring to_wstring(int val);
+constexpr wstring to_wstring(unsigned val);
+constexpr wstring to_wstring(long val);
+constexpr wstring to_wstring(unsigned long val);
+constexpr wstring to_wstring(long long val);
+constexpr wstring to_wstring(unsigned long long val);
 wstring to_wstring(float val);
 wstring to_wstring(double val);
 wstring to_wstring(long double val);
@@ -5363,6 +5394,11 @@ wstring to_wstring(long double val);
 \rSec2[basic.string.hash]{Hash support}
 
 \indexlibrarymember{hash}{basic_string}%
+\indexlibrarymember{hash}{string}%
+\indexlibrarymember{hash}{u8string}%
+\indexlibrarymember{hash}{u16string}%
+\indexlibrarymember{hash}{u32string}%
+\indexlibrarymember{hash}{wstring}%
 \begin{itemdecl}
 template<class A> struct hash<basic_string<char, char_traits<char>, A>>;
 template<class A> struct hash<basic_string<char8_t, char_traits<char8_t>, A>>;
@@ -5465,13 +5501,18 @@ The same suffix \tcode{s} is used for \tcode{chrono::duration} literals denoting
 \indexlibraryglobal{strtok}%
 \indexlibraryglobal{strxfrm}%
 \begin{codeblock}
+#define __STDC_VERSION_STRING_H__ 202311L
+
 namespace std {
   using size_t = @\textit{see \ref{support.types.layout}}@;                                            // freestanding
 
   void* memcpy(void* s1, const void* s2, size_t n);                     // freestanding
+  void* memccpy(void* s1, const void* s2, int c, size_t n);             // freestanding
   void* memmove(void* s1, const void* s2, size_t n);                    // freestanding
   char* strcpy(char* s1, const char* s2);                               // freestanding
   char* strncpy(char* s1, const char* s2, size_t n);                    // freestanding
+  char* strdup(const char* s);
+  char* strndup(const char* s, size_t size);
   char* strcat(char* s1, const char* s2);                               // freestanding
   char* strncat(char* s1, const char* s2, size_t n);                    // freestanding
   int memcmp(const void* s1, const void* s2, size_t n);                 // freestanding
@@ -5493,6 +5534,7 @@ namespace std {
   char* strstr(char* s1, const char* s2);                               // freestanding; see \ref{library.c}
   char* strtok(char* s1, const char* s2);
   void* memset(void* s, int c, size_t n);                               // freestanding
+  void* memset_explicit(void* s, int c, size_t n);                      // freestanding
   char* strerror(int errnum);
   size_t strlen(const char* s);                                         // freestanding
 }
@@ -5526,4 +5568,4 @@ have different signatures in this document,
 but they have the same behavior as in the C standard library\iref{library.c}.
 \end{note}
 
-\xrefc{7.24}
+\xrefc{7.26}

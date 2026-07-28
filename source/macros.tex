@@ -235,6 +235,11 @@
 %%--------------------------------------------------
 \newcommand{\CodeStyle}{\ttfamily}
 \newcommand{\CodeStylex}[1]{\texttt{\protect\frenchspacing #1}}
+\makeatletter
+% Append `\@` to restore proper sentence spacing in text mode. This insertion
+% happens only during normal typesetting; it is suppressed for .idx generation.
+\newcommand{\CodeStylexGuarded}[1]{\CodeStylex{#1\ifmmode\else\ifx\protect\@typeset@protect\@\fi\fi}}
+\makeatother
 
 \definecolor{grammar-gray}{gray}{0.2}
 
@@ -242,7 +247,7 @@
 \newcommand{\GrammarStylex}[1]{\textcolor{grammar-gray}{\textsf{\textit{#1}}}}
 
 % Code and definitions embedded in text.
-\newcommand{\tcode}[1]{\CodeStylex{#1}}
+\newcommand{\tcode}[1]{\CodeStylexGuarded{#1}}
 \newcommand{\term}[1]{\textit{#1}}
 \newcommand{\gterm}[1]{\GrammarStylex{#1}}
 \newcommand{\fakegrammarterm}[1]{\gterm{#1}}
@@ -292,7 +297,7 @@
 \newcommand{\CppXXIII}{\Cpp{} 2023}
 \newcommand{\CppXXVI}{\Cpp{} 2026}
 \newcommand{\IsoCUndated}{ISO/IEC 9899}
-\newcommand{\IsoC}{\IsoCUndated{}:2018}
+\newcommand{\IsoC}{\IsoCUndated{}:2024}
 \newcommand{\IsoFloatUndated}{ISO/IEC 60559}
 \newcommand{\IsoPosixUndated}{ISO/IEC/IEEE 9945}
 \newcommand{\IsoPosix}{\IsoPosixUndated{}:2009}
@@ -363,6 +368,7 @@
 \newcommand{\required}{\Fundesc{Required behavior}}
 \newcommand{\constraints}{\Fundesc{Constraints}}
 \newcommand{\mandates}{\Fundesc{Mandates}}
+\newcommand{\constantwhen}{\Fundesc{Constant When}}
 \newcommand{\expects}{\Fundesc{Preconditions}}
 \newcommand{\hardexpects}{\Fundesc{Hardened preconditions}}
 \newcommand{\effects}{\Fundesc{Effects}}
@@ -400,8 +406,10 @@
 \ExplSyntaxOff
 
 %% Inline non-parenthesized table reference (override memoir's \tref)
+\providecommand{\tref}{}
 \renewcommand{\tref}[1]{\hyperref[tab:#1]{\tablerefname \nolinebreak[3] \ref*{tab:#1}}}
 %% Inline non-parenthesized figure reference (override memoir's \fref)
+\providecommand{\fref}{}
 \renewcommand{\fref}[1]{\hyperref[fig:#1]{\figurerefname \nolinebreak[3] \ref*{fig:#1}}}
 
 %% NTBS, etc.
@@ -462,8 +470,14 @@
 \newcommand{\unspecbool}{\UNSP{unspecified-bool-type}}
 \newcommand{\seebelow}{\UNSP{see below}}      % macro length: 0
 \newcommand{\seebelownc}{\UNSPnc{see below}}  % macro length: 2
+\newcommand{\seeabove}{\UNSP{see above}}      % macro length: 0
+\newcommand{\seeabovenc}{\UNSPnc{see above}}  % macro length: 2
 \newcommand{\unspecuniqtype}{\UNSP{unspecified unique type}}
 \newcommand{\unspecalloctype}{\UNSP{unspecified allocator type}}
+
+%% Convenience macro for double carets in expressions,
+%% particularly within \tcode.
+\newcommand{\reflexpr}[1]{\caret\caret#1}
 
 %% Manual insertion of italic corrections, for aligning in the presence
 %% of the above annotations.
@@ -503,8 +517,8 @@
 \newcommand{\libconceptx}[2]{\cname{#1}\indexconcept{\idxconcept{#2}}}
 \newcommand{\libconcept}[1]{\libconceptx{#1}{#1}}
 \newcommand{\deflibconcept}[1]{\cname{#1}\indexlibrary{\idxconcept{#1}}\indexconcept{\idxconcept{#1}|idxbfpage}}
-\newcommand{\exposconcept}[1]{\ecname{#1}\indexconcept{\idxexposconcept{#1}}}
 \newcommand{\exposconceptx}[2]{\ecname{#1}\indexconcept{\idxexposconcept{#2}}}
+\newcommand{\exposconcept}[1]{\exposconceptx{#1}{#1}}
 \newcommand{\exposconceptnc}[1]{\indexconcept{\idxexposconcept{#1}}\ecname{#1}\itcorr[-1]}               % macro length: 15
 \newcommand{\defexposconcept}[1]{\ecname{#1}\indexconcept{\idxexposconcept{#1}|idxbfpage}}               % macro length: 16
 \newcommand{\defexposconceptnc}[1]{\ecname{#1}\indexconcept{\idxexposconcept{#1}|idxbfpage}\itcorr[-1]}  % macro length: 18
@@ -585,7 +599,7 @@
 \lstset{escapechar=@, aboveskip=\parskip, belowskip=0pt,
         midpenalty=500, endpenalty=-50,
         emptylinepenalty=-250, semicolonpenalty=0,upquote=true}%
-\renewcommand{\tcode}[1]{\textup{\CodeStylex{##1}}}
+\renewcommand{\tcode}[1]{\textup{\CodeStylexGuarded{##1}}}
 \renewcommand{\term}[1]{\textit{##1}}%
 \renewcommand{\grammarterm}[1]{\gterm{##1}}%
 }
@@ -597,7 +611,7 @@
 #1:}}\CodeBlockSetup}{}
 
 % An environment for command / program output that is not C++ code.
-\lstnewenvironment{outputblock}{\lstset{language=}}{}
+\lstnewenvironment{outputblock}{\lstset{escapechar=@, language=}}{}
 
 % A code block in which single-quotes are digit separators
 % rather than character literals.
@@ -643,7 +657,7 @@
  belowskip=0ex	% leave this alone: it keeps these things out of the
 				% footnote area
  }%
- \renewcommand{\tcode}[1]{\textup{\CodeStylex{##1}}}
+ \renewcommand{\tcode}[1]{\textup{\CodeStylexGuarded{##1}}}
 }
 {
 }
@@ -787,3 +801,37 @@
 }
 \newcommand{\defncontext}[1]{\textlangle#1\textrangle}
 \newnoteenvironment{defnote}{Note \arabic{defnote} to entry}{end note}
+
+%%----------------------------------
+%% UB and IFNDR sections for annexes
+%%----------------------------------
+%% Undefined behavior and ill-formed, no diagnostic required
+
+\newcommand{\behaviordef}[2]{\nolinebreak[3] (\label{#2x:#1}\ref{#2:#1})}
+
+\newcommand{\behaviordescription}[2]{%
+\let\oldcontentsline\addcontentsline%
+\let\addcontentsline\nocontentsline%
+\ifcase\value{SectionDepth}
+         \let\s=\section
+      \or\let\s=\subsection
+      \or\let\s=\subsubsection
+      \or\let\s=\paragraph
+      \or\let\s=\subparagraph
+      \fi%
+\s[#1]{\hfill[#2:#1]}\label{#2:#1}%
+\textbf{Specified in:}\space\ref{#2x:#1}%
+\let\addcontentsline\oldcontentsline%
+}
+
+% Use in main body of text to mark undefined behavior
+\newcommand{\ubdef}[1]{\behaviordef{#1}{ub}}
+
+% Use in Annex for sections describing each individual UB
+\newcommand{\ubdescription}[1]{\behaviordescription{#1}{ub}}
+
+% Use in main body of text to mark IFNDR
+\newcommand{\ifndrdef}[1]{\behaviordef{#1}{ifndr}}
+
+% Use in Annex for sections describing each individual IFNDR
+\newcommand{\ifndrdescription}[1]{\behaviordescription{#1}{ifndr}}

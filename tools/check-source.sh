@@ -87,7 +87,7 @@ grep -n 'U+' $texfiles |
     fail 'use \\unicode or \\ucode or \\uname instead' || failed=1
 
 # Discourage double-wrapping \tcode{\exposid{data_}}
-grep -n '\\tcode{\\exposid{[a-zA-Z0-9_]*}}' $texfiles |
+grep -n '\\tcode{\\exposid{[a-zA-Z0-9_-]*}}' $texfiles |
     fail 'double-wrapped \\exposid in \\tcode' || failed=1
 
 # Hex digits inside \ucode and \unicode must be lowercase so that \textsc works
@@ -97,8 +97,16 @@ grep -n 'unicode{[^}]*[^0-9a-f}][^}]*}' $texfiles |
     fail 'use lowercase hex digits inside \\unicode' || failed=1
 
 # Use \iref instead of "(\ref", except for subclause ranges
-grep -n '.(\\ref' $texfiles  | grep -v -- "--" |
+grep -n '.(\\ref{' $texfiles  | grep -v -- "--" |
     fail 'use \\iref instead of (\\ref' || failed=1
+
+# \iref cannot be at the start of a line
+grep -n '^\\iref' $texfiles |
+    fail '\\iref must be flush against the preceding word, not at the start of a line' || failed=1
+
+# \iref cannot be preceded by space
+grep -n ' \\iref' $texfiles |
+    fail '\\iref must not be preceded by space' || failed=1
 
 # Use \xrefc instead of "ISO C x.y.z"
 grep -n "^ISO C [0-9]*\." $texfiles |
@@ -125,11 +133,15 @@ grep -ne 'template\s\+<' $texlib |
 
 # In library declarations, constexpr should not follow explicit
 grep -ne '\bexplicit\b.*\bconstexpr\b' $texlib |
-    fail 'explicit constexpr' || failed=1
+    fail 'wrong order: explicit constexpr' || failed=1
 
 # In library declarations, static should not follow constexpr
 grep -ne '\bconstexpr\b.*\sstatic\s' $texlib |
-    fail 'constexpr static' || failed=1
+    fail 'wrong order: constexpr static' || failed=1
+
+# In library declarations, type aliases should not use typename
+grep -ne "using.*= typename" $texlib |
+    fail 'type alias with typename' || failed=1
 
 # "Class" heading without namespace
 for f in $texlib; do
@@ -142,6 +154,9 @@ done |
 # ref-qualifier on member functions with no space, e.g. "const&"
 grep -F -ne ') const&' $texlib |
     fail 'no space between cv-qualifier and ref-qualifier' || failed=1
+
+grep -n '\\\(def\)\?\(lib\|expos\)concept{[a-z0-9_-]*[^a-z0-9_}-][a-z0-9_-]*}' $texlib |
+    fail 'bad concept name' || failed=1
 
 # \begin{example/note} with non-whitespace in front on the same line.
 grep -ne '^.*[^ ]\s*\\\(begin\|end\){\(example\|note\)}' $texfiles |
@@ -197,9 +212,9 @@ done |
     fail '"shall", "should", or "may" inside a note' || failed=1
 
 # Comma after e.g. and i.e.
-grep -n "e\.g\.[^,]" $texfiles |
+grep -nP "e\.g\.(?!,)" $texfiles |
     fail '"e.g." must be followed by a comma'
-grep -n "i\.e\.[^,]" $texfiles |
+grep -nP "i\.e\.(?!,)" $texfiles |
     fail '"i.e." must be followed by a comma'
 
 
@@ -248,7 +263,7 @@ done | fail 'subclause without siblings' || failed=1
 for f in $texlibdesc; do
     sed -n '/begin{itemdescr}/,/end{itemdescr}/{=;p;}' < $f |
     sed '/^[0-9]\+$/{N;s/\n/:/;}' | sed "s/.*/$f:&/" |
-    awk -F: '$3 ~ /^\\pnum/ { seenpnum=1; next } $3 ~ /^\\index/ { next } $3 ~ /^\\(constraints|mandates|expects|effects|sync|ensures|returns|throws|complexity|remarks|errors|recommended)/ { if(seenpnum == 0) { print $0 } } { seenpnum=0 }'
+    awk -F: '$3 ~ /^\\pnum/ { seenpnum=1; next } $3 ~ /^\\index/ { next } $3 ~ /^\\(constraints|mandates|constantwhen|expects|hardexpects|effects|sync|ensures|returns|throws|complexity|remarks|errors|recommended)/ { if(seenpnum == 0) { print $0 } } { seenpnum=0 }'
 done |
     fail '\\pnum missing' || failed=1
 
