@@ -5849,7 +5849,7 @@ namespace std {
     constexpr ~out_ptr_t();
 
     constexpr operator Pointer*() const noexcept;
-    operator void**() const noexcept;
+    constexpr operator void**() const noexcept;
 
   private:
     Smart& s;                   // \expos
@@ -5979,7 +5979,7 @@ constexpr operator Pointer*() const noexcept;
 \end{itemdescr}
 
 \begin{itemdecl}
-operator void**() const noexcept;
+constexpr operator void**() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
@@ -6089,7 +6089,7 @@ namespace std {
     constexpr ~inout_ptr_t();
 
     constexpr operator Pointer*() const noexcept;
-    operator void**() const noexcept;
+    constexpr operator void**() const noexcept;
 
   private:
     Smart& s;                   // \expos
@@ -6215,7 +6215,7 @@ constexpr operator Pointer*() const noexcept;
 \end{itemdescr}
 
 \begin{itemdecl}
-operator void**() const noexcept;
+constexpr operator void**() const noexcept;
 \end{itemdecl}
 
 \begin{itemdescr}
